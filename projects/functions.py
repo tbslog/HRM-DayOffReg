@@ -258,11 +258,11 @@ def depart_manager(emplid,jplevel_TP_PP):
                     when o.RegDate is null then 0 --N'chưa gửi' 
                     --đơn đó duyệt thì trường regdate phải có data
                     when sum(a.ApprovalState) is null then 1 --N'Chờ Duyệt' 
-                    when sum(a.ApprovalState) = 0 then -2 --N'Từ Chối' 
+                    when sum(a.ApprovalState) = 1 then 2 --N'Đã Duyệt'
+                    when sum(a.ApprovalState) = 0 then 3 --N'Từ Chối'
                     --when sum(a.ApprovalState) = 1 THEN 2 --N'Đã Duyệt'
-                    when sum(a.ApprOrder) = 1 then 2 --N'Đã Duyệt'
-                    when sum(a.ApprOrder) = 3 then 3 --N'NS Tiếp Nhận'
-                    when sum(a.ApprOrder) = 7 then 4 --N'GĐ Kiêm Soát'
+                    when sum(a.ApprOrder) = 3 then 4 --N'NS Tiếp Nhận'
+                    when sum(a.ApprOrder) = 7 then 5 --N'GĐ Kiêm Soát'
                 ELSE 'Error!' end as aStatus 
             FROM dbo.OffRegister o
             LEFT JOIN dbo.Approval a ON a.regID = o.regID
@@ -284,7 +284,7 @@ def depart_manager(emplid,jplevel_TP_PP):
                             )
             GROUP BY o.regID,o.EmpID,o.Type,o.Reason,o.StartDate,o.Period,o.RegDate,
             o.AnnualLeave,o.Address,e.LastName,e.FirstName,e.DeptID,e.PosID,j.JPLevel
-            ORDER BY o.RegDate
+            ORDER BY aStatus ASC, o.StartDate ASC
                     """
     result = get_data(s,1)
     return result
