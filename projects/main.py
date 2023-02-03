@@ -70,6 +70,11 @@ class Approve(BaseModel):
     comment: str
     state: int
 
+class ChangePass(BaseModel):
+    Username: str = ''
+    CurrentPassword: str = ''
+    NewPassword: str = ''
+    ConfirmPass: str = ''
 
 # @app.post("/dangnhapUsernamePass", tags=['HRM'], dependencies=[Depends(validate_token)])
 @app.post("/Login", tags=['Login']) #done
@@ -83,9 +88,7 @@ def index(formdata: CheckLogin):
         s = f"""
                     SELECT top 1 EmpID, Password FROM Users WHERE UserName = '{formdata.username}' 
                 """
-    # cursor = cn.cursor()
-    # # fetchall tìm nạp tất cả các hàng từ câu truy vấn
-    # rows = cursor.execute(s, formdata.username).fetchall()
+   
     result = fn.get_data(s)
     if len(result) > 0:
         # -- a Thái
@@ -122,6 +125,37 @@ def index(formdata: CheckLogin):
                 return {'rCode' : 1, 'rMsg' : "Đăng nhập không thành công, EmpID tồn tại"}
         else:
             return {'rCode': 0,'rMsg': 'Đăng nhập không thành công'}
+
+#đổi password
+@app.post('/changePass',tags=['Login'])
+async def change(form:ChangePass):
+    s = ''
+    if form.Username.isnumeric():
+        s = f"""
+                    SELECT top 1 EmpID, Password FROM Users WHERE EmpID = '{form.Username}'
+                """
+    else:
+        s = f"""
+                    SELECT top 1 EmpID, Password FROM Users WHERE UserName = '{form.Username}' 
+                """
+    result = fn.get_data(s)
+    if len(result) > 0:
+        # -- a Thái
+        if (fn.check_pw(form.CurrentPassword,result[0][1])):
+            if form.NewPassword == form.ConfirmPass and form.NewPassword != '':
+                s = f"""
+                    UPDATE dbo.Users SET Password = '{fn.hashpw(form.ConfirmPass)}'
+                    WHERE EmpID = '{form.Username}'
+                    """
+                fn.insert_data(s)
+                
+                return {'rCode':1,'rData':{},'rMsg':'Thay đổi password thành công'}
+            else:
+                return{'rCode':0, 'rData':{},'rMsg':'Xác nhận password không đúng'}
+
+    return {'rCode': 0,
+            'rMsg': 'tài khoản hoặc mật khẩu không đúng'
+            }
 
 
 

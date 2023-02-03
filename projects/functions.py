@@ -59,18 +59,21 @@ def connect_db1():
 #hàm kết nối - truy vấn - đóng kết nối - get data
 def get_data(query,option = None):
     if option == 1:
-        cn = connect_db1()
-        cursor = cn.cursor()
-        rows = cursor.execute(query).fetchall() #fetches all the rows of a query result
-        cn.close()
-        if len(rows) > 0:
-            results = []
-            columns = [column[0] for column in cursor.description]
-            for row in rows:
-                results.append(dict(zip(columns, row)))
-            return results
-        else:
-            return [] #{'detail':'Lỗi'}
+        try:
+            cn = connect_db1()
+            cursor = cn.cursor()
+            rows = cursor.execute(query).fetchall() #fetches all the rows of a query result
+            cn.close()
+            if len(rows) > 0:
+                results = []
+                columns = [column[0] for column in cursor.description]
+                for row in rows:
+                    results.append(dict(zip(columns, row)))
+                return results
+            else:
+                return [] #{'detail':'Lỗi'}
+        except:
+            return {"detail":"Lỗi"}
     else:
         try:
             cn = connect_db1()
@@ -81,7 +84,7 @@ def get_data(query,option = None):
         except:
             return {"detail":"Lỗi"}
 
-#hàm kết nối - truy vấn - đóng kết nối - insert data
+#hàm kết nối - truy vấn - đóng kết nối - insert data - update
 def insert_data(query):
     try:
         cn = connect_db1()
