@@ -1,6 +1,7 @@
 from fastapi import Depends,HTTPException,status
 import numpy as np
-from  projects import models
+from  projects.models import *
+
 from pydantic import BaseModel
 import datetime
 from sqlalchemy.orm import Session
@@ -21,60 +22,7 @@ from datetime import timedelta
 cn = fn.cn
 
 
-def get_db():
-    db = models.SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
-  
-
-class CreatedByEmpID(BaseModel):
-    EmpID: int
-    Gmail: str
-
-class CheckLogin(BaseModel):
-    username: str = ""
-    password: str = ""
-    autogen: int  
-
-
-# class tạo user (tạo tài khoản đầy đủ thông tin)
-class Created(BaseModel):
-    Username: str
-    EmpID: int
-    Password: str
-    Email: str
-
-class Username(BaseModel):
-    username: str
-
-# class tạo username nhanh
-class CheckUsername(BaseModel):
-    EmpID: int
-
-
-
-#class đăng ký nghĩ phép
-class offregister(BaseModel):
-    type: int
-    reason: str
-    startdate: datetime.date #| None = (datetime.datetime.now() + datetime.timedelta(days=2)).strftime("%Y%m%d")
-    period: int
-    address: str
-    command: int
-# class phê duyệt
-class Approve(BaseModel):
-    regid: int
-    comment: str
-    state: int
-
-class ChangePass(BaseModel):
-    Username: str = ''
-    CurrentPassword: str = ''
-    NewPassword: str = ''
-    ConfirmPass: str = ''
 
 # @app.post("/dangnhapUsernamePass", tags=['HRM'], dependencies=[Depends(validate_token)])
 @app.post("/Login", tags=['Login']) #done
@@ -97,11 +45,11 @@ def index(formdata: CheckLogin):
                         'rCode': 3,
                         'rData':{'token':fn.generate_token(username=formdata.username,days=30),
                                 'empid':result[0][0]},
-                        'rMsg': 'đăng nhập thành công'
+                        'rMsg': 'Đăng nhập thành công'
                         }
         else:
             return {'rCode': 0,
-                    'rMsg': 'tài khoản hoặc mật khẩu không đúng'
+                    'rMsg': 'Tài khoản hoặc mật khẩu không đúng'
                     }
 
         # -- a Thái
@@ -119,7 +67,7 @@ def index(formdata: CheckLogin):
                     fn.insert_data(s)
                     return {'rCode': 2,
                             'rData':{'token':fn.generate_token(username=formdata.username,days=30),'password':kq_chuoi},
-                            'rMsg':'anh/chị nhớ lưu lại password'
+                            'rMsg':'Anh/chị nhớ lưu lại password'
                             }
             else:
                 return {'rCode' : 1, 'rMsg' : "Đăng nhập không thành công, EmpID tồn tại"}
@@ -130,28 +78,28 @@ def index(formdata: CheckLogin):
 @app.post('/changePass',tags=['Login'])
 async def change(form:ChangePass):
     s = ''
-    if form.Username.isnumeric():
+    if form.username.isnumeric():
         s = f"""
-                    SELECT top 1 EmpID, Password FROM Users WHERE EmpID = '{form.Username}'
+                    SELECT top 1 EmpID, Password FROM Users WHERE EmpID = '{form.username}'
                 """
     else:
         s = f"""
-                    SELECT top 1 EmpID, Password FROM Users WHERE UserName = '{form.Username}' 
+                    SELECT top 1 EmpID, Password FROM Users WHERE UserName = '{form.username}' 
                 """
     result = fn.get_data(s)
     if len(result) > 0:
         # -- a Thái
-        if (fn.check_pw(form.CurrentPassword,result[0][1])):
-            if form.NewPassword == form.ConfirmPass and form.NewPassword != '':
+        if (fn.check_pw(form.currentPassword,result[0][1])):
+            if form.newPassword == form.confirmPass and form.newPassword != '':
                 s = f"""
-                    UPDATE dbo.Users SET Password = '{fn.hashpw(form.ConfirmPass)}'
-                    WHERE EmpID = '{form.Username}'
+                    UPDATE dbo.Users SET Password = '{fn.hashpw(form.confirmPass)}'
+                    WHERE EmpID = '{result[0][0]}'
                     """
                 fn.insert_data(s)
                 
                 return {'rCode':1,'rData':{},'rMsg':'Thay đổi password thành công'}
             else:
-                return{'rCode':0, 'rData':{},'rMsg':'Xác nhận password không đúng'}
+                return{'rCode':0, 'rData':{},'rMsg':'Xác nhận password không đúng hoặc password mới đang rỗng'}
 
     return {'rCode': 0,
             'rMsg': 'tài khoản hoặc mật khẩu không đúng'
@@ -161,10 +109,10 @@ async def change(form:ChangePass):
 
 # getEmpInfo -lấy thông tin nhân viên
 @app.get('/getEmpInfo',dependencies=[Depends(validate_token)], tags=['GetEmpInfo'])
-async def getEmpInfo(EmpId: str = None,token: str = Depends(validate_token)): #Done
+async def getEmpInfo(empId: str = None,token: str = Depends(validate_token)): #Done
     note = {'statusCode': 1,'note': 'EmpID chưa được tạo Users'}
     note1 = {'statusCode': 0,'note':'Anh/Chị hãy nhập mã nhân viên'}
-    if EmpId == None:
+    if empId == None:
         if str(token).isnumeric(): #and len(str(EmpId)) > 0
             if fn.checkEmplIDUser(token) == True:
                 s = f"""
@@ -188,9 +136,9 @@ async def getEmpInfo(EmpId: str = None,token: str = Depends(validate_token)): #D
                 return note
         else:
             return note1
-    elif EmpId.isnumeric():
-        if str(EmpId).isnumeric(): #and len(str(EmpId)) > 0
-            if fn.checkEmplIDUser(EmpId) == True:
+    elif empId.isnumeric():
+        if str(empId).isnumeric(): #and len(str(EmpId)) > 0
+            if fn.checkEmplIDUser(empId) == True:
                 s = f"""
                         SELECT U.UserName,U.Email,U.EmpID,U.Status,FORMAT(U.LastModify,'yyyy-MM-dd hh:mm:ss') AS lastModify,Emp.FirstName,Emp.LastName,Emp.ComeDate,Emp.ZoneID,Z.ZoneName,
                             jp.JobPosID,JPL.JPLevelID, DP.DeptID,AL.AnnualLeave,JP.Name,JPN.Name,JPL.Name,DP.Name FROM dbo.Users AS U
@@ -201,7 +149,7 @@ async def getEmpInfo(EmpId: str = None,token: str = Depends(validate_token)): #D
                             LEFT JOIN dbo.Department AS DP ON jp.DeptID = DP.DeptID
                             LEFT JOIN dbo.AnnualLeave AS AL ON Emp.EmpID = AL.EmpID
                             LEFT JOIN dbo.JPName AS JPN ON jp.JPName = JPN.JPNameID
-                            WHERE U.EmpID = '{EmpId}'
+                            WHERE U.EmpID = '{empId}'
                         """
                 result = fn.get_data(s)
                 df = pd.DataFrame([tuple(t) for t in result], columns=[
@@ -219,7 +167,7 @@ async def getEmpInfo(EmpId: str = None,token: str = Depends(validate_token)): #D
 
 
 # lấy list typyoff
-@app.get('/DayOffType', dependencies=[Depends(validate_token)], tags=['OffRegister'])
+@app.get('/dayOffType', tags=['OffRegister']) #dependencies=[Depends(validate_token)], 
 async def getDayOffType(): #done
     s = f"""
             SELECT * FROM OffType
@@ -235,12 +183,10 @@ async def getDayOffType(): #done
 
 
 
-
-
 # đăng ký nghỉ phép --- 
 @app.post("/day-off-letter", tags=['OffRegister'],dependencies=[Depends(validate_token)])
 # async def offDayRegister(empID:int,type:int,reason:str,period:int,startDate:datetime.date | None = (datetime.datetime.now() + datetime.timedelta(days=2)).strftime("%Y%m%d")):
-async def offDayRegister(form: offregister,emplid: str = Depends(validate_token)): #Done
+async def offDayRegister(form: Offregister,emplid: str = Depends(validate_token)): #Done
     note = {'rCode': 0,'rMsg':'anh chị vui lòng chọn lưu đơn (nhập số 0) hoặc gửi đơn (nhập số 1)'}
     note1 = {'rCode': 0,'rMsg':'EmpID chưa được tạo Users'}
     offtypeId = [1,2,3,4,5,6]
@@ -325,8 +271,8 @@ async def dayoffregID(regid = None): #Done
                         when o.RegDate is null then 0 --N'chưa gửi' 
                         --đơn đó duyệt thì trường regdate phải có data
                         when sum(a.ApprovalState) is null then 1 --N'Chờ Duyệt' 
-                        when sum(a.ApprovalState) = 0 then -2 --N'Từ Chối' 
                         when sum(a.ApprOrder) = 1 then 2 --N'Đã Duyệt'
+                        when sum(a.ApprovalState) = 0 then 3 --N'Từ Chối'
                         when sum(a.ApprOrder) = 3 then 3 --N'NS Tiếp Nhận'
                         when sum(a.ApprOrder) = 7 then 4 --N'GĐ Kiêm Soát'
                     ELSE 'Error!' end as aStatus 
@@ -397,7 +343,7 @@ async def approve(form: Approve,approver: str = Depends(validate_token)): #form:
             
 
 
-    
+   
 
 
 

@@ -335,7 +335,7 @@ def roommates(depid,jplevel):
 #lấy đơn nghĩ phép của mình
 def myself(emplid):
     s = f"""
-                select r.EmpID,r.regID,r.Period,r.StartDate,r.RegDate,r.Type,r.Address,e.FirstName,e.LastName,e.ComeDate,e.DeptID,e.PosID,j.JPLevel,sum(a.ApprOrder) as apprOrder, sum(a.ApprovalState) as apprState,
+                select r.EmpID,r.regID,r.Period,r.StartDate,r.RegDate,r.Type,r.Address,r.Reason,e.FirstName,e.LastName,e.ComeDate,e.DeptID,e.PosID,j.JPLevel,sum(a.ApprOrder) as apprOrder, sum(a.ApprovalState) as apprState,
                     case 
                         when r.RegDate is null then 0 --N'chưa gửi' 
                         --đơn đó duyệt thì trường regdate phải có data
@@ -350,7 +350,7 @@ def myself(emplid):
                 LEFT JOIN dbo.Employee e ON e.EmpID = r.EmpID
                 LEFT JOIN dbo.JobPosition j ON j.JobPosID = e.PosID
                 WHERE r.EmpID = '{emplid}' --trường hợp lấy empid trong bảng offregister
-                group by r.EmpID,r.regID,r.Period,r.StartDate,r.RegDate,r.Type,r.Address,e.FirstName,e.LastName,e.ComeDate,e.DeptID,e.PosID,j.JPLevel
+                group by r.EmpID,r.regID,r.Period,r.StartDate,r.RegDate,r.Type,r.Address,r.Reason,e.FirstName,e.LastName,e.ComeDate,e.DeptID,e.PosID,j.JPLevel
                 ORDER BY aStatus ASC, r.StartDate ASC
                     """
     result = get_data(s,1)
