@@ -194,34 +194,56 @@ async def offDayRegister(form: Offregister,emplid: str = Depends(validate_token)
         if form.period > 0:
             #if form.startdate >= datetime.date.today() + timedelta(days=2) and form.startdate.isoweekday() != 7: #isoweekday lấy số nguyên theo thứ trong tuần (7 là ngày chủ nhật)
             #trường hợp lưu lại: regdate = NULL #comment là trạng thái 0: lưu , 1: gửi đơn
-            a = ''
-            b = ''
+            a = []
+            b = []
             if form.startdate < datetime.date.today() + timedelta(days=2):
-                a = 'Vui lòng đăng ký ngày nghỉ phép trước 2 ngày cho lần sau'
+                a = ['Vui lòng đăng ký ngày nghỉ phép trước 2 ngày cho lần sau']
             if form.startdate.isoweekday() == 7:
-                b = 'Ngày nghĩ phép là ngày chủ nhật'
-            if form.command == 0:
-                if fn.checkEmplIDUser(emplid):
-                    s = f'''
-                        INSERT INTO dbo.OffRegister(EmpID,Type,Reason,StartDate,Period,RegDate,AnnualLeave,Address) VALUES ('{emplid}','{form.type}',N'{form.reason}','{form.startdate}','{form.period}',NULL,0,'{form.address}')
-                        ''' 
-                    fn.insert_data(s)
-                    return {'rCode':1,'rData':{},'rMsg':{'rMsg1':'Đơn đã lưu','rMsg2': a ,'rMsg3': b}}
-                else:
-                    return note1
-            #trường hợp gửi đơn: regdate = ngày đăng ký
-            elif form.command == 1:
-                if fn.checkEmplIDUser(emplid):
-                    s = f'''
-                        INSERT INTO dbo.OffRegister(EmpID,Type,Reason,StartDate,Period,RegDate,AnnualLeave,Address) VALUES ('{emplid}','{form.type}',N'{form.reason}','{form.startdate}','{form.period}',SYSDATETIME(),0,'{form.address}')
-                        ''' 
-                    fn.insert_data(s)
+                b = ['Ngày nghĩ phép là ngày chủ nhật']
 
-                    return {'rCode':1,'rData':{},'rMsg':{'rMsg1':'Đơn đã gửi','rMsg2':a,'rMsg3':b}}
-                else:
-                    return note1
+            if form.command == 0:
+                c = 'NULL'
+                d = 'Đơn đã lưu'
+            elif form.command == 1:
+                c = 'SYSDATETIME()'
+                d = 'Đơn đã gửi'
             else:
                 return note
+
+            #code cải tiến (viết lần 2)
+            if fn.checkEmplIDUser(emplid):
+                s = f'''
+                    INSERT INTO dbo.OffRegister(EmpID,Type,Reason,Startdate,Period,RegDate,AnnualLeave,Address) 
+                    VALUES ('{emplid}','{form.type}',N'{form.reason}','{form.startdate}','{form.period}',{c},0,'{form.address}')           
+                    ''' 
+                fn.insert_data(s)
+                return {'rCode':1,'rData':{},'rMsg':{'notification':d,'startdate':a + b}}
+            else:
+                return note1
+
+            #viết lần 1
+            # if form.command == 0:
+            #     if fn.checkEmplIDUser(emplid):
+            #         s = f'''
+            #             INSERT INTO dbo.OffRegister(EmpID,Type,Reason,StartDate,Period,RegDate,AnnualLeave,Address) VALUES ('{emplid}','{form.type}',N'{form.reason}','{form.startdate}','{form.period}',NULL,0,'{form.address}')
+            #             ''' 
+            #         fn.insert_data(s)
+            #         return {'rCode':1,'rData':{},'rMsg':{'notification':'Đơn đã lưu','startdate':a + b}}
+            #     else:
+            #         return note1
+            # #trường hợp gửi đơn: regdate = ngày đăng ký
+            # elif form.command == 1:
+            #     if fn.checkEmplIDUser(emplid):
+            #         s = f'''
+            #             INSERT INTO dbo.OffRegister(EmpID,Type,Reason,StartDate,Period,RegDate,AnnualLeave,Address) VALUES ('{emplid}','{form.type}',N'{form.reason}','{form.startdate}','{form.period}',SYSDATETIME(),0,'{form.address}')
+            #             ''' 
+            #         fn.insert_data(s)
+
+            #         return {'rCode':1,'rData':{},'rMsg':{'notification':'Đơn đã gửi','startdate':a + b}}
+            #     else:
+            #         return note1
+            # else:
+            #     return note
         else:
             return {'rCode':'0','rData':{},'rMsg':'vui lòng nhập số ngày nghĩ'}
     else:
