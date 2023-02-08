@@ -217,7 +217,10 @@ async def offDayRegister(form: Offregister,emplid: str = Depends(validate_token)
                     VALUES ('{emplid}','{form.type}',N'{form.reason}','{form.startdate}','{form.period}',{c},0,'{form.address}')           
                     ''' 
                 fn.insert_data(s)
-                return {'rCode':1,'rData':{},'rMsg':{'notification':d,'startdate':a + b}}
+                return {'rCode':1,
+                        'rData':{},
+                        'rMsg': d,
+                        'rError':{'startdate': a + b}}
             else:
                 return note1
 
