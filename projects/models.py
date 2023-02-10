@@ -47,6 +47,21 @@ class ChangePass(BaseModel):
     newPassword: str = ''
     confirmPass: str = ''
 
+class Getlist(BaseModel):
+    needAppr: int
+    astatus: list[int] = []
+
+class AdjustDayOff(BaseModel):
+    regid: int
+    offtype: int
+    reason: str = ""
+    startdate: datetime.date
+    period: int
+    address: str = ""
+    command: int
+
+
+
 
 
 

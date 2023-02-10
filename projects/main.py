@@ -16,6 +16,7 @@ import random
 import string, math
 from pandas import DataFrame
 from datetime import timedelta
+import json
 
 
 # ------------------------------------------------------------------------------------------------------------
@@ -97,9 +98,9 @@ async def change(form:ChangePass):
                     """
                 fn.insert_data(s)
                 
-                return {'rCode':1,'rData':{},'rMsg':'Thay đổi password thành công'}
+                return {'rCode':1,'rMsg':'Thay đổi password thành công'}
             else:
-                return{'rCode':0, 'rData':{},'rMsg':'Xác nhận password không đúng hoặc password mới đang rỗng'}
+                return{'rCode':0,'rMsg':'Xác nhận password không đúng hoặc password mới đang rỗng'}
 
     return {'rCode': 0,
             'rMsg': 'tài khoản hoặc mật khẩu không đúng'
@@ -110,7 +111,7 @@ async def change(form:ChangePass):
 # getEmpInfo -lấy thông tin nhân viên
 @app.get('/getEmpInfo',dependencies=[Depends(validate_token)], tags=['GetEmpInfo'])
 async def getEmpInfo(empId: str = None,token: str = Depends(validate_token)): #Done
-    note = {'statusCode': 1,'note': 'EmpID chưa được tạo Users'}
+    note = {'statusCode': 0,'note': 'EmpID chưa được tạo Users'}
     note1 = {'statusCode': 0,'note':'Anh/Chị hãy nhập mã nhân viên'}
     if empId == None:
         if str(token).isnumeric(): #and len(str(EmpId)) > 0
@@ -131,35 +132,41 @@ async def getEmpInfo(empId: str = None,token: str = Depends(validate_token)): #D
                 df = pd.DataFrame([tuple(t) for t in result], columns=[
                                 'UserName', 'Email', 'EmpID', 'Status','LastModify','FirstName','LastName','ComeDate','ZoneID','ZoneName','JobPosID','JPLevelID',
                                 'DeptID','AnnualLeave','JobpositionName','JPName','JPLevelName','DepartmentName'])
-                return (df.to_dict('Records')[0]) #trả về dữ liệu: Dict kiểu 'Records'
+                return {'rCode':1,
+                        'rData': df.to_dict('Records')[0], #trả về dữ liệu: Dict kiểu 'Records'
+                        'rMsg': 'Lấy thông tin thành công'
+                        }
             else:
                 return note
         else:
             return note1
-    elif empId.isnumeric():
-        if str(empId).isnumeric(): #and len(str(EmpId)) > 0
-            if fn.checkEmplIDUser(empId) == True:
-                s = f"""
-                        SELECT U.UserName,U.Email,U.EmpID,U.Status,FORMAT(U.LastModify,'yyyy-MM-dd hh:mm:ss') AS lastModify,Emp.FirstName,Emp.LastName,Emp.ComeDate,Emp.ZoneID,Z.ZoneName,
-                            jp.JobPosID,JPL.JPLevelID, DP.DeptID,AL.AnnualLeave,JP.Name,JPN.Name,JPL.Name,DP.Name FROM dbo.Users AS U
-                            LEFT JOIN Employee AS Emp ON U.EmpID = Emp.EmpID 
-                            LEFT JOIN dbo.Zone AS Z ON Emp.ZoneID = Z.ZoneID
-                            LEFT JOIN dbo.JobPosition AS JP	ON Emp.PosID = JP.JobPosID
-                            LEFT JOIN dbo.JPLevel AS JPL ON JP.JPLevel = JPL.JPLevelID
-                            LEFT JOIN dbo.Department AS DP ON jp.DeptID = DP.DeptID
-                            LEFT JOIN dbo.AnnualLeave AS AL ON Emp.EmpID = AL.EmpID
-                            LEFT JOIN dbo.JPName AS JPN ON jp.JPName = JPN.JPNameID
-                            WHERE U.EmpID = '{empId}'
-                        """
-                result = fn.get_data(s)
-                df = pd.DataFrame([tuple(t) for t in result], columns=[
-                                'UserName', 'Email', 'EmpID', 'Status','LastModify','FirstName','LastName','ComeDate','ZoneID','ZoneName','JobPosID','JPLevelID',
-                                'DeptID','AnnualLeave','JobpositionName','JPName','JPLevelName','DepartmentName'])
-                return (df.to_dict('Records')[0]) #trả về dữ liệu: Dict kiểu 'Records'
-            else:
-                return note
+    elif str(empId).isnumeric():
+        # if str(empId).isnumeric(): #and len(str(EmpId)) > 0
+        if fn.checkEmplIDUser(empId) == True:
+            s = f"""
+                    SELECT U.UserName,U.Email,U.EmpID,U.Status,FORMAT(U.LastModify,'yyyy-MM-dd hh:mm:ss') AS lastModify,Emp.FirstName,Emp.LastName,Emp.ComeDate,Emp.ZoneID,Z.ZoneName,
+                        jp.JobPosID,JPL.JPLevelID, DP.DeptID,AL.AnnualLeave,JP.Name,JPN.Name,JPL.Name,DP.Name FROM dbo.Users AS U
+                        LEFT JOIN Employee AS Emp ON U.EmpID = Emp.EmpID 
+                        LEFT JOIN dbo.Zone AS Z ON Emp.ZoneID = Z.ZoneID
+                        LEFT JOIN dbo.JobPosition AS JP	ON Emp.PosID = JP.JobPosID
+                        LEFT JOIN dbo.JPLevel AS JPL ON JP.JPLevel = JPL.JPLevelID
+                        LEFT JOIN dbo.Department AS DP ON jp.DeptID = DP.DeptID
+                        LEFT JOIN dbo.AnnualLeave AS AL ON Emp.EmpID = AL.EmpID
+                        LEFT JOIN dbo.JPName AS JPN ON jp.JPName = JPN.JPNameID
+                        WHERE U.EmpID = '{empId}'
+                    """
+            result = fn.get_data(s)
+            df = pd.DataFrame([tuple(t) for t in result], columns=[
+                            'UserName', 'Email', 'EmpID', 'Status','LastModify','FirstName','LastName','ComeDate','ZoneID','ZoneName','JobPosID','JPLevelID',
+                            'DeptID','AnnualLeave','JobpositionName','JPName','JPLevelName','DepartmentName'])
+            return {'rCode':1,
+                    'rData': df.to_dict('Records')[0], #trả về dữ liệu: Dict kiểu 'Records'
+                    'rMsg': 'Lấy thông tin thành công'
+                    }
         else:
-            return note1
+            return note
+        # else:
+        #     return note1
     else:
         return note1
         
@@ -167,7 +174,7 @@ async def getEmpInfo(empId: str = None,token: str = Depends(validate_token)): #D
 
 
 # lấy list typyoff
-@app.get('/dayOffType', tags=['OffRegister']) #dependencies=[Depends(validate_token)], 
+@app.get("/dayOffType", tags=['OffRegister']) #dependencies=[Depends(validate_token)], 
 async def getDayOffType(): #done
     s = f"""
             SELECT * FROM OffType
@@ -179,7 +186,10 @@ async def getDayOffType(): #done
     df = pd.DataFrame([tuple(t) for t in result], columns=[
                       'OffTypeID', 'Name', 'Note', 'DeletedFlag'])
     # print(df)
-    return (df.to_dict('records'))
+    return {'rCode':1,
+            'rData':df.to_dict('records'),
+            'rMsg': 'Lấy danh sách thành công'
+            }
 
 
 
@@ -209,18 +219,16 @@ async def offDayRegister(form: Offregister,emplid: str = Depends(validate_token)
                 d = 'Đơn đã gửi'
             else:
                 return note
-
             #code cải tiến (viết lần 2)
             if fn.checkEmplIDUser(emplid):
                 s = f'''
                     INSERT INTO dbo.OffRegister(EmpID,Type,Reason,Startdate,Period,RegDate,AnnualLeave,Address) 
-                    VALUES ('{emplid}','{form.type}',N'{form.reason}','{form.startdate}','{form.period}',{c},0,'{form.address}')           
+                    VALUES ('{emplid}','{form.type}',N'{form.reason}','{form.startdate}','{form.period}',{c},0,N'{form.address}')           
                     ''' 
                 fn.insert_data(s)
-                return {'rCode':1,
-                        'rData':{},
-                        'rMsg': d,
-                        'rError':{'startdate': a + b}}
+                if a == [] and b == []:
+                    return {'rCode':1,'rMsg': d}
+                return {'rCode':1,'rMsg': d,'rError':{'startdate': a + b}}
             else:
                 return note1
 
@@ -248,17 +256,17 @@ async def offDayRegister(form: Offregister,emplid: str = Depends(validate_token)
             # else:
             #     return note
         else:
-            return {'rCode':'0','rData':{},'rMsg':'vui lòng nhập số ngày nghĩ'}
+            return {'rCode':0,'rData':{},'rMsg':'vui lòng nhập số ngày nghĩ'}
     else:
-        return {'rCode':'0','rData':{},'rMsg':'sai mã typeID'}
+        return {'rCode':0,'rData':{},'rMsg':'chưa chọn typeID'}
 
 
-#(có status: tạo mới, đã gửi, duyệt, chưa duyệt,...)
-@app.get("/day-off-letters",tags=['OffRegister'],summary='truyền vào số 1: lấy đơn quản lý, còn lại: lấy đơn chính mình')
-async def getsListoffstatus(needAppr: int = None,emplid: int = Depends(validate_token)): #hello
+#(lấy đơn theo status: tạo mới, đã gửi, duyệt, chưa duyệt,...)
+@app.post("/day-off-letters",tags=['OffRegister'],summary='truyền vào số 1: lấy đơn quản lý, còn lại: lấy đơn chính mình')
+async def getsListoffstatus(form: Getlist,emplid: int = Depends(validate_token)): #, astatus: list = None,
 # no parametter: lấy các d-o-letters của người đang đăng nhập(có token)     
 # needAppr = 1:  lấy các d-o-letters cần người đang đăng nhập(có token) phê duyệt
-    if needAppr == 1:
+    if form.needAppr == 1:
         s = f"""
                 SELECT e.DeptID,j.JPLevel FROM dbo.Employee e
                 LEFT JOIN dbo.JobPosition j ON j.JobPosID = e.PosID
@@ -268,24 +276,80 @@ async def getsListoffstatus(needAppr: int = None,emplid: int = Depends(validate_
         for i in result:
             depid = i[0]
             jplevel = i[1]
-
         #lấy mã jplevel của TP,PP của phòng ban, trực thuộc quản lý  
         jplevel_TP_PP = ((int(jplevel/10)+1)*10)+9
-
         if jplevel <= 50:
-           
-            return {'rCode':'1',
-                    'rData': fn.depart_manager(emplid,jplevel_TP_PP) + fn.roommates(depid,jplevel),
-                    'rMsg':'lấy danh sách quản lý, thành công'} 
+            query = fn.depart_manager(emplid,jplevel_TP_PP) + fn.roommates(depid,jplevel)
+            if len(form.astatus)>0:
+                ketqua = [] #kết quả đầu ra
+                for i in query:
+                    if i['aStatus'] in form.astatus:#i['aStatus']: lấy value của key, kiểm tra xem có nằm trong list đầu vào không
+                        ketqua.append(i)
+                return {'rCode':1,'rData': ketqua,'rMsg': 'Lấy danh sách quản lý (filter astutus) thành công'}
+            return {'rCode':1,'rData': query,'rMsg':'lấy danh sách quản lý (ALL) thành công'} 
         else:
-            return{'rCode':'0',
-                    'rData':[],
-                    'rMsg':''}
-            
-    else: #if needAppr is None:
-        return {'rCode':1, 'rData': fn.myself(emplid), 'rMsg': ''}
+            return{'rCode':0,'rData':[],'rMsg':''}  
+    else:
+        #lấy của chính mình
+        query = fn.myself(emplid)#kết quả truy vấn
+        if len(form.astatus)>0:
+            ketqua= [] #kết quả đầu ra
+            for i in query:
+                if i['aStatus'] in form.astatus: #i['aStatus']: lấy value của key, kiểm tra xem có nằm trong list đầu vào không
+                    ketqua.append(i)
+            return {'rCode':1,'rData': ketqua,'rMsg': 'Lấy danh sách myself (filter astutus) thành công'}
+        return {'rCode':1,'rData': query,'rMsg': 'lấy danh sách myself (ALL) thành công'}
+
+@app.post("/adjust-day-off",tags=['OffRegister'])   
+async def adjust(form: AdjustDayOff):
+    offtypeId = [1,2,3,4,5,6]
+    s = f"""
+            SELECT COUNT(*)  FROM dbo.OffRegister
+            WHERE regID = '{form.regid}' AND RegDate IS NULL
+        """
+    result = fn.get_data(s)
+    
+    if result[0][0] > 0:
+        if form.offtype in offtypeId:
+            if form.period > 0:
+                a = []
+                b = []
+                if form.startdate < datetime.date.today() + timedelta(days=2):
+                    a = ['Vui lòng đăng ký ngày nghỉ phép trước 2 ngày cho lần sau']
+                if form.startdate.isoweekday() == 7:
+                    b = ['Ngày nghĩ phép là ngày chủ nhật']
+
+                if form.command == 0:
+                    c = 'NULL'
+                    d = 'Đơn đã lưu'
+                elif form.command == 1:
+                    c = 'SYSDATETIME()'
+                    d = 'Đơn đã gửi'
+                else:
+                    return {'rCode': 0,'rMsg':'anh chị vui lòng chọn lưu đơn (nhập số 0) hoặc gửi đơn (nhập số 1)'}
+                 #----------------------------------------------------   
+
+                s = f'''
+                        UPDATE dbo.OffRegister 
+                        SET Type = '{form.offtype}', Reason = N'{form.reason}',StartDate = '{form.startdate}',Period = '{form.period}',RegDate = {c},Address = N'{form.address}'
+                        WHERE regID = {form.regid}	      
+                    ''' 
+                fn.insert_data(s)
+                if a == [] and b == []:
+                    return {'rCode':1,'rMsg': d}
+                return {'rCode':1,'rMsg': d,'rError':{'startdate': a + b}}
+            else:
+                return {'rCode':0,'rData':{},'rMsg':'vui lòng nhập số ngày nghĩ'}
+        else:
+            return {'rCode':0,'rData':{},'rMsg':'chưa chọn typeID'}
+    else:
+        return {'rCode':0,'rData':{},'rMsg':'regId không tồn tại hoặc regId đã gửi đơn'}
+
+
         
 
+
+    
 # tìm đơn nghĩ phép theo regID
 @app.get("/day-off-letter",tags=['OffRegister'])
 async def dayoffregID(regid = None): #Done
@@ -296,10 +360,10 @@ async def dayoffregID(regid = None): #Done
                         when o.RegDate is null then 0 --N'chưa gửi' 
                         --đơn đó duyệt thì trường regdate phải có data
                         when sum(a.ApprovalState) is null then 1 --N'Chờ Duyệt' 
-                        when sum(a.ApprOrder) = 1 then 2 --N'Đã Duyệt'
+                        when sum(a.ApprovalState) = 1 then 2 --N'Đã Duyệt'
                         when sum(a.ApprovalState) = 0 then 3 --N'Từ Chối'
-                        when sum(a.ApprOrder) = 3 then 3 --N'NS Tiếp Nhận'
-                        when sum(a.ApprOrder) = 7 then 4 --N'GĐ Kiêm Soát'
+                        when sum(a.ApprOrder) = 3 then 4 --N'NS Tiếp Nhận'
+                        when sum(a.ApprOrder) = 7 then 5 --N'GĐ Kiêm Soát'
                     ELSE 'Error!' end as aStatus 
                 FROM dbo.OffRegister o
                 LEFT JOIN dbo.Approval a ON a.regID = o.regID
@@ -308,9 +372,12 @@ async def dayoffregID(regid = None): #Done
                 ORDER BY o.RegDate ASC
                 """
         result = fn.get_data(s,1)
-        return result
+        if len(result)>0:
+            return {'rCode': 1,'rData':result[0],'rMsg':'Lấy đơn nghĩ phép thành công'}
+        else:
+            return {'rCode':0,'rMsg':'regid không tồn tại'}
     else:
-        return {'rCode': 0,'msg': 'vui lòng nhập mã regID'}
+        return {'rCode': 0,'rMsg': 'vui lòng nhập mã regID'}
    
 
 
@@ -323,13 +390,9 @@ async def approve(form: Approve,approver: str = Depends(validate_token)): #form:
             WHERE regID = '{form.regid}' AND RegDate IS NOT NULL      
         """
     result = fn.get_data(s)
-    for row in result:
-        regdate = row[0]
-
+    
     #kiểm nếu có đơn thì kiểm tra duyệt chưa, không có đơn trả về lỗi
-    if regdate == []:
-        return{'rCode':0,'rdata': {},'rMsg':{}}
-    else:
+    if len(result)>0:
         # kiểm tra regID đã được phê duyệt chưa
         s = f"""
                 SELECT CASE WHEN max(apprOrder) IS NULL THEN 0   ELSE max(apprOrder)   END as aOrder 
@@ -337,10 +400,9 @@ async def approve(form: Approve,approver: str = Depends(validate_token)): #form:
                 WHERE regID = '{form.regid}'      
             """
         result = fn.get_data(s)
-        aOrder = 0
-        if len(result) > 0:
-            aOrder = result[0][0]
-
+        
+        aOrder = result[0][0]
+        print(aOrder)
         if aOrder == 0: #chưa phê duyệt
             aOrder += 1
             #lấy thông tin người approve
@@ -349,9 +411,11 @@ async def approve(form: Approve,approver: str = Depends(validate_token)): #form:
                 where EmpID = '{approver}'
                 """
             result = fn.get_data(s)
+
             jobposid = ''
             if len(result) >0:
                 jobposid = result[0][0]
+            
             
             if form.state != 0:
                 form.state = 1
@@ -365,9 +429,8 @@ async def approve(form: Approve,approver: str = Depends(validate_token)): #form:
             return {'rCode':1,'rData':{},'rMsg':'Phê duyệt thành công'}
         else:
             return {'rCode':0,'rData':{},'rMsg':'Phê duyệt không thành công, đơn đã được phê duyệt trước đó'}
-            
-
-
+    else:
+        return{'rCode':0,'rdata': {},'rMsg':'Regid không tồn tại'}
    
 
 

@@ -44,10 +44,8 @@ def connect_db1():
     trust = "yes"
     cnstr = f"Driver={driver};Server={server};Database={database};UID={uid};PWD={pwd};"
     # cnstr = 'DRIVER={ODBC Driver 13 for SQL Server};SERVER='+server+';DATABASE='+database+';UID='+uid+';PWD=' + pwd
-
     try:
         cn = pyodbc.connect(cnstr, autocommit=True)
-        
         # cn.autocommit = True
         # return cn
     except pyodbc.Error as e:
@@ -73,7 +71,7 @@ def get_data(query,option = None):
             else:
                 return [] #{'detail':'Lỗi'}
         except:
-            return {"detail":"Lỗi"}
+            return []
     else:
         try:
             cn = connect_db1()
@@ -82,7 +80,7 @@ def get_data(query,option = None):
             cn.close()
             return rows
         except:
-            return {"detail":"Lỗi"}
+            return []
 
 #hàm kết nối - truy vấn - đóng kết nối - insert data - update
 def insert_data(query):
@@ -92,9 +90,9 @@ def insert_data(query):
         cursor.execute(query)
         cn.commit
         cn.close()
-        return {'note': 'Insert thành công'}
+        return [{'note': 'Insert thành công'}]
     except:
-        return {"detail":"Lỗi"}
+        return []
 
 
 
@@ -333,7 +331,18 @@ def roommates(depid,jplevel):
    
 
 #lấy đơn nghĩ phép của mình
-def myself(emplid):
+def myself(emplid): #filter
+    # sFilter = ''
+    # afilter = [1,2,4,8,16,32,64,128]
+    # for a in afilter:
+    #     if filter & a: # đơn mới
+    #         if len(sFilter)>0:
+    #             sFilter = 'OR ' + sFilter
+    #         sFilter = sFilter + ' (aStatus = {a})'
+        
+    
+    # if len(sFilter)>0:
+    #         sFilter = 'AND (' + sFilter + ')'
     s = f"""
                 select r.EmpID,r.regID,r.Period,r.StartDate,r.RegDate,r.Type,r.Address,r.Reason,e.FirstName,e.LastName,e.ComeDate,e.DeptID,e.PosID,j.JPLevel,sum(a.ApprOrder) as apprOrder, sum(a.ApprovalState) as apprState,
                     case 
@@ -349,7 +358,7 @@ def myself(emplid):
                 LEFT join [dbo].[Approval] a on r.regID = a.regid
                 LEFT JOIN dbo.Employee e ON e.EmpID = r.EmpID
                 LEFT JOIN dbo.JobPosition j ON j.JobPosID = e.PosID
-                WHERE r.EmpID = '{emplid}' --trường hợp lấy empid trong bảng offregister
+                WHERE r.EmpID = '{emplid}'--trường hợp lấy empid trong bảng offregister
                 group by r.EmpID,r.regID,r.Period,r.StartDate,r.RegDate,r.Type,r.Address,r.Reason,e.FirstName,e.LastName,e.ComeDate,e.DeptID,e.PosID,j.JPLevel
                 ORDER BY aStatus ASC, r.StartDate ASC
                     """
