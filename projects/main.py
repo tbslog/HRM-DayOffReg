@@ -300,7 +300,7 @@ async def getsListoffstatus(form: Getlist,emplid: int = Depends(validate_token))
             return {'rCode':1,'rData': ketqua,'rMsg': 'Lấy danh sách myself (filter astutus) thành công'}
         return {'rCode':1,'rData': query,'rMsg': 'lấy danh sách myself (ALL) thành công'}
 
-@app.post("/adjust-day-off",tags=['OffRegister'])   
+@app.put("/adjust-day-off",tags=['OffRegister'])   
 async def adjust(form: AdjustDayOff):
     offtypeId = [1,2,3,4,5,6]
     s = f"""
