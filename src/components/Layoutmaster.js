@@ -18,7 +18,7 @@ const Header = ({ children }) => {
   useEffect(() => {
     (async () => {
       let data = await getData("getEmpInfo", emID);
-
+      console.log(data);
       setname(data.FirstName + " " + data.LastName);
     })();
   }, []);

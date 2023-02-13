@@ -17,7 +17,7 @@ const StaffPage = () => {
     (async () => {
       let data = await getData("day-off-letters");
       let dataMana = await getData("day-off-letters?needAppr=1");
-      console.log(dataMana.rData);
+
       if (dataMana.rData.length > 0) {
         setOpen(true);
         setsizeConten("500px");
@@ -26,7 +26,7 @@ const StaffPage = () => {
 
       setdbEmpid(data.rData[0].EmpID);
       setdbFullName(data.rData[0].FirstName + "" + data.rData[0].LastName);
-      console.log(data.rData);
+
       setdbTable(data.rData);
       let dataTypeOff = await getData("dayOffType");
       // console.log(dataTypeOff);
@@ -109,7 +109,7 @@ const StaffPage = () => {
             <h3>Danh Sách Đơn Nghỉ Phép</h3>
           </div>
           <div style={{ alignSelf: "end" }}>
-            <a href="" className="btn btn-sm btn-success">
+            <a href="/Register" className="btn btn-sm btn-success">
               <i className="fas fa-plus" /> Create New
             </a>
           </div>

@@ -15,7 +15,6 @@ const ManagerPage = () => {
   const [sizeContenTB, setsizeContenTB] = useState("450px");
   useEffect(() => {
     (async () => {
-      let data = await getData("day-off-letters");
       let dataMana = await getData("day-off-letters?needAppr=1");
       console.log(dataMana.rData);
       if (dataMana.rData.length > 0) {
@@ -23,11 +22,7 @@ const ManagerPage = () => {
         setsizeConten("500px");
         setsizeContenTB("420px");
       } else setOpen(false);
-
-      setdbEmpid(data.rData[0].EmpID);
-      setdbFullName(data.rData[0].FirstName + "" + data.rData[0].LastName);
-      console.log(data.rData);
-      setdbTable(data.rData);
+      setdbTableMana(dataMana.rData);
       let dataTypeOff = await getData("dayOffType");
       // console.log(dataTypeOff);
       setlistTypeOff(dataTypeOff);
@@ -35,18 +30,35 @@ const ManagerPage = () => {
   }, []);
   const col = [
     {
-      name: "Ngày gửi",
-      selector: (row) => checkRegDate(row.RegDate),
+      name: "Mã NV",
+      selector: (row) => row.EmpID,
+      width: "96px",
       sortable: true,
     },
     {
-      name: "Ngày Bắt đầu Nghỉ",
+      name: "Họ tên NV",
+      selector: (row) => (
+        <div>
+          {row.FirstName} {row.LastName}
+        </div>
+      ),
+      width: "150px",
+      sortable: true,
+    },
+    {
+      name: "Ngày gửi",
+      selector: (row) => moment(row.RegDate).format("DD-MM-YYYY"),
+      sortable: true,
+    },
+    {
+      name: "Ngày Nghỉ",
       selector: (row) => moment(row.StartDate).format("DD-MM-YYYY"),
       sortable: true,
     },
     {
-      name: "Số Ngày Nghỉ",
+      name: "Số Ngày",
       selector: (row) => row.Period,
+      width: "100px",
       sortable: true,
     },
     {
@@ -55,43 +67,60 @@ const ManagerPage = () => {
       sortable: true,
     },
     {
-      name: "Trạng Thái",
-      selector: (row) => aStatusShow(row.aStatus),
-      sortable: true,
-    },
-    {
-      name: "Action",
-      cell: (row) => actionEdit(row.aStatus),
+      name: "",
+      cell: (row) => aStatusShow(row.aStatus),
+
+      conditionalCellStyles: [
+        {
+          when: (row) => row.aStatus != 0,
+          classNames: ["d-flex justify-content-center"],
+        },
+      ],
     },
   ];
-  const aStatusShow = (aStatus) => {
-    if (aStatus === 1) {
-      return <i className="fas fa-long-arrow-alt-right" title="Chờ Duyệt" />;
-    }
-    if (aStatus === 3) {
-      return <i className="fas fa-times" title="Từ Chối" />;
-    }
-    if (aStatus === 2) {
-      return <i className="fas fa-check-circle" title="Đã Duyệt" />;
-    }
-  };
-  const actionEdit = (aStatus) => {
-    if (aStatus === 0) {
-      return (
-        <button className="btn btn-primary">
-          <i className="fas fa-edit" />
-        </button>
-      );
-    }
-  };
-  const checkRegDate = (regDate) => {
-    if (regDate == null) {
-      return <div style={{ color: "red" }}> Chưa Gửi</div>;
-    } else return moment(regDate).format("DD-MM-YYYY");
-  };
   const checkTypeOff = (id) => {
     let a = listTypeOff?.find((data) => data.OffTypeID === id);
     return a?.Name + "(" + a?.Note + ")";
+  };
+  const aStatusShow = (aStatus) => {
+    if (aStatus === 1) {
+      return (
+        <div>
+          <button
+            className="border border-light btn btn-success "
+            style={{ width: "40px", height: "40px" }}
+          >
+            <i className=" fas fa-check-circle" title="Duyệt" />
+          </button>
+          <button
+            className="border border-light btn btn-danger"
+            style={{ width: "40px", height: "40px" }}
+          >
+            <i className=" fas fa-times" title="Từ Chối" />
+          </button>
+        </div>
+      );
+    }
+    if (aStatus === 3) {
+      return (
+        <div
+          className="border border-light btn btn-danger "
+          style={{ width: "40px", height: "40px" }}
+        >
+          <i className=" fas fa-times" title="Đã Từ Chối" />
+        </div>
+      );
+    }
+    if (aStatus === 2) {
+      return (
+        <div
+          className="border border-light btn btn-success"
+          style={{ width: "40px", height: "40px" }}
+        >
+          <i className="  fas fa-check-circle" title="Đã Duyệt" />
+        </div>
+      );
+    }
   };
   return (
     <form>
@@ -108,7 +137,7 @@ const ManagerPage = () => {
       <div className="card-body m-0 p-0 " style={{ height: sizeConten }}>
         <DataTable
           columns={col}
-          data={dbTable}
+          data={dbTableMana}
           pagination
           fixedHeader
           fixedHeaderScrollHeight={sizeContenTB}
@@ -116,7 +145,36 @@ const ManagerPage = () => {
           selectableRowsHighlight
           highlightOnHover
           subHeader
-          subHeaderComponent={<input type="text" placeholder="Search" />}
+          subHeaderComponent={
+            <div className="d-flex justify-content-between w-100">
+              <div class="dropdown show">
+                <a
+                  class="btn btn-secondary dropdown-toggle"
+                  href="#"
+                  role="button"
+                  id="dropdownMenuLink"
+                  data-toggle="dropdown"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                >
+                  Tất cả đơn
+                </a>
+
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                  <a class="dropdown-item" href="#">
+                    Đơn Mới
+                  </a>
+                  <a class="dropdown-item" href="#">
+                    Đã Phê Duyệt
+                  </a>
+                  <a class="dropdown-item" href="#">
+                    Chưa Phê Duyệt
+                  </a>
+                </div>
+              </div>
+              <input type="text" placeholder="Search"></input>
+            </div>
+          }
         />
       </div>
     </form>

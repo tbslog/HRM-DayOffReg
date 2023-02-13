@@ -12,10 +12,9 @@ const IndexListRegister = () => {
   useEffect(() => {
     (async () => {
       let dataMana = await getData("day-off-letters?needAppr=1");
-      console.log(dataMana.rData);
+
       if (dataMana.rData.length > 0) {
         setOpen(true);
-        console.log(dataMana.rData.length);
       } else setOpen(false);
     })();
   }, []);

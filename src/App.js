@@ -6,6 +6,7 @@ import Login from "./components/login/Login";
 import Demo2 from "./components/demo2";
 import Cookies from "js-cookie";
 import "react-tabs/style/react-tabs.css";
+import "react-datepicker/dist/react-datepicker.css";
 let token = Cookies.get("user");
 
 function App() {
