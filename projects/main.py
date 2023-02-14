@@ -16,7 +16,8 @@ import random
 import string, math
 from pandas import DataFrame
 from datetime import timedelta
-import json
+
+
 
 
 # ------------------------------------------------------------------------------------------------------------
@@ -60,25 +61,29 @@ def index(formdata: CheckLogin):
         if fn.checkEmplID(formdata.username) == True:
                 
             if formdata.autogen == 1:
-                    chuoi = string.ascii_letters + string.digits
-                    kq_chuoi = ''.join((random.choice(chuoi) for i in range(8)))
+                    # chuoi = string.ascii_letters + string.digits
+                    # kq_chuoi = ''.join((random.choice(chuoi) for i in range(6)))
+                    passWord = fn.genPass()
                     s = f'''
-                    INSERT INTO dbo.Users(UserName,EmpID,Password,UserType,Email,Status,LastModify,Modifier) values ('{formdata.username}','{formdata.username}','{fn.hashpw(kq_chuoi)}',0,'{formdata.username+"@tbslogistics.com"}',0,SYSDATETIME(),0) 
+                    INSERT INTO dbo.Users(UserName,EmpID,Password,UserType,Email,Status,LastModify,Modifier) values ('{formdata.username}','{formdata.username}','{fn.hashpw(passWord)}',0,'{formdata.username+"@tbslogistics.com"}',0,SYSDATETIME(),0) 
                     ''' 
                     fn.insert_data(s)
                     return {'rCode': 2,
-                            'rData':{'token':fn.generate_token(username=formdata.username,days=30),'password':kq_chuoi},
+                            'rData':{'token':fn.generate_token(username=formdata.username,days=30),'password':passWord},
                             'rMsg':'Anh/chị nhớ lưu lại password'
                             }
             else:
                 return {'rCode' : 1, 'rMsg' : "Đăng nhập không thành công, EmpID tồn tại"}
         else:
-            return {'rCode': 0,'rMsg': 'Đăng nhập không thành công'}
+            return {'rCode': 0,'rMsg': 'Tài khoản không tồn tại'}
 
 #đổi password
 @app.post('/changePass',tags=['Login'])
 async def change(form:ChangePass):
     s = ''
+    a = ['Xác nhận password không đúng']
+    b = ['Password mới đang rỗng']
+    c = ['Password mới phải nhỏ hơn 7 ký tự']
     if form.username.isnumeric():
         s = f"""
                     SELECT top 1 EmpID, Password FROM Users WHERE EmpID = '{form.username}'
@@ -91,7 +96,7 @@ async def change(form:ChangePass):
     if len(result) > 0:
         # -- a Thái
         if (fn.check_pw(form.currentPassword,result[0][1])):
-            if form.newPassword == form.confirmPass and form.newPassword != '':
+            if form.newPassword == form.confirmPass and form.newPassword != '' and len(form.newPassword) < 7:
                 s = f"""
                     UPDATE dbo.Users SET Password = '{fn.hashpw(form.confirmPass)}'
                     WHERE EmpID = '{result[0][0]}'
@@ -100,7 +105,7 @@ async def change(form:ChangePass):
                 
                 return {'rCode':1,'rMsg':'Thay đổi password thành công'}
             else:
-                return{'rCode':0,'rMsg':'Xác nhận password không đúng hoặc password mới đang rỗng'}
+                return{'rCode':0,'rError':{'Lỗi newPassWord':a + b + c}}
 
     return {'rCode': 0,
             'rMsg': 'tài khoản hoặc mật khẩu không đúng'
@@ -209,7 +214,7 @@ async def offDayRegister(form: Offregister,emplid: str = Depends(validate_token)
             if form.startdate < datetime.date.today() + timedelta(days=2):
                 a = ['Vui lòng đăng ký ngày nghỉ phép trước 2 ngày cho lần sau']
             if form.startdate.isoweekday() == 7:
-                b = ['Ngày nghĩ phép là ngày chủ nhật']
+                b = ['Ngày nghỉ phép là ngày chủ nhật']
 
             if form.command == 0:
                 c = 'NULL'
@@ -296,66 +301,64 @@ async def getsListoffstatus(form: Getlist,emplid: int = Depends(validate_token))
             ketqua= [] #kết quả đầu ra
             for i in query:
                 if i['aStatus'] in form.astatus: #i['aStatus']: lấy value của key, kiểm tra xem có nằm trong list đầu vào không
-                    ketqua.append(i)
+                    ketqua.append(i) 
             return {'rCode':1,'rData': ketqua,'rMsg': 'Lấy danh sách myself (filter astutus) thành công'}
         return {'rCode':1,'rData': query,'rMsg': 'lấy danh sách myself (ALL) thành công'}
 
-@app.post("/adjust-day-off",tags=['OffRegister'])   
-async def adjust(form: AdjustDayOff):
+@app.put("/adjust-day-off",tags=['OffRegister'])   
+async def adjust(form: AdjustDayOff, emplid: int = Depends(validate_token)):
     offtypeId = [1,2,3,4,5,6]
     s = f"""
-            SELECT COUNT(*)  FROM dbo.OffRegister
+            SELECT EmpID  FROM dbo.OffRegister
             WHERE regID = '{form.regid}' AND RegDate IS NULL
         """
     result = fn.get_data(s)
     
-    if result[0][0] > 0:
-        if form.offtype in offtypeId:
-            if form.period > 0:
-                a = []
-                b = []
-                if form.startdate < datetime.date.today() + timedelta(days=2):
-                    a = ['Vui lòng đăng ký ngày nghỉ phép trước 2 ngày cho lần sau']
-                if form.startdate.isoweekday() == 7:
-                    b = ['Ngày nghĩ phép là ngày chủ nhật']
+    # if emplid == 
+    if len(result) > 0:
+        if emplid == result[0][0]:
+            if form.offtype in offtypeId:
+                if form.period > 0:
+                    a = []
+                    b = []
+                    if form.startdate < datetime.date.today() + timedelta(days=2):
+                        a = ['Vui lòng đăng ký ngày nghỉ phép trước 2 ngày cho lần sau']
+                    if form.startdate.isoweekday() == 7:
+                        b = ['Ngày nghĩ phép là ngày chủ nhật']
 
-                if form.command == 0:
-                    c = 'NULL'
-                    d = 'Đơn đã lưu'
-                elif form.command == 1:
-                    c = 'SYSDATETIME()'
-                    d = 'Đơn đã gửi'
+                    if form.command == 0:
+                        c = 'NULL'
+                        d = 'Đơn đã lưu'
+                    elif form.command == 1:
+                        c = 'SYSDATETIME()'
+                        d = 'Đơn đã gửi'
+                    else:
+                        return {'rCode': 0,'rMsg':'anh chị vui lòng chọn lưu đơn (nhập số 0) hoặc gửi đơn (nhập số 1)'}
+                    s = f'''
+                            UPDATE dbo.OffRegister 
+                            SET Type = '{form.offtype}', Reason = N'{form.reason}',StartDate = '{form.startdate}',Period = '{form.period}',RegDate = {c},Address = N'{form.address}'
+                            WHERE regID = {form.regid}	      
+                        ''' 
+                    fn.insert_data(s)
+                    if a == [] and b == []:
+                        return {'rCode':1,'rMsg': d}
+                    return {'rCode':1,'rMsg': d,'rError':{'startdate': a + b}}
                 else:
-                    return {'rCode': 0,'rMsg':'anh chị vui lòng chọn lưu đơn (nhập số 0) hoặc gửi đơn (nhập số 1)'}
-                 #----------------------------------------------------   
-
-                s = f'''
-                        UPDATE dbo.OffRegister 
-                        SET Type = '{form.offtype}', Reason = N'{form.reason}',StartDate = '{form.startdate}',Period = '{form.period}',RegDate = {c},Address = N'{form.address}'
-                        WHERE regID = {form.regid}	      
-                    ''' 
-                fn.insert_data(s)
-                if a == [] and b == []:
-                    return {'rCode':1,'rMsg': d}
-                return {'rCode':1,'rMsg': d,'rError':{'startdate': a + b}}
+                    return {'rCode':0,'rData':{},'rMsg':'vui lòng nhập số ngày nghĩ'}
             else:
-                return {'rCode':0,'rData':{},'rMsg':'vui lòng nhập số ngày nghĩ'}
+                return {'rCode':0,'rData':{},'rMsg':'chưa chọn typeID'}
         else:
-            return {'rCode':0,'rData':{},'rMsg':'chưa chọn typeID'}
-    else:
+            return {'rCode':0, 'rData': {},'rMsg':'Bạn không được regid adjustment'}
+    else: 
         return {'rCode':0,'rData':{},'rMsg':'regId không tồn tại hoặc regId đã gửi đơn'}
 
 
-        
-
-
-    
-# tìm đơn nghĩ phép theo regID
+# tìm đơn nghĩ phép thep regID viết lần 4
 @app.get("/day-off-letter",tags=['OffRegister'])
-async def dayoffregID(regid = None): #Done
+async def dayoffregID(regid = None):
     if str(regid).isnumeric():
         s = f"""
-                SELECT o.regID,o.EmpID,o.Type,o.Reason,o.StartDate,o.Period,o.RegDate,o.AnnualLeave,o.Address, 
+                SELECT o.regID,o.EmpID,o.Type,o.Reason,o.StartDate,o.Period,o.RegDate,o.AnnualLeave,o.Address,o.Type,
                     case 
                         when o.RegDate is null then 0 --N'chưa gửi' 
                         --đơn đó duyệt thì trường regdate phải có data
@@ -368,17 +371,39 @@ async def dayoffregID(regid = None): #Done
                 FROM dbo.OffRegister o
                 LEFT JOIN dbo.Approval a ON a.regID = o.regID
                 WHERE o.regID = '{regid}'
-                group by o.regID,o.EmpID,o.Type,o.Reason,o.StartDate,o.Period,o.RegDate,o.AnnualLeave,o.Address
-                ORDER BY o.RegDate ASC
+                group by o.regID,o.EmpID,o.Type,o.Reason,o.StartDate,o.Period,o.RegDate,o.AnnualLeave,o.Address,o.type
                 """
         result = fn.get_data(s,1)
-        if len(result)>0:
-            return {'rCode': 1,'rData':result[0],'rMsg':'Lấy đơn nghĩ phép thành công'}
-        else:
-            return {'rCode':0,'rMsg':'regid không tồn tại'}
-    else:
-        return {'rCode': 0,'rMsg': 'vui lòng nhập mã regID'}
-   
+        # print(result[0]['aStatus'])
+        # if result[0]['aStatus'] == 0:
+        # if result[0]['aStatus'] == 1:
+        if len(result)>0: # kết quả của câu truy vấn lần 1 lấy status (trường hợp có data)
+            s1 = f"""
+                        SELECT a.ApprovalID,a.regID,a.ApprOrder,a.Approver,a.JobPosID AS 'ApproJobposID',a.Comment,a.ApprovalState,a.ApprovalDate,
+                        e.DeptID AS 'ApproDeptID',e.LastName AS 'ApproLastName',e.FirstName AS 'ApproFirstName',j.Name AS 'ApproJobName'
+                        FROM dbo.Approval AS a
+                        LEFT JOIN dbo.Employee AS e ON e.EmpID = a.Approver
+                        LEFT JOIN dbo.JobPosition AS j ON j.JobPosID = a.JobPosID
+                        WHERE regID = '{regid}'
+                        ORDER BY a.ApprOrder ASC
+                        """
+            rApprInf = fn.get_data(s1,1)
+            if len(rApprInf)>0:
+                for i in range(0,len(rApprInf)):
+                    if rApprInf[i]['ApprOrder'] == 1:
+                        if rApprInf[i]['ApprovalState'] == 1:
+                            rApprInf[i]['StateName'] = 'Accept'
+                        elif rApprInf[i]['ApprovalState'] == 0:
+                            rApprInf[i]['StateName'] = 'Reject'
+                    elif rApprInf[i]['ApprOrder'] == 2:
+                        rApprInf[i]['StateName'] = 'Receive'
+                    else:
+                        rApprInf[i]['StateName'] = 'Control'
+
+            result[0]['apprInf'] = rApprInf
+            return {'rCode': 1,'rData':result[0],'rMsg':'Lấy đơn thành công'}
+    return {'rCode': 0,'rData':{},'rMsg':'Đơn không tồn tại'}
+           
 
 
 # phê duyệt
@@ -402,7 +427,6 @@ async def approve(form: Approve,approver: str = Depends(validate_token)): #form:
         result = fn.get_data(s)
         
         aOrder = result[0][0]
-        print(aOrder)
         if aOrder == 0: #chưa phê duyệt
             aOrder += 1
             #lấy thông tin người approve
@@ -822,3 +846,203 @@ async def getlistOff():
     # check = db.query(models.Users.UserName).where(models.Users==formdata.username)
     # print(check)
     # return check
+    #-----------------------------------------------------------------tham khảo code--------------------------------------------------------------
+    # tìm đơn nghĩ phép theo regID
+#@app.get("/day-off-letter",tags=['OffRegister'])
+async def dayoffregID3(regid = None): #Done
+    if str(regid).isnumeric():
+        s = f"""
+                SELECT o.regID,o.EmpID,o.Type,o.Reason,o.StartDate,o.Period,o.RegDate,o.AnnualLeave,o.Address,o.Type,
+                    case 
+                        when o.RegDate is null then 0 --N'chưa gửi' 
+                        --đơn đó duyệt thì trường regdate phải có data
+                        when sum(a.ApprovalState) is null then 1 --N'Chờ Duyệt' 
+                        when sum(a.ApprovalState) = 1 then 2 --N'Đã Duyệt'
+                        when sum(a.ApprovalState) = 0 then 3 --N'Từ Chối'
+                        when sum(a.ApprOrder) = 3 then 4 --N'NS Tiếp Nhận'
+                        when sum(a.ApprOrder) = 7 then 5 --N'GĐ Kiêm Soát'
+                    ELSE 'Error!' end as aStatus 
+                FROM dbo.OffRegister o
+                LEFT JOIN dbo.Approval a ON a.regID = o.regID
+                WHERE o.regID = '{regid}'
+                group by o.regID,o.EmpID,o.Type,o.Reason,o.StartDate,o.Period,o.RegDate,o.AnnualLeave,o.Address,o.type
+                ORDER BY o.RegDate ASC  
+                """
+        result = fn.get_data(s,1)
+        
+        if len(result)>0:
+            return {'rCode': 1,'rData':result[0],'rMsg':'Lấy đơn nghĩ phép thành công'}
+        else:
+            return {'rCode':0,'rMsg':'regid không tồn tại'}
+    else:
+        return {'rCode': 0,'rMsg': 'vui lòng nhập mã regID'}
+   
+
+# tìm đơn nghĩ phép theo regID viết lần 2
+# @app.get("/day-off-letter1",tags=['OffRegister'])
+async def dayoffregID1(regid = None):
+    if str(regid).isnumeric():
+        s = f'''
+                SELECT o.regID,o.EmpID,o.Type,o.Reason,o.StartDate,o.Period,o.RegDate,o.Address,
+                a.ApprOrder,a.Approver,a.JobPosID,a.Comment,a.ApprovalState,a.ApprovalDate,
+				e.FirstName AS 'ApproverName',e.LastName AS 'ApproverLastName',e.DeptID AS 'ApproverDeptID',
+				j.Name AS 'PositionName'
+				 FROM dbo.OffRegister AS o
+                LEFT JOIN dbo.Approval AS a ON a.regID = o.regID
+				LEFT JOIN dbo.Employee AS e ON e.EmpID = a.Approver
+				LEFT JOIN dbo.JobPosition AS j ON j.JobPosID = a.JobPosID
+                WHERE o.regID = '{regid}'
+                ORDER BY a.ApprOrder ASC
+                '''
+        result = fn.get_data(s,1)
+        aStatus = {'aStatus':''}
+        note = {'Note':''}
+        rMsg = 'Lấy đơn thành công'
+        list_kq = []
+        # print(result)
+        # print(len(result))
+        if len(result) > 0:
+            if result[0]['RegDate'] == None:    
+                # aStatus = {'aStatus':0}
+                aStatus['aStatus'] = 0
+                note['Note'] = 'Đơn mới'
+                concat_dict ={**result[0],**aStatus,**note} #nối nhiều cái dict ------------ # 
+                return {'rCode': 1,'rData':concat_dict,'rMsg':rMsg}
+            
+            if result[0]['ApprovalState'] == None:
+                aStatus['aStatus'] = 1
+                note['Note'] = 'Chờ duyệt'
+                concat_dict = {**result[0],**aStatus,**note}
+                return {'rCode': 1,'rData':concat_dict,'rMsg':rMsg}
+                
+            for i in result:
+                
+                aStatus = {'aStatus':''}
+                note = {'Note':''}
+                if i['ApprOrder'] == 1:
+                    aStatus['aStatus'] = 2
+                    note['Note'] = 'Đã duyệt'
+                    if i['ApprovalState'] == 0:
+                        aStatus['aStatus'] = 3
+                        note['Note'] = 'Từ chối'
+                        concat_dict = {**i,**aStatus,**note}                      
+                        return {'rCode': 1,'rData':concat_dict,'rMsg':rMsg}
+
+                    concat_dict = {**i,**aStatus,**note}
+                    
+                if i['ApprOrder'] == 2:
+                    aStatus = {'aStatus':4}
+                    note = {'Note':'Nhân sự tiếp nhận'}
+                    concat_dict = {**i,**aStatus,**note}
+                if i['ApprOrder'] == 4:
+                    aStatus = {'aStatus':5}
+                    note = {'Note':'Giám đốc kiểm soát'}
+                    concat_dict = {**i,**aStatus,**note}
+
+                list_kq.append(concat_dict) #nối nhiều dict vào list 
+            return {'rCode': 1,'rData':list_kq,'rMsg':rMsg}
+        else:
+            return {'rCode':0,'rData':{},'rMsg':'Đơn không tồn tại'}
+                # return {'rCode': 1,'rData':concat_dict,'rMsg':rMsg}
+    else:
+        return {'rCode':0,'rData':{},'rMsg':'vui lòng nhập regID'}
+
+               
+
+
+            
+
+
+
+        # a = {"aaaa":"bbbbb"}
+        
+        # a['aaaa'] = 222
+        
+        # concat_dict = {**result[0],**a}
+        
+# tìm đơn nghĩ phép theo regID viết lần 3
+# @app.get("/day-off-letter1",tags=['OffRegister'])
+async def dayoffregID2(regid = None):
+    apprInf = []
+    if str(regid).isnumeric():
+        s = f"""
+                SELECT o.regID,o.EmpID,o.Type,o.Reason,o.StartDate,o.Period,o.RegDate,o.AnnualLeave,o.Address,o.Type,
+                    case 
+                        when o.RegDate is null then 0 --N'chưa gửi' 
+                        --đơn đó duyệt thì trường regdate phải có data
+                        when sum(a.ApprovalState) is null then 1 --N'Chờ Duyệt' 
+                        when sum(a.ApprovalState) = 1 then 2 --N'Đã Duyệt'
+                        when sum(a.ApprovalState) = 0 then 3 --N'Từ Chối'
+                        when sum(a.ApprOrder) = 3 then 4 --N'NS Tiếp Nhận'
+                        when sum(a.ApprOrder) = 7 then 5 --N'GĐ Kiêm Soát'
+                    ELSE 'Error!' end as aStatus 
+                FROM dbo.OffRegister o
+                LEFT JOIN dbo.Approval a ON a.regID = o.regID
+                WHERE o.regID = '{regid}'
+                group by o.regID,o.EmpID,o.Type,o.Reason,o.StartDate,o.Period,o.RegDate,o.AnnualLeave,o.Address,o.type
+                """
+        result = fn.get_data(s,1)
+        # print(result[0]['aStatus'])
+        # if result[0]['aStatus'] == 0:
+        # if result[0]['aStatus'] == 1:
+        if len(result)>0: # kết quả của câu truy vấn lần 1 lấy status (trường hợp có data)
+            s1 = f"""
+                        SELECT a.ApprovalID,a.regID,a.ApprOrder,a.Approver,a.JobPosID AS 'ApproJobposID',a.Comment,a.ApprovalState,a.ApprovalDate,
+                        e.DeptID AS 'ApproDeptID',e.LastName AS 'ApproLastName',e.FirstName AS 'ApproFirstName',j.Name AS 'ApproJobName'
+                        FROM dbo.Approval AS a
+                        LEFT JOIN dbo.Employee AS e ON e.EmpID = a.Approver
+                        LEFT JOIN dbo.JobPosition AS j ON j.JobPosID = a.JobPosID
+                        WHERE regID = '{regid}'
+                        ORDER BY a.ApprOrder ASC
+                        """
+            result_1 = fn.get_data(s1,1)
+            for row in result_1: #result_1 kết quả truy vấn lần 2
+                if result[0]['aStatus'] == 3: #result kết quả truy vấn ban đầu
+                    row['aStatus'] = 3
+                    row['Note'] = 'Từ chối'
+                if result[0]['aStatus'] == 2:
+                    row['aStatus'] = 2
+                    row['Note'] = 'Đã duyệt'
+                if result[0]['aStatus'] == 4:
+                    if row['ApprOrder'] == 1:
+                        row['aStatus'] = 2
+                        row['Note'] = 'Đã duyệt'
+                    elif row['ApprOrder'] == 2:
+                        row['aStatus'] = 4
+                        row['Note'] = 'Nhân Sự đã tiếp nhận'
+                if result[0]['aStatus'] == 5:
+                    if row['ApprOrder'] == 1:
+                        row['aStatus'] = 2
+                        row['Note'] = 'Đã duyệt'
+                    elif row['ApprOrder'] == 2:
+                        row['aStatus'] = 4
+                        row['Note'] = 'Nhân Sự đã tiếp nhận'
+                    elif row['ApprOrder'] == 4:
+                        row['aStatus'] = 5
+                        row['Note'] = 'Ban giám đốc kiểm soát'
+                apprInf.append(row)
+            
+            result[0]['apprInf'] = apprInf
+
+
+            return {'rCode': 1,'rData':result[0],'rMsg':'Lấy đơn thành công'}
+       
+    return {'rCode': 0,'rData':result[0],'rMsg':'Đơn không tồn tại'}
+
+            # if result[0]['aStatus'] == 3: #từ chối
+            #     result_1[0]['Note'] = 'từ chối'
+            # if result[0]['aStatus'] == 2:
+            #     result_1[0]['Note'] = 'Đã duyệt'
+            # if result[0]['aStatus'] == 4:
+            #     for row in result_1:
+            #         row['note'] = 'Đã duyệt'
+
+            
+                
+
+
+
+                # for row in result1:
+                #     if row['ApprOrder'] == 1:
+
+                #         row['sta'] = ''

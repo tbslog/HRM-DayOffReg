@@ -30,10 +30,10 @@ class CheckUsername(BaseModel):
 #class đăng ký nghĩ phép
 class Offregister(BaseModel):
     type: int
-    reason: str
+    reason: str = ""
     startdate: datetime.date #| None = (datetime.datetime.now() + datetime.timedelta(days=2)).strftime("%Y%m%d")
     period: int
-    address: str
+    address: str = ""
     command: int
 # class phê duyệt
 class Approve(BaseModel):
@@ -42,10 +42,10 @@ class Approve(BaseModel):
     state: int
 
 class ChangePass(BaseModel):
-    username: str = ''
-    currentPassword: str = ''
-    newPassword: str = ''
-    confirmPass: str = ''
+    username: str = ""
+    currentPassword: str = ""
+    newPassword: str = ""
+    confirmPass: str = ""
 
 class Getlist(BaseModel):
     needAppr: int

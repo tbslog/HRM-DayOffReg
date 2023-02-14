@@ -5,7 +5,7 @@ import json
 import bcrypt
 from fastapi import Depends, HTTPException
 from projects.security import validate_token
-
+from numpy import random
 # with open('projects/config.json') as f:
 with open('projects/config.json') as f:
     data = json.load(f)
@@ -365,9 +365,19 @@ def myself(emplid): #filter
     result = get_data(s,1)
     return result
 
+def genPass():
+  keys = ['Mat troi','Mat trang','chem chep','Bach tuoc','Ca da bo','Ca map xam','Ca ngat','Ca nheo',
+            'Ca chim trang','Ca mat trang','Ca hoi nuong ','Ca keo kho','Ca tram co','Ca chep giòn',
+            'Ca nuc kho ca','Ca nuc hap','Ca dao den','Ca trang','Trung ca hoi ','Dan ca heo','Tom the vang',
+            'Tom xu xanh','Tom hum alaska','Tom kho nho','Muc ong','Muc nang','Muc trung','Con bo nau','Con bo rung',
+            'Con bo den','Con bo sua','Ga dong tao','Con ga mai','Con ga trong','Con vit bau','Con vit co','Con ngan',
+            'Con ngong','Con cho muc','Con cho vang','Con meo Con','Con meo muop','Con meo den','Con meo vang','Con de den',
+            'Con de trang','Con de nui','Con ho xam','Con gau trang','Gau bac cuc','Con gau nau']
+
+  return keys[random.randint(len(keys))].title().replace(" ","")
 
 
 
-
+a = genPass()
 
 
