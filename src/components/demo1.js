@@ -102,17 +102,17 @@ const Demo1 = () => {
             <div className="card-header py-0 border-0">
               {open && (
                 <ul class="nav nav-pills">
-                  <li class="nav-item">
+                  <li className="nav-item">
                     <a
-                      class="nav-link active"
+                      className="nav-link active"
                       href="#activity"
                       data-toggle="tab"
                     >
                       Đơn Của Tôi
                     </a>
                   </li>
-                  <li class="nav-item">
-                    <a class="nav-link" href="#timeline" data-toggle="tab">
+                  <li className="nav-item">
+                    <a className="nav-link" href="#timeline" data-toggle="tab">
                       Đơn Cần Phê Duyệt
                     </a>
                   </li>

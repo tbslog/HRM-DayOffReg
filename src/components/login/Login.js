@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -7,16 +7,9 @@ import logo from "../../assets/imgs/logoTBS.jpg";
 import "./login.css";
 
 import { login } from "../../actions/auth";
+import ChangePass from "../register/ChangePass";
 
-const required = (value) => {
-  if (!value) {
-    return (
-      <div className="alert alert-danger" role="alert">
-        This field is required!
-      </div>
-    );
-  }
-};
+import { Modal } from "bootstrap";
 
 const Login = (props) => {
   const {
@@ -26,28 +19,70 @@ const Login = (props) => {
   } = useForm();
   let navigate = useNavigate();
 
-  const form = useRef();
-  const checkBtn = useRef();
-
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  //const [newp, setnewp] = useState("");
   const [loading, setLoading] = useState(false);
-  const [msg, setMsg] = useState("");
 
   const { isLoggedIn } = useSelector((state) => state.auth);
   const { message } = useSelector((state) => state.message);
+  const { rcode } = useSelector((state) => state.rcode);
+  const { newpass } = useSelector((state) => state.newpass);
+
+  const [onchanpass, setonchanpass] = useState(false);
+
+  const [showPassword, setShowPassword] = useState(false);
+
+  const [ShowModal, SetShowModal] = useState("");
+  const [modal, setModal] = useState(null);
+  const parseExceptionModal = useRef();
+
+  const showModalForm = () => {
+    const modal = new Modal(parseExceptionModal.current, {
+      keyboard: false,
+      backdrop: "static",
+    });
+    setModal(modal);
+    modal.show();
+  };
+  const hideModal = () => {
+    modal.hide();
+  };
 
   const dispatch = useDispatch();
+  const showRegis = (e) => {
+    const username = e.target.value;
+    setUsername(username);
+  };
 
   const onChangeUsername = (e) => {
     const username = e.target.value;
     setUsername(username);
+  };
+  const offRegis = () => {
+    window.location.reload();
+  };
+
+  const Regis = (e) => {
+    dispatch(login(username, password, 1))
+      .then(() => {
+        showModalForm();
+        SetShowModal("change");
+      })
+      .catch(() => {
+        setLoading(false);
+      });
+
+    showModalForm();
+    SetShowModal("change");
+    setPassword(newpass);
   };
 
   const onChangePassword = (e) => {
     const password = e.target.value;
     setPassword(password);
   };
+
   const validateLogin = {
     userName: {
       required: " Không được để trống",
@@ -67,6 +102,7 @@ const Login = (props) => {
 
   const onSubmit = (e) => {
     setLoading(true);
+    setUsername(username);
 
     if (!errors.userName?.message && !errors.password?.message) {
       dispatch(login(username, password, 0))
@@ -130,7 +166,6 @@ const Login = (props) => {
                           {...register("userName", validateLogin.userName)}
                           value={username}
                           onChange={onChangeUsername}
-                          validations={[required]}
                         />
                       </div>
                       <p style={{ fontSize: "10px", color: "red" }}>
@@ -141,20 +176,28 @@ const Login = (props) => {
                         <label className="form-label" htmlFor="password">
                           Mật khẩu
                         </label>
-                        <input
-                          type="password"
-                          className="form-control"
-                          id="password"
-                          {...register("password", validateLogin.Password)}
-                          placeholder="Mật khẩu"
-                          value={password}
-                          onChange={onChangePassword}
-                          validations={[required]}
-                        />
+                        <div className="d-flex">
+                          <input
+                            type={showPassword ? "text" : "password"}
+                            className="form-control"
+                            id="password"
+                            {...register("password", validateLogin.Password)}
+                            placeholder="Mật khẩu"
+                            value={password}
+                            onChange={onChangePassword}
+                          />
+                          <button
+                            className="border-0"
+                            onClick={() => setShowPassword(!showPassword)}
+                            type="button"
+                          >
+                            <span className="fa fa-fw fa-eye field-icon toggle-password"></span>
+                          </button>
+                        </div>
+                        <p style={{ fontSize: "10px", color: "red" }}>
+                          {errors.password?.message}
+                        </p>
                       </div>
-                      <p style={{ fontSize: "10px", color: "red" }}>
-                        {errors.password?.message}
-                      </p>
 
                       <div className="text-center pt-1 mb-5 pb-1">
                         <button
@@ -177,7 +220,68 @@ const Login = (props) => {
                             </div>
                           </div>
                         )}
+                        {rcode === 1 && (
+                          <div className="d-flex justify-content-center mb-0">
+                            <button
+                              className="btn btn-success gradient-custom-2"
+                              style={{ width: "80px" }}
+                              type="submit"
+                              onClick={Regis}
+                            >
+                              <span>Có</span>
+                            </button>
+                            <button
+                              className="btn btn-primary gradient-custom-2 ml-3 "
+                              style={{ width: "80px" }}
+                              type="submit"
+                              onClick={offRegis}
+                            >
+                              <span>Không</span>
+                            </button>
+                          </div>
+                        )}
                       </div>
+                      <>
+                        <div
+                          className="modal fade"
+                          id="modal-xl"
+                          data-backdrop="static"
+                          ref={parseExceptionModal}
+                          aria-labelledby="parseExceptionModal"
+                          backdrop="static"
+                        >
+                          <div
+                            className="modal-dialog modal-dialog-scrollable"
+                            style={{ maxWidth: "88%" }}
+                          >
+                            <div className="modal-content">
+                              <div className="modal-header border-0 p-0">
+                                <button
+                                  type="button"
+                                  className="close ml"
+                                  data-dismiss="modal"
+                                  onClick={() => hideModal()}
+                                  aria-label="Close"
+                                >
+                                  <span
+                                    aria-hidden="true"
+                                    style={{ fontSize: "30px" }}
+                                  >
+                                    ×
+                                  </span>
+                                </button>
+                              </div>
+                              <div className="modal-body pt-0">
+                                <>
+                                  {ShowModal === "change" && (
+                                    <ChangePass user={username} />
+                                  )}
+                                </>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </>
                     </div>
                   </div>
                   <div className="col-lg-6 d-flex align-items-center gradient-custom-2">

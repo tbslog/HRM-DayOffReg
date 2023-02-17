@@ -17,9 +17,18 @@ const Header = ({ children }) => {
 
   useEffect(() => {
     (async () => {
-      let data = await getData("getEmpInfo", emID);
-      console.log(data);
-      setname(data.FirstName + " " + data.LastName);
+      let data = await getData("getEmpInfo");
+
+      // console.log(data);
+      Cookies.set(
+        "info",
+        JSON.stringify({
+          FirstName: data.rData.FirstName,
+          LastName: data.rData.LastName,
+          JobpositionName: data.rData.JobpositionName,
+        })
+      );
+      setname(data.rData.FirstName + " " + data.rData.LastName);
     })();
   }, []);
 
@@ -43,18 +52,18 @@ const Header = ({ children }) => {
               </li>
               <li className="nav-item d-none d-sm-inline-block">
                 <a href="/" className="nav-link">
-                  Home
+                  Trang chủ
                 </a>
               </li>
             </ul>
-            <li className="  nav-item d-none d-sm-inline-block">
+            <li className="nav-item d-none d-sm-inline-block">
               <a
                 href="/"
                 className="nav-link"
                 style={{ color: "rgba(0,0,0,.5)" }}
                 onClick={logOut}
               >
-                LogOut
+                Đăng xuất
               </a>
             </li>
             {/* Right navbar links */}
@@ -122,15 +131,15 @@ const Header = ({ children }) => {
                       <li className="nav-item">
                         <Link to="/indexListRegister" className="nav-link ">
                           <i className="far fa-circle nav-icon" />
-                          <p>Đăng kí phép</p>
+                          <p>Quản lý ngày nghỉ</p>
                         </Link>
                       </li>
-                      <li className="nav-item">
+                      {/* <li className="nav-item">
                         <Link to="/Approve" className="nav-link ">
                           <i className="far fa-circle nav-icon" />
                           <p>Phê Duyệt</p>
                         </Link>
-                      </li>
+                      </li> */}
                     </ul>
                   </li>
                 </ul>
@@ -139,7 +148,7 @@ const Header = ({ children }) => {
             </div>
             {/* /.sidebar */}
           </aside>
-          <div className="  w-100 h-100" style={{ overflow: "hidden" }}>
+          <div className="w-100 h-100" style={{ overflow: "hidden" }}>
             {children}
           </div>
           <footer className="main-footer">
@@ -148,7 +157,7 @@ const Header = ({ children }) => {
             </strong>
             All rights reserved.
             <div className="float-right d-none d-sm-inline-block">
-              <b>Version</b> 1.0.1
+              <b>Version</b> 1.0.0
             </div>
           </footer>
           {/* Control Sidebar */}
