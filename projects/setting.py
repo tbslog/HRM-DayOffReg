@@ -7,7 +7,7 @@ from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
 from fastapi import FastAPI, Depends
 from pathlib import Path
-# import os
+import os
 
 
 DEBUG = True
@@ -21,8 +21,6 @@ ALLOWED_HOSTS = ["*"]
 MIDDLEWARE = []
 
 app = FastAPI()
-# Cross Origin Resource Sharing - chia sẻ API (localhost) đến máy client khác
-# middleware phần mềm trung gian
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_HOSTS,
@@ -31,4 +29,3 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-   

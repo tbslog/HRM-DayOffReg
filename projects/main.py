@@ -14,7 +14,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from  projects.setting import  app
 import random
 import string, math
-from pandas import DataFrame
 from datetime import timedelta
 
 
@@ -204,8 +203,15 @@ async def getDayOffType(): #done
 async def offDayRegister(form: Offregister,emplid: str = Depends(validate_token)): #Done
     note = {'rCode': 0,'rMsg':'anh chị vui lòng chọn lưu đơn (nhập số 0) hoặc gửi đơn (nhập số 1)'}
     note1 = {'rCode': 0,'rMsg':'EmpID chưa được tạo Users'}
-    offtypeId = [1,2,3,4,5,6]
-    if form.type in offtypeId: 
+    offtypeId = []
+    s = f'''
+            SELECT OffTypeID FROM dbo.OffType
+            '''
+    result = fn.get_data(s)
+    for row in result:
+        offtypeId.append(int(row[0]))
+
+    if form.type in offtypeId:
         if form.period > 0:
             #if form.startdate >= datetime.date.today() + timedelta(days=2) and form.startdate.isoweekday() != 7: #isoweekday lấy số nguyên theo thứ trong tuần (7 là ngày chủ nhật)
             #trường hợp lưu lại: regdate = NULL #comment là trạng thái 0: lưu , 1: gửi đơn
@@ -224,6 +230,7 @@ async def offDayRegister(form: Offregister,emplid: str = Depends(validate_token)
                 d = 'Đơn đã gửi'
             else:
                 return note
+            
             #code cải tiến (viết lần 2)
             if fn.checkEmplIDUser(emplid):
                 s = f'''
@@ -263,7 +270,7 @@ async def offDayRegister(form: Offregister,emplid: str = Depends(validate_token)
         else:
             return {'rCode':0,'rData':{},'rMsg':'vui lòng nhập số ngày nghĩ'}
     else:
-        return {'rCode':0,'rData':{},'rMsg':'chưa chọn typeID'}
+        return {'rCode':0,'rData':{},'rMsg':'chưa chọn typeID (loại phép)'}
 
 
 #(lấy đơn theo status: tạo mới, đã gửi, duyệt, chưa duyệt,...)
@@ -307,16 +314,23 @@ async def getsListoffstatus(form: Getlist,emplid: int = Depends(validate_token))
 
 @app.put("/adjust-day-off",tags=['OffRegister'])   
 async def adjust(form: AdjustDayOff, emplid: int = Depends(validate_token)):
-    offtypeId = [1,2,3,4,5,6]
-    s = f"""
+    offtypeId = []
+    s = f'''
+            SELECT OffTypeID FROM dbo.OffType
+            '''
+    result = fn.get_data(s)
+    for row in result:
+        offtypeId.append(int(row[0]))   
+    
+    s1 = f"""
             SELECT EmpID  FROM dbo.OffRegister
             WHERE regID = '{form.regid}' AND RegDate IS NULL
         """
-    result = fn.get_data(s)
+    result_1 = fn.get_data(s1)
     
     # if emplid == 
-    if len(result) > 0:
-        if emplid == result[0][0]:
+    if len(result_1) > 0:
+        if int(emplid) == result_1[0][0]:
             if form.offtype in offtypeId:
                 if form.period > 0:
                     a = []
@@ -328,10 +342,10 @@ async def adjust(form: AdjustDayOff, emplid: int = Depends(validate_token)):
 
                     if form.command == 0:
                         c = 'NULL'
-                        d = 'Đơn đã lưu'
+                        d = 'Chỉnh sửa đơn thành công, đơn đã được lưu'
                     elif form.command == 1:
                         c = 'SYSDATETIME()'
-                        d = 'Đơn đã gửi'
+                        d = 'Chỉnh sửa đơn thành công, đơn đã được gửi'
                     else:
                         return {'rCode': 0,'rMsg':'anh chị vui lòng chọn lưu đơn (nhập số 0) hoặc gửi đơn (nhập số 1)'}
                     s = f'''
@@ -392,13 +406,13 @@ async def dayoffregID(regid = None):
                 for i in range(0,len(rApprInf)):
                     if rApprInf[i]['ApprOrder'] == 1:
                         if rApprInf[i]['ApprovalState'] == 1:
-                            rApprInf[i]['StateName'] = 'Accept'
+                            rApprInf[i]['StateName'] = 'Chấp nhận'
                         elif rApprInf[i]['ApprovalState'] == 0:
-                            rApprInf[i]['StateName'] = 'Reject'
+                            rApprInf[i]['StateName'] = 'Từ chối'
                     elif rApprInf[i]['ApprOrder'] == 2:
-                        rApprInf[i]['StateName'] = 'Receive'
+                        rApprInf[i]['StateName'] = 'Đã nhận'
                     else:
-                        rApprInf[i]['StateName'] = 'Control'
+                        rApprInf[i]['StateName'] = 'Đã Kiểm soát'
 
             result[0]['apprInf'] = rApprInf
             return {'rCode': 1,'rData':result[0],'rMsg':'Lấy đơn thành công'}
@@ -440,6 +454,8 @@ async def approve(form: Approve,approver: str = Depends(validate_token)): #form:
             if len(result) >0:
                 jobposid = result[0][0]
             
+            if form.comment == '':
+                return {'rCode':0,'rMsg':'vui lòng nhập lý do phê duyệt'}
             
             if form.state != 0:
                 form.state = 1
@@ -459,10 +475,49 @@ async def approve(form: Approve,approver: str = Depends(validate_token)): #form:
 
 
 
-
+# xuất file excel (số ngày PN còn lại, số ngày PN sử dụng trong tháng - số ngày phép việc riêng(bệnh ốm,thai sản,tai nạn,chờ việc,hiếu hỉ-tang lễ) sử dụng trong tháng ) của mỗi nhân viên
+@app.get("/summary",tags=['Plus'])
+async def sum_OffType_employee():
+    s = f'''
+            SELECT e.EmpID,e.FirstName,e.LastName,e.ComeDate,e.DeptID,e.Sex,j.Name,j.JPLevel,a.AnnualLeave,
+            ot.Note,o.Type,o.Period,SUM(ap.ApprovalState) AS 'ApprovalState' --o.regID,o.RegDate,
+            FROM dbo.Employee AS e
+            LEFT JOIN dbo.JobPosition AS j ON j.JobPosID = e.PosID
+            LEFT JOIN dbo.AnnualLeave AS a ON a.EmpID = e.EmpID
+            INNER JOIN dbo.OffRegister AS o ON o.EmpID = e.EmpID
+            INNER JOIN dbo.OffType AS ot ON ot.OffTypeID = o.Type
+            INNER JOIN dbo.Approval AS ap ON ap.regID = o.regID
+            WHERE ap.ApprovalState >= 1
+            GROUP BY e.EmpID,e.FirstName,e.LastName,e.ComeDate,e.DeptID,e.Sex,j.Name,j.JPLevel,a.AnnualLeave,o.regID,o.RegDate, ot.Note,o.Type,o.Period
+            ORDER BY e.EmpID,o.Type ASC
+            '''
+    query_result = fn.get_data(s,1)
+    if len(query_result)>0:
+        output_result = []
+        list_key = []
+        for row in query_result:
+            # empid = row['EmpID']
+            # offtype = row['Type']
+            # # key = empid + "-" + offtype
+            key = str(row['EmpID']) + "-" + row['Type']
+            if key not in list_key:
+                list_key.append(key)
+                output_result.append(row)
+            else:
+                number = 0
+                for i in output_result:
+                    if str(i['EmpID']) + "-" + i['Type'] == key:
+                        output_result[number]['Period'] = output_result[number]['Period'] + row['Period']
+                        
+                    number +=1
+        df = pd.DataFrame(output_result)
+        df.to_excel('data.xlsx')
+        print(df)
+        return {'rCode':1,'rData': output_result,'rMsg':'Lấy thông tin thành công'}
+    else:
+        return {'rCode': 0,'rData':{},'rMsg':'Không có đơn nghỉ phép'}
     
-        
-
+    
 
 
 
@@ -526,17 +581,17 @@ def getToken(formdata: CheckLogin):
 # tạo Username/Password theo form đầy đủ thông tin
 # @app.post("/CreatedUser/password", tags=['HRM'])
 def taouser(form: Created):
-    if fn.checkuser(form.Username) == False:
-        if fn.checkEmplID(form.EmpID) == True:
-            if fn.checkEmplIDUser(form.EmpID) == False:
-                if fn.checkEmail(form.Email) == False:
+    if fn.checkuser(form.username) == False:
+        if fn.checkEmplID(form.empID) == True:
+            if fn.checkEmplIDUser(form.empID) == False:
+                if fn.checkEmail(form.email) == False:
 
                     cursor = cn.cursor()
                     # s = f'''
                     #     insert into Users(UserName, EmpID, Password, Email ) values (?, ?, ?, ?)
                     #     '''
                     s = f'''
-                        insert into Users(UserName, EmpID, Password, Email ) values ('{form.Username}', '{form.EmpID}', '{fn.hashpw(form.Password)}', '{form.Email}')
+                        insert into Users(UserName, EmpID, Password, Email ) values ('{form.username}', '{form.empID}', '{fn.hashpw(form.password)}', '{form.email}')
                         '''
 
                     # cursor.execute(s,form.Username,form.EmpID,fn.hashpw(form.Password),form.Email)

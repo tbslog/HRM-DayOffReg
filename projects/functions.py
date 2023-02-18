@@ -253,8 +253,11 @@ def depart_manager(emplid,jplevel_TP_PP):
     s = f"""
         --trước khi thực thi câu lệnh này thì: jplevel <= 50
 
-            SELECT o.regID,o.EmpID,o.Type,o.Reason,o.StartDate,o.Period,o.RegDate,o.AnnualLeave,o.Address,e.LastName,e.FirstName,e.DeptID,e.PosID,
-            j.JPLevel,sum(a.ApprOrder) as apprOrder, sum(a.ApprovalState) as apprState,
+            SELECT o.regID,o.EmpID,o.Type,o.Reason,o.StartDate,o.Period,o.RegDate,o.Address,
+                    e.LastName,e.FirstName,e.DeptID,e.PosID,e.ComeDate
+                    j.JPLevel,j.Name,
+                    al.AnnualLeave,
+                    sum(a.ApprOrder) as apprOrder, sum(a.ApprovalState) as apprState,
                 case 
                     when o.RegDate is null then 0 --N'chưa gửi' 
                     --đơn đó duyệt thì trường regdate phải có data
@@ -269,6 +272,7 @@ def depart_manager(emplid,jplevel_TP_PP):
             LEFT JOIN dbo.Approval a ON a.regID = o.regID
             LEFT JOIN dbo.Employee e ON e.EmpID = o.EmpID
             LEFT JOIN dbo.JobPosition j ON j.JobPosID = e.PosID
+            LEFT JOIN dbo.AnnualLeave al ON al.EmpID = o.EmpID 
             WHERE o.RegDate IS NOT NULL -- lấy những đơn đã gửi
             AND j.JPLevel <= '{jplevel_TP_PP}' -- lấy Trưởng Phòng,Phó Phòng
             -- lấy danh sách nhân viên trong depID con 
@@ -284,7 +288,7 @@ def depart_manager(emplid,jplevel_TP_PP):
                             )
                             )
             GROUP BY o.regID,o.EmpID,o.Type,o.Reason,o.StartDate,o.Period,o.RegDate,
-            o.AnnualLeave,o.Address,e.LastName,e.FirstName,e.DeptID,e.PosID,j.JPLevel
+            o.Address,e.LastName,e.FirstName,e.DeptID,e.PosID,e.ComeDate,j.JPLevel,j.Name,al.AnnualLeave
             ORDER BY aStatus ASC, o.StartDate ASC
                     """
     result = get_data(s,1)
@@ -293,28 +297,31 @@ def depart_manager(emplid,jplevel_TP_PP):
 
 #hàm lấy đơn nghĩ phép cùng phòng ban
 def roommates(depid,jplevel):
-
     s = f"""
-                    SELECT o.regID,o.EmpID,o.Type,o.Reason,o.StartDate,o.Period,o.RegDate,o.AnnualLeave,o.Address,
-                        e.LastName,e.FirstName,e.DeptID,e.PosID,j.JPLevel,sum(a.ApprOrder) as apprOrder, sum(a.ApprovalState) as apprState,
-                        case 
-                            when o.RegDate is null then 0 --N'chưa gửi' 
-                            --đơn đó duyệt thì trường regdate phải có data
-                            when sum(a.ApprovalState) is null then 1 --N'Chờ Duyệt' 
-                            when sum(a.ApprovalState) = 1 then 2 --N'Đã Duyệt'
-                            when sum(a.ApprovalState) = 0 then 3 --N'Từ Chối'
-                            when sum(a.ApprOrder) = 3 then 4 --N'NS Tiếp Nhận'
-                            when sum(a.ApprOrder) = 7 then 5 --N'GĐ Kiêm Soát'
-                            else 'Error!' end as aStatus
-                    FROM dbo.OffRegister o
-                    LEFT JOIN dbo.Approval a ON a.regID = o.regID
-                    LEFT JOIN dbo.Employee e ON e.EmpID = o.EmpID
-                    LEFT JOIN dbo.JobPosition j ON j.JobPosID = e.PosID
-                    WHERE  e.DeptID = '{depid}' AND	j.JPLevel > '{jplevel}' AND o.RegDate IS NOT NULL
-                    group by o.regID,o.EmpID,o.Type,o.Reason,o.StartDate,o.Period,o.RegDate,o.AnnualLeave,o.Address,
-                        e.LastName,e.FirstName,e.DeptID,e.PosID,j.JPLevel
-                    ORDER BY aStatus ASC, o.StartDate ASC
-                    """
+            SELECT o.regID,o.EmpID,o.Type,o.Reason,o.StartDate,o.Period,o.RegDate,o.Address,
+                e.LastName,e.FirstName,e.DeptID,e.PosID,e.ComeDate,
+                j.JPLevel,j.Name,
+                al.AnnualLeave,
+                sum(a.ApprOrder) as apprOrder, sum(a.ApprovalState) as apprState,
+                case 
+                    when o.RegDate is null then 0 --N'chưa gửi' 
+                    --đơn đó duyệt thì trường regdate phải có data
+                    when sum(a.ApprovalState) is null then 1 --N'Chờ Duyệt' 
+                    when sum(a.ApprovalState) = 1 then 2 --N'Đã Duyệt'
+                    when sum(a.ApprovalState) = 0 then 3 --N'Từ Chối'
+                    when sum(a.ApprOrder) = 3 then 4 --N'NS Tiếp Nhận'
+                    when sum(a.ApprOrder) = 7 then 5 --N'GĐ Kiêm Soát'
+                    else 'Error!' end as aStatus
+            FROM dbo.OffRegister o
+            LEFT JOIN dbo.Approval a ON a.regID = o.regID
+            LEFT JOIN dbo.Employee e ON e.EmpID = o.EmpID
+            LEFT JOIN dbo.JobPosition j ON j.JobPosID = e.PosID
+            LEFT JOIN dbo.AnnualLeave al ON al.EmpID = o.EmpID 
+            WHERE  e.DeptID = '{depid}' AND	j.JPLevel > '{jplevel}' AND o.RegDate IS NOT NULL
+            group by o.regID,o.EmpID,o.Type,o.Reason,o.StartDate,o.Period,o.RegDate,o.Address,
+                e.LastName,e.FirstName,e.DeptID,e.PosID,e.ComeDate,j.JPLevel,J.Name,al.AnnualLeave
+            ORDER BY aStatus ASC, o.StartDate ASC
+            """
     # cursor = cn.cursor()
     # rows = cursor.execute(s).fetchall()
     # results = []
@@ -344,7 +351,11 @@ def myself(emplid): #filter
     # if len(sFilter)>0:
     #         sFilter = 'AND (' + sFilter + ')'
     s = f"""
-                select r.EmpID,r.regID,r.Period,r.StartDate,r.RegDate,r.Type,r.Address,r.Reason,e.FirstName,e.LastName,e.ComeDate,e.DeptID,e.PosID,j.JPLevel,sum(a.ApprOrder) as apprOrder, sum(a.ApprovalState) as apprState,
+                select r.EmpID,r.regID,r.Period,r.StartDate,r.RegDate,r.Type,r.Address,r.Reason,
+                e.FirstName,e.LastName,e.ComeDate,e.DeptID,e.PosID,
+                j.JPLevel,j.Name,
+                al.AnnualLeave,
+                sum(a.ApprOrder) as apprOrder, sum(a.ApprovalState) as apprState,
                     case 
                         when r.RegDate is null then 0 --N'chưa gửi' 
                         --đơn đó duyệt thì trường regdate phải có data
@@ -358,8 +369,10 @@ def myself(emplid): #filter
                 LEFT join [dbo].[Approval] a on r.regID = a.regid
                 LEFT JOIN dbo.Employee e ON e.EmpID = r.EmpID
                 LEFT JOIN dbo.JobPosition j ON j.JobPosID = e.PosID
+                LEFT JOIN dbo.AnnualLeave al ON al.EmpID = r.EmpID 
                 WHERE r.EmpID = '{emplid}'--trường hợp lấy empid trong bảng offregister
-                group by r.EmpID,r.regID,r.Period,r.StartDate,r.RegDate,r.Type,r.Address,r.Reason,e.FirstName,e.LastName,e.ComeDate,e.DeptID,e.PosID,j.JPLevel
+                group by r.EmpID,r.regID,r.Period,r.StartDate,r.RegDate,r.Type,r.Address,r.Reason,e.FirstName,e.LastName,
+                e.ComeDate,e.DeptID,e.PosID,j.JPLevel,j.Name,al.AnnualLeave
                 ORDER BY aStatus ASC, r.StartDate ASC
                     """
     result = get_data(s,1)
@@ -378,6 +391,6 @@ def genPass():
 
 
 
-a = genPass()
+
 
 

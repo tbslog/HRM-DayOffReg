@@ -38,7 +38,7 @@ class Offregister(BaseModel):
 # class phê duyệt
 class Approve(BaseModel):
     regid: int
-    comment: str
+    comment: str = ''
     state: int
 
 class ChangePass(BaseModel):
