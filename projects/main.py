@@ -371,8 +371,13 @@ async def adjust(form: AdjustDayOff, emplid: int = Depends(validate_token)):
 @app.get("/day-off-letter",tags=['OffRegister'])
 async def dayoffregID(regid = None):
     if str(regid).isnumeric():
+        
         s = f"""
                 SELECT o.regID,o.EmpID,o.Type,o.Reason,o.StartDate,o.Period,o.RegDate,o.AnnualLeave,o.Address,o.Type,
+                        e.FirstName,e.LastName,e.comedate,e.DeptID,e.PosID,
+		                j.Name AS JobPositionName,
+                        d.Name AS departmentName,
+						jpl.Name AS Position,
                     case 
                         when o.RegDate is null then 0 --N'chưa gửi' 
                         --đơn đó duyệt thì trường regdate phải có data
@@ -384,20 +389,32 @@ async def dayoffregID(regid = None):
                     ELSE 'Error!' end as aStatus 
                 FROM dbo.OffRegister o
                 LEFT JOIN dbo.Approval a ON a.regID = o.regID
+                LEFT JOIN Employee e ON o.EmpID = e.EmpID
+				LEFT JOIN dbo.JobPosition j ON j.JobPosID = e.PosID
+                LEFT JOIN dbo.Department d ON d.DeptID = e.DeptID
+				LEFT JOIN dbo.JPLevel jpl ON jpl.JPLevelID = j.JPLevel
                 WHERE o.regID = '{regid}'
-                group by o.regID,o.EmpID,o.Type,o.Reason,o.StartDate,o.Period,o.RegDate,o.AnnualLeave,o.Address,o.type
+                group by o.regID,o.EmpID,o.Type,o.Reason,o.StartDate,o.Period,o.RegDate,o.AnnualLeave,o.Address,o.type,
+                e.FirstName,e.LastName,e.comedate,e.DeptID,e.PosID,
+				j.Name,d.Name,jpl.Name
                 """
         result = fn.get_data(s,1)
         # print(result[0]['aStatus'])
         # if result[0]['aStatus'] == 0:
         # if result[0]['aStatus'] == 1:
         if len(result)>0: # kết quả của câu truy vấn lần 1 lấy status (trường hợp có data)
+            
             s1 = f"""
                         SELECT a.ApprovalID,a.regID,a.ApprOrder,a.Approver,a.JobPosID AS 'ApproJobposID',a.Comment,a.ApprovalState,a.ApprovalDate,
-                        e.DeptID AS 'ApproDeptID',e.LastName AS 'ApproLastName',e.FirstName AS 'ApproFirstName',j.Name AS 'ApproJobName'
+                        e.DeptID AS 'ApproDeptID',e.LastName AS 'ApproLastName',e.FirstName AS 'ApproFirstName',
+                        j.Name AS ApproJobName,
+                        d.Name AS departmentName,
+						jpl.Name AS Position
                         FROM dbo.Approval AS a
                         LEFT JOIN dbo.Employee AS e ON e.EmpID = a.Approver
                         LEFT JOIN dbo.JobPosition AS j ON j.JobPosID = a.JobPosID
+                        LEFT JOIN dbo.Department d ON d.DeptID = e.DeptID
+						LEFT JOIN dbo.JPLevel jpl ON jpl.JPLevelID = j.JPLevel
                         WHERE regID = '{regid}'
                         ORDER BY a.ApprOrder ASC
                         """
@@ -454,11 +471,13 @@ async def approve(form: Approve,approver: str = Depends(validate_token)): #form:
             if len(result) >0:
                 jobposid = result[0][0]
             
-            if form.comment == '':
-                return {'rCode':0,'rMsg':'vui lòng nhập lý do phê duyệt'}
+            # if form.comment == '':
+            #     return {'rCode':0,'rMsg':'vui lòng nhập lý do phê duyệt'}
             
-            if form.state != 0:
-                form.state = 1
+            if form.state != 1:
+                form.state = 0
+                if form.comment == '':
+                    return {'rCode':0,'rMsg':'vui lòng nhập lý do phê duyệt'}
             
             s = f'''
             INSERT INTO dbo.Approval(regID,ApprOrder,Approver,JobPosID,adjType,adjStartDate,adjPeriod,Comment,ApprovalState,ApprovalDate)
@@ -476,11 +495,14 @@ async def approve(form: Approve,approver: str = Depends(validate_token)): #form:
 
 
 # xuất file excel (số ngày PN còn lại, số ngày PN sử dụng trong tháng - số ngày phép việc riêng(bệnh ốm,thai sản,tai nạn,chờ việc,hiếu hỉ-tang lễ) sử dụng trong tháng ) của mỗi nhân viên
-@app.get("/summary",tags=['Plus'])
+# @app.get("/summary",tags=['Plus'])
 async def sum_OffType_employee():
     s = f'''
-            SELECT e.EmpID,e.FirstName,e.LastName,e.ComeDate,e.DeptID,e.Sex,j.Name,j.JPLevel,a.AnnualLeave,
-            ot.Note,o.Type,o.Period,SUM(ap.ApprovalState) AS 'ApprovalState' --o.regID,o.RegDate,
+            SELECT e.EmpID,e.FirstName,e.LastName,e.ComeDate,e.DeptID,e.Sex,
+            j.Name,j.JPLevel,
+            a.AnnualLeave,
+            ot.Note,
+            o.Type,o.Period,SUM(ap.ApprovalState) AS 'ApprovalState' --o.regID,o.RegDate,
             FROM dbo.Employee AS e
             LEFT JOIN dbo.JobPosition AS j ON j.JobPosID = e.PosID
             LEFT JOIN dbo.AnnualLeave AS a ON a.EmpID = e.EmpID
@@ -488,7 +510,12 @@ async def sum_OffType_employee():
             INNER JOIN dbo.OffType AS ot ON ot.OffTypeID = o.Type
             INNER JOIN dbo.Approval AS ap ON ap.regID = o.regID
             WHERE ap.ApprovalState >= 1
-            GROUP BY e.EmpID,e.FirstName,e.LastName,e.ComeDate,e.DeptID,e.Sex,j.Name,j.JPLevel,a.AnnualLeave,o.regID,o.RegDate, ot.Note,o.Type,o.Period
+            GROUP BY e.EmpID,e.FirstName,e.LastName,e.ComeDate,e.DeptID,e.Sex,
+                    j.Name,j.JPLevel,
+                    a.AnnualLeave,
+                    o.regID,o.RegDate,
+                    ot.Note,
+                    o.Type,o.Period
             ORDER BY e.EmpID,o.Type ASC
             '''
     query_result = fn.get_data(s,1)
@@ -508,10 +535,10 @@ async def sum_OffType_employee():
                 for i in output_result:
                     if str(i['EmpID']) + "-" + i['Type'] == key:
                         output_result[number]['Period'] = output_result[number]['Period'] + row['Period']
-                        
                     number +=1
         df = pd.DataFrame(output_result)
-        df.to_excel('data.xlsx')
+        df.to_excel(r'D:\data.xlsx',index=False,)
+        
         print(df)
         return {'rCode':1,'rData': output_result,'rMsg':'Lấy thông tin thành công'}
     else:

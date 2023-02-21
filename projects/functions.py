@@ -254,8 +254,10 @@ def depart_manager(emplid,jplevel_TP_PP):
         --trước khi thực thi câu lệnh này thì: jplevel <= 50
 
             SELECT o.regID,o.EmpID,o.Type,o.Reason,o.StartDate,o.Period,o.RegDate,o.Address,
-                    e.LastName,e.FirstName,e.DeptID,e.PosID,e.ComeDate
-                    j.JPLevel,j.Name,
+                    e.LastName,e.FirstName,e.DeptID,e.PosID,e.ComeDate,
+                    j.JPLevel,j.Name as JobPositionName,
+                    d.Name AS departmentName,
+                    jpl.Name AS Position,
                     al.AnnualLeave,
                     sum(a.ApprOrder) as apprOrder, sum(a.ApprovalState) as apprState,
                 case 
@@ -272,6 +274,8 @@ def depart_manager(emplid,jplevel_TP_PP):
             LEFT JOIN dbo.Approval a ON a.regID = o.regID
             LEFT JOIN dbo.Employee e ON e.EmpID = o.EmpID
             LEFT JOIN dbo.JobPosition j ON j.JobPosID = e.PosID
+            LEFT JOIN dbo.Department d ON d.DeptID = e.DeptID
+            LEFT JOIN dbo.JPLevel jpl ON jpl.JPLevelID = j.JPLevel
             LEFT JOIN dbo.AnnualLeave al ON al.EmpID = o.EmpID 
             WHERE o.RegDate IS NOT NULL -- lấy những đơn đã gửi
             AND j.JPLevel <= '{jplevel_TP_PP}' -- lấy Trưởng Phòng,Phó Phòng
@@ -288,7 +292,7 @@ def depart_manager(emplid,jplevel_TP_PP):
                             )
                             )
             GROUP BY o.regID,o.EmpID,o.Type,o.Reason,o.StartDate,o.Period,o.RegDate,
-            o.Address,e.LastName,e.FirstName,e.DeptID,e.PosID,e.ComeDate,j.JPLevel,j.Name,al.AnnualLeave
+            o.Address,e.LastName,e.FirstName,e.DeptID,e.PosID,e.ComeDate,j.JPLevel,j.Name,d.Name,jpl.Name,al.AnnualLeave
             ORDER BY aStatus ASC, o.StartDate ASC
                     """
     result = get_data(s,1)
@@ -300,7 +304,9 @@ def roommates(depid,jplevel):
     s = f"""
             SELECT o.regID,o.EmpID,o.Type,o.Reason,o.StartDate,o.Period,o.RegDate,o.Address,
                 e.LastName,e.FirstName,e.DeptID,e.PosID,e.ComeDate,
-                j.JPLevel,j.Name,
+                j.JPLevel,j.Name as JobPositionName,
+                d.Name AS departmentName,
+                jpl.Name AS Position,
                 al.AnnualLeave,
                 sum(a.ApprOrder) as apprOrder, sum(a.ApprovalState) as apprState,
                 case 
@@ -316,10 +322,12 @@ def roommates(depid,jplevel):
             LEFT JOIN dbo.Approval a ON a.regID = o.regID
             LEFT JOIN dbo.Employee e ON e.EmpID = o.EmpID
             LEFT JOIN dbo.JobPosition j ON j.JobPosID = e.PosID
+            LEFT JOIN dbo.Department d ON d.DeptID = e.DeptID
+            LEFT JOIN dbo.JPLevel jpl ON jpl.JPLevelID = j.JPLevel
             LEFT JOIN dbo.AnnualLeave al ON al.EmpID = o.EmpID 
             WHERE  e.DeptID = '{depid}' AND	j.JPLevel > '{jplevel}' AND o.RegDate IS NOT NULL
             group by o.regID,o.EmpID,o.Type,o.Reason,o.StartDate,o.Period,o.RegDate,o.Address,
-                e.LastName,e.FirstName,e.DeptID,e.PosID,e.ComeDate,j.JPLevel,J.Name,al.AnnualLeave
+                e.LastName,e.FirstName,e.DeptID,e.PosID,e.ComeDate,j.JPLevel,J.Name,d.Name,jpl.Name,al.AnnualLeave
             ORDER BY aStatus ASC, o.StartDate ASC
             """
     # cursor = cn.cursor()
@@ -353,7 +361,9 @@ def myself(emplid): #filter
     s = f"""
                 select r.EmpID,r.regID,r.Period,r.StartDate,r.RegDate,r.Type,r.Address,r.Reason,
                 e.FirstName,e.LastName,e.ComeDate,e.DeptID,e.PosID,
-                j.JPLevel,j.Name,
+                j.JPLevel,j.Name as JobPositionName,
+                d.Name AS departmentName,
+                jpl.Name AS Position,
                 al.AnnualLeave,
                 sum(a.ApprOrder) as apprOrder, sum(a.ApprovalState) as apprState,
                     case 
@@ -369,10 +379,12 @@ def myself(emplid): #filter
                 LEFT join [dbo].[Approval] a on r.regID = a.regid
                 LEFT JOIN dbo.Employee e ON e.EmpID = r.EmpID
                 LEFT JOIN dbo.JobPosition j ON j.JobPosID = e.PosID
+                LEFT JOIN dbo.Department d ON d.DeptID = e.DeptID
+                LEFT JOIN dbo.JPLevel jpl ON jpl.JPLevelID = j.JPLevel
                 LEFT JOIN dbo.AnnualLeave al ON al.EmpID = r.EmpID 
                 WHERE r.EmpID = '{emplid}'--trường hợp lấy empid trong bảng offregister
                 group by r.EmpID,r.regID,r.Period,r.StartDate,r.RegDate,r.Type,r.Address,r.Reason,e.FirstName,e.LastName,
-                e.ComeDate,e.DeptID,e.PosID,j.JPLevel,j.Name,al.AnnualLeave
+                e.ComeDate,e.DeptID,e.PosID,j.JPLevel,j.Name,d.Name,jpl.Name,al.AnnualLeave
                 ORDER BY aStatus ASC, r.StartDate ASC
                     """
     result = get_data(s,1)
