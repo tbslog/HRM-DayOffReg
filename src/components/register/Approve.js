@@ -51,7 +51,7 @@ const Approve = (props) => {
       setshow(true);
     }
     (async () => {
-      //console.log(props.dataRegByID.rData);
+      console.log(props.dataRegByID.rData);
       let data = await getData(
         `getEmpInfo?empId=${props.dataRegByID.rData?.EmpID}`
       );
@@ -78,6 +78,7 @@ const Approve = (props) => {
         setApproName("");
         setApproJobName("");
         setComment("");
+
         console.log("first");
       }
 

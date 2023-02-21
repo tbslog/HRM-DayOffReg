@@ -7,7 +7,7 @@ import logo from "../../assets/imgs/logoTBS.jpg";
 import "./login.css";
 
 import { login } from "../../actions/auth";
-import ChangePass from "../register/ChangePass";
+import ChangePass from "./ChangePass";
 
 import { Modal } from "bootstrap";
 

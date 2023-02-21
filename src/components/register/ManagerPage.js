@@ -46,7 +46,7 @@ const ManagerPage = (props) => {
         needAppr: 1,
         astatus: [0, 1, 2, 3, 4, 5],
       });
-      // console.log(dataMana);
+      console.log(dataMana);
 
       setdbTableMana(dataMana.rData);
       setftTableMana(dataMana.rData);

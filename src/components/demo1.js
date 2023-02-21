@@ -101,7 +101,7 @@ const Demo1 = () => {
           <div className="card ">
             <div className="card-header py-0 border-0">
               {open && (
-                <ul class="nav nav-pills">
+                <ul className="nav nav-pills">
                   <li className="nav-item">
                     <a
                       className="nav-link active"
