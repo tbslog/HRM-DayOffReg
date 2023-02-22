@@ -11,7 +11,6 @@ class SplashScreen extends GetView<SplashController> {
     return GetBuilder<SplashController>(
       init: SplashController(),
       builder: (controller) {
-        // return Image.asset("assets/images/logo@2x.png");
         return Image.asset("assets/images/logo@2x.png");
       },
     );

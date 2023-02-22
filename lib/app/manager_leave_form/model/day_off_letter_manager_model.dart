@@ -1,56 +1,68 @@
 class DayOffLettersManagerModel {
-  int? regID;
   int? empID;
-  String? type;
-  String? reason;
-  String? startDate;
+  int? regID;
   int? period;
+  String? startDate;
   String? regDate;
-  int? annualLeave;
+  String? type;
   String? address;
-  String? lastName;
+  String? reason;
   String? firstName;
+  String? lastName;
+  String? comeDate;
   String? deptID;
   int? posID;
   int? jPLevel;
+  String? jobPositionName;
+  String? departmentName;
+  String? position;
+  int? annualLeave;
   int? apprOrder;
   int? apprState;
   int? aStatus;
 
   DayOffLettersManagerModel(
-      {this.regID,
-      this.empID,
-      this.type,
-      this.reason,
-      this.startDate,
+      {this.empID,
+      this.regID,
       this.period,
+      this.startDate,
       this.regDate,
-      this.annualLeave,
+      this.type,
       this.address,
-      this.lastName,
+      this.reason,
       this.firstName,
+      this.lastName,
+      this.comeDate,
       this.deptID,
       this.posID,
       this.jPLevel,
+      this.jobPositionName,
+      this.departmentName,
+      this.position,
+      this.annualLeave,
       this.apprOrder,
       this.apprState,
       this.aStatus});
 
   DayOffLettersManagerModel.fromJson(Map<String, dynamic> json) {
-    regID = json['regID'];
     empID = json['EmpID'];
-    type = json['Type'];
-    reason = json['Reason'];
-    startDate = json['StartDate'];
+    regID = json['regID'];
     period = json['Period'];
+    startDate = json['StartDate'];
     regDate = json['RegDate'];
-    annualLeave = json['AnnualLeave'];
+    type = json['Type'];
     address = json['Address'];
-    lastName = json['LastName'];
+    reason = json['Reason'];
     firstName = json['FirstName'];
+    lastName = json['LastName'];
+    comeDate = json['ComeDate'];
     deptID = json['DeptID'];
     posID = json['PosID'];
     jPLevel = json['JPLevel'];
+    jobPositionName = json['JobPositionName'];
+    departmentName = json['departmentName'];
+    position = json['Position'];
+    annualLeave = json['AnnualLeave'];
     apprOrder = json['apprOrder'];
     apprState = json['apprState'];
     aStatus = json['aStatus'];
@@ -58,20 +70,24 @@ class DayOffLettersManagerModel {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
-    data['regID'] = regID;
     data['EmpID'] = empID;
-    data['Type'] = type;
-    data['Reason'] = reason;
-    data['StartDate'] = startDate;
+    data['regID'] = regID;
     data['Period'] = period;
+    data['StartDate'] = startDate;
     data['RegDate'] = regDate;
-    data['AnnualLeave'] = annualLeave;
+    data['Type'] = type;
     data['Address'] = address;
-    data['LastName'] = lastName;
+    data['Reason'] = reason;
     data['FirstName'] = firstName;
+    data['LastName'] = lastName;
+    data['ComeDate'] = comeDate;
     data['DeptID'] = deptID;
     data['PosID'] = posID;
     data['JPLevel'] = jPLevel;
+    data['JobPositionName'] = jobPositionName;
+    data['departmentName'] = departmentName;
+    data['Position'] = position;
+    data['AnnualLeave'] = annualLeave;
     data['apprOrder'] = apprOrder;
     data['apprState'] = apprState;
     data['aStatus'] = aStatus;

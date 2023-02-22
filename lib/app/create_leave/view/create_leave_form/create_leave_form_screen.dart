@@ -41,11 +41,27 @@ class CreateLeaveFormScreen extends GetView<CreateLeaveFormController> {
                                 height: 40,
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.end,
-                                  children: const [
-                                    Text(
-                                      "HD Quy định/Quy trình !",
-                                      style: TextStyle(
-                                        color: Colors.green,
+                                  children: [
+                                    InkWell(
+                                      onTap: () {
+                                        Get.defaultDialog(
+                                          title: "Hướng Dẫn Quy Định/Quy Trình",
+                                          titleStyle: const TextStyle(
+                                            fontSize: 14,
+                                          ),
+                                          content: SizedBox(
+                                            height: size.height * 0.6,
+                                            width: size.width * 0.9,
+                                            child: Image.asset(
+                                                "assets/images/QuyDinh.png"),
+                                          ),
+                                        );
+                                      },
+                                      child: const Text(
+                                        "HD Quy định/Quy trình !",
+                                        style: TextStyle(
+                                          color: Colors.green,
+                                        ),
                                       ),
                                     )
                                   ],
@@ -152,8 +168,8 @@ class CreateLeaveFormScreen extends GetView<CreateLeaveFormController> {
                                           ),
                                         ),
                                         onPressed: () {
-                                          if (controller.formKey.currentState!
-                                              .validate()) {
+                                          var validate = controller.formKey.currentState!.validate();
+                                          if (!validate) {
                                             controller.postRegister(
                                               type: int.parse(controller
                                                   .selectedTaixe
@@ -341,14 +357,14 @@ class CreateLeaveFormScreen extends GetView<CreateLeaveFormController> {
                       ),
                       color: Colors.white,
                     ),
-                    height: 60,
-                    width: size.width * 0.3,
+                    height: 80,
+                    width: size.width * 0.35,
                     margin: EdgeInsets.symmetric(vertical: size.height * 0.02),
                     child: TextFormField(
                       validator: (value) {
                         // ignore: unrelated_type_equality_checks
-                        if (value == null || value == 0) {
-                          return 'Nhập số ngày nghỉ !';
+                        if (value == "" || value == 0 || value == null) {
+                          return 'Nhập số ngày !';
                         }
                         return null;
                       },

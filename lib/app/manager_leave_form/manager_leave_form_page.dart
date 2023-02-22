@@ -3,9 +3,9 @@ import 'package:get/get.dart';
 import 'package:tbs_logistics_phieunghi/app/manager_leave_form/controller/manager_leave_form_controller.dart';
 import 'package:tbs_logistics_phieunghi/app/manager_leave_form/view/access_leave/access_single_screen.dart';
 import 'package:tbs_logistics_phieunghi/app/manager_leave_form/view/single_view/single_view.dart';
+import 'package:tbs_logistics_phieunghi/app/manager_leave_form/view/widgets/drawer.dart';
 import 'package:tbs_logistics_phieunghi/config/core/data/color.dart';
 import 'package:tbs_logistics_phieunghi/config/core/data/text_style.dart';
-import 'package:tbs_logistics_phieunghi/config/share_prefs.dart';
 
 import 'view/access_leave/access_leave.dart';
 
@@ -31,42 +31,8 @@ class ManagerLeaveFormScreen extends GetView<ManagerLeaveFormController> {
                 centerTitle: true,
                 // automaticallyImplyLeading: false,
               ),
-              drawer: Drawer(
-                child: Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                        colors: [Colors.orangeAccent, Colors.white],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        stops: [0.4, 0.7]),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Card(
-                        child: ListTile(
-                          onTap: () async {
-                            await SharePerApi().postLogout();
-                          },
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            side: const BorderSide(color: Colors.orangeAccent),
-                          ),
-                          title: const Text(
-                            "Đăng xuất",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          trailing: const Icon(
-                            Icons.logout_outlined,
-                          ),
-                        ),
-                      )
-                    ],
-                  ),
-                ),
+              drawer: const Drawer(
+                child: MenuDrawer(),
               ),
               body: SingleChildScrollView(
                 child: Container(
