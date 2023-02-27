@@ -35,14 +35,14 @@ const Edit = (props) => {
   const [regID, setregID] = useState("");
 
   useEffect(() => {
-    console.log(props.dataRegByID);
+    //console.log(props.dataRegByID);
     if (
       props &&
       props.dataRegByID &&
       Object.keys(props.dataRegByID).length > 0 &&
       Object.keys(props).length > 0
     ) {
-      console.log(props.dataRegByID.rData);
+      //console.log(props.dataRegByID.rData);
       setregID(props.dataRegByID.rData?.regID);
       setValue("MSNV", props.dataRegByID.rData.EmpID);
       setType(props.dataRegByID.rData.Type);
@@ -55,7 +55,7 @@ const Edit = (props) => {
     setValue("fullName", props.fullName);
     (async () => {
       let data = await getData("getEmpInfo", emID);
-      console.log(data.rData);
+      //console.log(data.rData);
       setname(data.rData.FirstName + " " + data.rData.LastName);
       setDepartmentName(data.rData.DepartmentName);
       setJobpositionName(data.rData.JobpositionName);

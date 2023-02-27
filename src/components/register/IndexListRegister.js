@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { getData, getDataCustom } from "../../services/user.service";
 import StaffPage from "./StaffPage";
 import ManagerPage from "./ManagerPage";
+import Usermanual from "../usermanual/Usermanual";
 const IndexListRegister = () => {
   const [tabIndex, setTabIndex] = useState(0);
   const HandleOnChangeTabs = (tabIndex) => {
@@ -16,7 +17,7 @@ const IndexListRegister = () => {
         needAppr: 1,
         astatus: [],
       });
-      console.log(dataMana);
+      //console.log(dataMana);
       if (dataMana.rData.length > 0) {
         setOpen(true);
       } else setOpen(false);
@@ -26,9 +27,12 @@ const IndexListRegister = () => {
     <>
       {open ? (
         <div className="content-wrapper ">
-          <section className="content">
+          <section
+            className="content"
+            style={{ maxHeight: "100%", height: "100vh" }}
+          >
             {/* Default box */}
-            <div className="card ">
+            <div className="card  " style={{ height: "100%" }}>
               <div className="card-header py-0 border-0">
                 <Tabs
                   selectedIndex={tabIndex}
@@ -37,18 +41,21 @@ const IndexListRegister = () => {
                   <TabList>
                     <Tab>Đơn Cần Phê Duyệt</Tab>
                     <Tab>Đơn Của Tôi</Tab>
+                    <Tab>Hướng Dẫn Quy Trình</Tab>
                   </TabList>
                   <TabPanel>
-                    <div style={{ height: "590px" }}>
-                      <ManagerPage
-                        sizeConten={"500px"}
-                        sizeContenTB={"420px"}
-                      />
+                    <div style={{ height: "100vh" }}>
+                      <ManagerPage sizeConten={"85vh"} sizeContenTB={"68%"} />
                     </div>
                   </TabPanel>
                   <TabPanel>
-                    <div style={{ height: "596px" }}>
-                      <StaffPage sizeConten={"560px"} sizeContenTB={"414px"} />
+                    <div style={{ height: "100vh" }}>
+                      <StaffPage sizeConten={"85vh"} sizeContenTB={"68%"} />
+                    </div>
+                  </TabPanel>
+                  <TabPanel>
+                    <div style={{ height: "100vh" }}>
+                      <Usermanual />
                     </div>
                   </TabPanel>
                 </Tabs>
@@ -57,8 +64,28 @@ const IndexListRegister = () => {
           </section>
         </div>
       ) : (
-        <div className="content-wrapper ">
-          <StaffPage sizeConten={"480px"} sizeContenTB={"470px"} />
+        <div className="content-wrapper " style={{ height: "100vh" }}>
+          <Tabs
+            selectedIndex={tabIndex}
+            onSelect={(index) => HandleOnChangeTabs(index)}
+          >
+            <TabList>
+              <Tab>Đơn Của Tôi</Tab>
+              <Tab>Hướng Dẫn Quy Trình</Tab>
+            </TabList>
+
+            <TabPanel>
+              <div style={{ height: "100vh" }}>
+                <StaffPage sizeConten={"85vh"} sizeContenTB={"68%"} />
+              </div>
+            </TabPanel>
+            <TabPanel>
+              <div style={{ height: "100vh" }}>
+                <Usermanual />
+              </div>
+            </TabPanel>
+          </Tabs>
+          <StaffPage sizeConten={"90vh"} sizeContenTB={"73%"} />
         </div>
       )}
     </>

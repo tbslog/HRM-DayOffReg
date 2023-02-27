@@ -39,6 +39,7 @@ const Approve = (props) => {
   const [comment, setComment] = useState("");
   const [Showstream, setShowstream] = useState(false);
   const [Showstream1, setShowstream1] = useState("");
+  const [Showstreamx, setShowstreamx] = useState(false);
 
   let info = JSON.parse(Cookies.get("info"));
 
@@ -51,20 +52,22 @@ const Approve = (props) => {
       setshow(true);
     }
     (async () => {
-      console.log(props.dataRegByID.rData);
-      let data = await getData(
-        `getEmpInfo?empId=${props.dataRegByID.rData?.EmpID}`
-      );
-      //console.log(data.rData);
+      //console.log(props.dataRegByID.rData);
 
       setregID(props.dataRegByID.rData.regID);
       setMSNV(props.dataRegByID.rData.EmpID);
-      setname(data.rData.FirstName + " " + data.rData.LastName);
-      setDepartmentName(data.rData.DepartmentName);
-      setJobpositionName(data.rData.JobpositionName);
-      setAnnualLeave(data.rData.AnnualLeave);
-      setcomeDate(moment(data.rData.ComeDate).format("DD-MM-YYYY"));
-      setJPLevelName(data.rData.JPLevelName);
+      setname(
+        props.dataRegByID.rData.FirstName +
+          " " +
+          props.dataRegByID.rData.LastName
+      );
+      setDepartmentName(props.dataRegByID.rData.departmentName);
+      setJobpositionName(props.dataRegByID.rData.JobPositionName);
+      setAnnualLeave(props.dataRegByID.rData.AnnualLeave);
+      setcomeDate(
+        moment(props.dataRegByID.rData.comedate).format("DD-MM-YYYY")
+      );
+      setJPLevelName(props.dataRegByID.rData.Position);
       setType(props.dataRegByID.rData.Type);
       setRegDate(moment(props.dataRegByID.rData.RegDate).format("DD-MM-YYYY"));
       setPeriod(props.dataRegByID.rData.Period);
@@ -79,7 +82,7 @@ const Approve = (props) => {
         setApproJobName("");
         setComment("");
 
-        console.log("first");
+        //console.log("first");
       }
 
       if (props.dataRegByID.rData?.aStatus === 1 && props.isAppove === true) {
@@ -88,7 +91,8 @@ const Approve = (props) => {
         setApproJobName(info.JobpositionName);
         setComment("");
         setshow(false);
-        console.log("2");
+        setShowstreamx(false);
+        setShowstream(false);
       } else {
         if (props.isme === true) {
           if (props.dataRegByID.rData?.aStatus == 1) {
@@ -96,10 +100,16 @@ const Approve = (props) => {
             setApproName("");
             setApproJobName("");
             setComment("");
+            console.log("2");
+            setShowstream(false);
+            setShowstreamx(true);
+            Trangtt(props);
+            console.log(props.dataRegByID.rData);
           } else {
             console.log(props.dataRegByID.rData?.apprInf[0]);
             setShowstream(true);
-
+            setShowstreamx(true);
+            Trangtt(props);
             setApprovalDate(
               moment(props.dataRegByID.rData?.apprInf[0]?.ApprovalDate).format(
                 "DD-MM-YYYY"
@@ -114,20 +124,11 @@ const Approve = (props) => {
             setComment(props.dataRegByID.rData?.apprInf[0].Comment);
           }
         } else {
-          console.log(props.dataRegByID.rData?.apprInf[0]);
+          console.log("first1");
+          //console.log(props.dataRegByID.rData);
           setShowstream(true);
-          if (props.dataRegByID.rData?.aStatus === 2) {
-            setShowstream1("Đã duyệt");
-          }
-          if (props.dataRegByID.rData?.aStatus === 3) {
-            setShowstream1("Từ Chối");
-          }
-          if (props.dataRegByID.rData?.aStatus === 2) {
-            setShowstream1("Nhân sự");
-          }
-          if (props.dataRegByID.rData?.aStatus === 2) {
-            setShowstream1("Giám đốc");
-          }
+          setShowstreamx(true);
+          Trangtt(props);
           setApprovalDate(
             moment(props.dataRegByID.rData?.apprInf[0]?.ApprovalDate).format(
               "DD-MM-YYYY"
@@ -148,6 +149,88 @@ const Approve = (props) => {
       setIsLoading(false);
     })(show);
   }, [props, props.dataRegByID, props.isShow]);
+
+  const Trangtt = (props) => {
+    if (props.dataRegByID.rData?.aStatus === 1) {
+      setShowstream1("Chờ Duyệt");
+    }
+    if (props.dataRegByID.rData?.aStatus === 2) {
+      setShowstream1("Đã duyệt");
+    }
+    if (props.dataRegByID.rData?.aStatus === 3) {
+      setShowstream1("Từ Chối");
+    }
+    if (props.dataRegByID.rData?.aStatus === 4) {
+      setShowstream1("Đã tiếp nhận");
+    }
+    if (props.dataRegByID.rData?.aStatus === 5) {
+      setShowstream1("Đã kiểm soát");
+    }
+  };
+
+  function ListItem(props) {
+    const listItems = props.dataRegByID.rData?.apprInf;
+    //console.log(listItems);
+    return (
+      <>
+        {listItems?.map((item) => (
+          <div className="pt-3">
+            <div className="row mt-2">
+              <div className="col-md-6 d-flex">
+                <span style={{ minWidth: "120px" }}>Trạng Thái</span>
+                <input
+                  readOnly
+                  className="form-control ml-3 "
+                  value={item.StateName}
+                />
+              </div>
+              <div className="col-md-6 d-flex">
+                <span style={{ minWidth: "120px" }}> Ngày Duyệt</span>
+                <input
+                  className="form-control ml-3"
+                  value={moment(item.ApprovalDate).format("DD-MM-YYYY")}
+                  readOnly
+                />
+              </div>
+            </div>
+            <div className="row mt-2">
+              <div className="col-md-6 d-flex">
+                <span style={{ minWidth: "120px" }}>Người Duyệt</span>
+                <input
+                  readOnly
+                  className="form-control ml-3 "
+                  value={item.ApproFirstName + " " + item.ApproLastName}
+                />
+              </div>
+              <div className="col-md-6 d-flex">
+                <span style={{ minWidth: "120px" }}> Chức vụ</span>
+                <input
+                  className="form-control ml-3"
+                  value={item.ApproJobName}
+                  readOnly
+                />
+              </div>
+            </div>
+            <div className="row mt-2">
+              <div className="col-md-12 d-flex">
+                <span style={{ minWidth: "120px" }}>
+                  Ý Kiến<span style={{ color: "red" }}>*</span>
+                </span>
+                <textarea
+                  type="text"
+                  className="form-control ml-3 "
+                  {...register("comment")}
+                  id="comment"
+                  readOnly
+                  value={item.Comment}
+                />
+              </div>
+            </div>
+          </div>
+        ))}
+      </>
+    );
+  }
   const aStatusShow = (aStatus) => {
     if (aStatus === 1) {
       return "Chờ Duyệt";
@@ -201,17 +284,22 @@ const Approve = (props) => {
           ) : (
             <div className="card-header py-0 border-0">
               <div>
-                <h2 className="p-2 d-flex justify-content-center position-relative">
-                  {Showstream === true && (
-                    <span style={{ position: "absolute ", left: "0" }}>
-                      <h5 style={{ fontSize: "15px" }}>{Showstream1}</h5>
-                    </span>
-                  )}
+                <h2
+                  className=" d-flex justify-content-center position-relative pb-1"
+                  style={{ background: "rgb(224 224 224)" }}
+                >
                   <span>THÔNG TIN ĐƠN NGHỈ PHÉP</span>
                 </h2>
+                {Showstreamx === true && (
+                  <span style={{ position: "absolute ", right: "30px" }}>
+                    <h5 style={{ fontSize: "15px" }}>
+                      Trạng Thái : {Showstream1}
+                    </h5>
+                  </span>
+                )}
               </div>
 
-              <div className="row mt-3">
+              <div className="row mt-3 pt-3">
                 <div className="col-md-6 d-flex">
                   MSNV
                   <p style={{ color: "red", minWidth: "74px" }}>(*)</p>
@@ -338,61 +426,68 @@ const Approve = (props) => {
                 <h5 className=" mt-1" style={{ textAlign: "center " }}>
                   Ý KIẾN NGƯỜI PHÊ DUYỆT
                 </h5>
-                <div className="row mt-2">
-                  <div className="col-md-6 d-flex">
-                    <span style={{ minWidth: "120px" }}>Trạng Thái</span>
-                    <input
-                      readOnly
-                      className="form-control ml-3 "
-                      value={aStatus}
-                    />
-                  </div>
-                  <div className="col-md-6 d-flex">
-                    <span style={{ minWidth: "120px" }}> Ngày Duyệt</span>
-                    <input
-                      className="form-control ml-3"
-                      value={approvalDate}
-                      readOnly
-                    />
-                  </div>
-                </div>
-                <div className="row mt-2">
-                  <div className="col-md-6 d-flex">
-                    <span style={{ minWidth: "120px" }}>Người Duyệt</span>
-                    <input
-                      readOnly
-                      className="form-control ml-3 "
-                      value={approName}
-                    />
-                  </div>
-                  <div className="col-md-6 d-flex">
-                    <span style={{ minWidth: "120px" }}> Chức vụ</span>
-                    <input
-                      className="form-control ml-3"
-                      value={approJobName}
-                      readOnly
-                    />
-                  </div>
-                </div>
-                <div className="row mt-2">
-                  <div className="col-md-12 d-flex">
-                    <span style={{ minWidth: "120px" }}>
-                      Ý Kiến<span style={{ color: "red" }}>*</span>
-                    </span>
-                    <textarea
-                      type="text"
-                      className="form-control ml-3 "
-                      {...register("comment")}
-                      id="comment"
-                      readOnly={show}
-                      onChange={(e) => {
-                        setComment(e.target.value);
-                      }}
-                      value={comment}
-                    />
-                  </div>
-                </div>
+                {Showstream ? (
+                  ListItem(props)
+                ) : (
+                  <>
+                    <div className="row mt-2">
+                      <div className="col-md-6 d-flex">
+                        <span style={{ minWidth: "120px" }}>Trạng Thái</span>
+                        <input
+                          readOnly
+                          className="form-control ml-3 "
+                          value={aStatus}
+                        />
+                      </div>
+                      <div className="col-md-6 d-flex">
+                        <span style={{ minWidth: "120px" }}> Ngày Duyệt</span>
+                        <input
+                          className="form-control ml-3"
+                          value={approvalDate}
+                          readOnly
+                        />
+                      </div>
+                    </div>
+                    <div className="row mt-2">
+                      <div className="col-md-6 d-flex">
+                        <span style={{ minWidth: "120px" }}>Người Duyệt</span>
+                        <input
+                          readOnly
+                          className="form-control ml-3 "
+                          value={approName}
+                        />
+                      </div>
+                      <div className="col-md-6 d-flex">
+                        <span style={{ minWidth: "120px" }}> Chức vụ</span>
+                        <input
+                          className="form-control ml-3"
+                          value={approJobName}
+                          readOnly
+                        />
+                      </div>
+                    </div>
+                    <div className="row mt-2">
+                      <div className="col-md-12 d-flex">
+                        <span style={{ minWidth: "120px" }}>
+                          Ý Kiến<span style={{ color: "red" }}>*</span>
+                        </span>
+                        <textarea
+                          type="text"
+                          className="form-control ml-3 "
+                          {...register("comment")}
+                          id="comment"
+                          readOnly={show}
+                          onChange={(e) => {
+                            setComment(e.target.value);
+                          }}
+                          value={comment}
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
+              {/* end */}
               {props.isAppove === true && (
                 <div className="mt-3 d-flex justify-content-end">
                   <button

@@ -1,7 +1,7 @@
 import axios from "axios";
 import authHeader from "./auth-header";
 
-const API_URL = "http://192.168.0.103:300/";
+const API_URL = "http://192.168.0.45:300/";
 //103.149.28.137:300/ // anh kiểu
 
 const getDataCustom = async (url, data, header = null) => {

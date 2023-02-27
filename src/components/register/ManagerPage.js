@@ -46,7 +46,7 @@ const ManagerPage = (props) => {
         needAppr: 1,
         astatus: [0, 1, 2, 3, 4, 5],
       });
-      console.log(dataMana);
+      //console.log(dataMana);
 
       setdbTableMana(dataMana.rData);
       setftTableMana(dataMana.rData);
@@ -217,9 +217,10 @@ const ManagerPage = (props) => {
       <form>
         <div className="card-header py-0 border-0">
           <div
-            className="row m-3 "
+            className="row  d-flex justify-content-center position-relative pt-1 "
             style={{
               justifyContent: "center ",
+              background: "rgb(224 224 224)",
             }}
           >
             <h3>DANH SÁCH ĐƠN NGHỈ PHÉP</h3>
@@ -233,6 +234,7 @@ const ManagerPage = (props) => {
             columns={col}
             data={ftTableMana}
             pagination
+            paginationRowsPerPageOptions={[25, 50, 100]}
             fixedHeader
             fixedHeaderScrollHeight={props.sizeContenTB}
             selectableRows

@@ -85,7 +85,6 @@ const Header = ({ children }) => {
                   <img
                     src={face1}
                     className="img-circle elevation-2"
-                    style={{ width: "5.1rem" }}
                     alt="User Image"
                   />
                 </div>
@@ -148,7 +147,10 @@ const Header = ({ children }) => {
             </div>
             {/* /.sidebar */}
           </aside>
-          <div className="w-100 h-100" style={{ overflow: "hidden" }}>
+          <div
+            className="w-100"
+            style={{ overflow: "hidden", maxHeight: "100%", height: "85vh" }}
+          >
             {children}
           </div>
           <footer className="main-footer">

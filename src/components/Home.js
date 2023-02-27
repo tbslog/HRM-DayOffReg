@@ -11,7 +11,12 @@ function Home() {
           style={{ height: "calc(100vh - 114px)" }}
         >
           <img
-            style={{ objectFit: "cover" }}
+            style={{
+              objectFit: "cover",
+              width: "100%",
+              height: "100%",
+              maxWidth: "100%",
+            }}
             className="h-100"
             src={tbsgropimg}
           />

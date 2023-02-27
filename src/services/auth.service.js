@@ -1,7 +1,7 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 
-const API_URL = "http://192.168.0.103:300/";
+const API_URL = "http://192.168.0.45:300/";
 //"http://192.168.0.103:300/"; cty
 //http://192.168.0.114:300/
 //103.149.28.137:300

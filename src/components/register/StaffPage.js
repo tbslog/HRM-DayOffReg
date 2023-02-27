@@ -147,7 +147,7 @@ const StaffPage = (props) => {
   const handleInfo = async (id) => {
     showModalForm();
     let dataReg = await getData(`day-off-letter?regid=${id}`);
-    console.log(dataReg);
+    //console.log(dataReg);
     setDataRegByID(dataReg);
   };
   const handleEditButtonClick = async (id) => {
@@ -188,19 +188,20 @@ const StaffPage = (props) => {
       <form>
         <div className="card-header py-0 border-0">
           <div
-            className="row p-3 "
+            className="row pt-1 "
             style={{
               justifyContent: "space-between ",
+              background: "rgb(224 224 224)",
             }}
           >
-            <div style={{ alignSelf: "end" }}>
+            <div className="pt-2 ml-2">
+              {/* style={{ alignSelf: "end" }} */}
               {empid}||{fullName}
             </div>
-            <div>
-              <h3>ĐƠN NGHỈ PHÉP CỦA TÔI</h3>
-            </div>
-            <div style={{ alignSelf: "end" }}>
-              <a href="/Register" className="btn btn-sm btn-success">
+
+            <div className="pt-1 ">
+              {/* style={{ alignSelf: "end" }} */}
+              <a href="/Register" className="btn btn-sm btn-success mr-3 mb-2">
                 <i className="fas fa-plus" /> Tạo đơn
               </a>
             </div>
@@ -214,6 +215,7 @@ const StaffPage = (props) => {
             columns={col}
             data={dbTable}
             pagination
+            paginationRowsPerPageOptions={[25, 50, 100]}
             fixedHeader
             fixedHeaderScrollHeight={props.sizeContenTB}
             selectableRows

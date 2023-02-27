@@ -122,9 +122,9 @@ const Register = () => {
   return (
     <form>
       <div className="content-wrapper pb-0 ">
-        <section className="content" style={{ minHeight: "620px" }}>
+        <section className="content" style={{ minHeight: "100%" }}>
           {/* Default box */}
-          <div className="card  " style={{ minHeight: "630px" }}>
+          <div className="card  " style={{ minHeight: "100vh" }}>
             {IsLoading ? (
               <Loading />
             ) : (
