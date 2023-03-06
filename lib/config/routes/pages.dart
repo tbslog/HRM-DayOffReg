@@ -1,5 +1,8 @@
 import 'package:get/get.dart';
-import 'package:tbs_logistics_phieunghi/app/auth/view/change_password_view.dart';
+import 'package:tbs_logistics_phieunghi/app/auth/moduels/change_pass_full_screen.dart';
+import 'package:tbs_logistics_phieunghi/app/auth/moduels/change_password_screen.dart';
+import 'package:tbs_logistics_phieunghi/app/auth/view/change_passwod_page.dart';
+
 import 'package:tbs_logistics_phieunghi/app/auth/view/login_page.dart';
 import 'package:tbs_logistics_phieunghi/app/create_leave/view/create_leave_form_page.dart';
 import 'package:tbs_logistics_phieunghi/app/create_leave/view/create_leave_form/create_leave_form_screen.dart';
@@ -27,8 +30,19 @@ abstract class AppPages {
       binding: SplashBindings(),
     ),
     GetPage(
+      name: Routes.CHANGE_PASSWORD_PAGE,
+      page: () => ChangePasswordPage(),
+    ),
+    GetPage(
       name: Routes.CHANGE_PASSWORD_SCREEN,
-      page: () => ChangePasswordScreen(),
+      page: () => ChangePasswordScreen(
+        oldPass: '',
+        username: '',
+      ),
+    ),
+    GetPage(
+      name: Routes.CHANGE_PASSWORD__FULL_SCREEN,
+      page: () => ChangePasswordFullScreen(),
     ),
     //MANAGER_LEAVE
     GetPage(

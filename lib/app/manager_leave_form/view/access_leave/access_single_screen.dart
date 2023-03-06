@@ -107,28 +107,27 @@ class AccessSingleScreen extends GetView<ManagerLeaveFormController> {
                                               ),
                                             ),
                                           )
-                                        : Container(
-                                            height: 40,
-                                            width: 60,
-                                            // color: Colors.green,
-                                            decoration: BoxDecoration(
-                                              color: Colors.green,
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
-                                            ),
-                                            child: Center(
-                                              child: IconButton(
-                                                icon: const Icon(
-                                                  Icons.check_outlined,
-                                                  color: Colors.white,
+                                        : InkWell(
+                                            onTap: () {
+                                              controller.postApprove(
+                                                regID: item.regID!,
+                                                comment: "",
+                                                state: 1,
+                                              );
+                                            },
+                                            child: Container(
+                                              height: 60,
+                                              width: 60,
+                                              // color: Colors.green,
+                                              decoration: BoxDecoration(
+                                                // color: Colors.green,
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                                image: const DecorationImage(
+                                                  image: AssetImage(
+                                                      "assets/images/check.png"),
+                                                  fit: BoxFit.fill,
                                                 ),
-                                                onPressed: () {
-                                                  controller.postApprove(
-                                                    regID: item.regID!,
-                                                    comment: "",
-                                                    state: 1,
-                                                  );
-                                                },
                                               ),
                                             ),
                                           ),
@@ -146,11 +145,81 @@ class AccessSingleScreen extends GetView<ManagerLeaveFormController> {
                                 ),
                               );
                       }
-                      return const Center(
-                        child: CircularProgressIndicator(
-                          color: Colors.orangeAccent,
-                        ),
-                      );
+                      return ListView.builder(
+                          itemCount: 6,
+                          itemBuilder: (context, index) {
+                            return Card(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                side: BorderSide(
+                                  color: Colors.black.withOpacity(0.4),
+                                  width: 1,
+                                ),
+                              ),
+                              child: ListTile(
+                                leading: Container(
+                                  height: 40,
+                                  width: 40,
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withOpacity(0.4),
+                                    borderRadius: BorderRadius.circular(100),
+                                  ),
+                                ),
+                                title: Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      height: 15,
+                                      width: size.width * 0.2,
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withOpacity(0.3),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 15),
+                                    Container(
+                                      height: 15,
+                                      width: size.width * 0.2,
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withOpacity(0.3),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                subtitle: Container(
+                                  height: 15,
+                                  width: size.width * 0.1,
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withOpacity(0.3),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                trailing: Column(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    Container(
+                                      height: 15,
+                                      width: size.width * 0.15,
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withOpacity(0.3),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                    ),
+                                    Container(
+                                      height: 15,
+                                      width: size.width * 0.15,
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withOpacity(0.3),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          });
                     }),
               );
             }),

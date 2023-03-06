@@ -28,7 +28,7 @@ class CreateLeaveFormController extends GetxController
   var numberDayFree = "".obs;
   var dayFreeError = RxnString(null);
 
-  var selectedTaixe = "";
+  var selectedLoaiphep = "";
 
   RxList listOffType = [].obs;
   final formKey = GlobalKey<FormState>();

@@ -19,9 +19,10 @@ class AppConstants {
 
   // Url
 
-  static const String urlBase = "http://103.149.28.137:300";
+  // static const String urlBase = "http://103.149.28.137:300";
   // static const String urlBase = "http://192.168.0.103:300";
   // static const String urlBase = "http://192.168.0.114:300";
+  static const String urlBase = "http://192.168.0.45:300";
 
   // Url Client
   //Tài xế
@@ -32,4 +33,3 @@ class AppConstants {
   static const String urlListOffType = "dayOffType";
   static const String urlRegister = "day-off-letter";
 }
-// 

@@ -12,9 +12,19 @@ class LoginController extends GetxController {
   late Response response;
 
   var dio = Dio();
+
   TextEditingController accountController = TextEditingController(text: "");
   TextEditingController passwordController = TextEditingController(text: "");
   RxBool obcureText = true.obs;
+
+  // final formKey = GlobalKey<FormState>();
+
+  @override
+  void onInit() {
+    // formKey;
+    super.onInit();
+  }
+
   void updateObcureText() {
     obcureText.value = !obcureText.value;
     update();
@@ -47,24 +57,62 @@ class LoginController extends GetxController {
 
         if (response.data["rCode"] == 1) {
           Get.defaultDialog(
+            barrierDismissible: false,
             title: "Thông báo",
             middleText: "Chưa có tài khoản ! Bạn có muốn tạo tài khoản ?",
             confirmTextColor: Colors.orangeAccent,
             backgroundColor: Colors.white,
-            onConfirm: () {
-              createAccount(
-                username: username,
-              );
-              Get.back();
-            },
-            onCancel: () {
-              Get.back();
-            },
+            buttonColor: Colors.white,
+            cancel: Container(
+              height: 35,
+              width: 100,
+              decoration: BoxDecoration(
+                border: Border.all(
+                  width: 1,
+                  color: Colors.orangeAccent,
+                ),
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: TextButton(
+                child: const Text(
+                  "Không",
+                  style: TextStyle(color: Colors.orangeAccent),
+                ),
+                onPressed: () {
+                  Get.back();
+                },
+              ),
+            ),
+            confirm: Container(
+              height: 35,
+              width: 100,
+              decoration: BoxDecoration(
+                border: Border.all(
+                  width: 1,
+                  color: Colors.orangeAccent,
+                ),
+                borderRadius: BorderRadius.circular(15),
+                color: Colors.orangeAccent,
+              ),
+              child: TextButton(
+                child: const Text(
+                  "Có",
+                  style: TextStyle(color: Colors.white),
+                ),
+                onPressed: () {
+                  createAccount(
+                    username: username,
+                  );
+                  Get.back();
+                },
+              ),
+            ),
           );
         } else if (response.data["rCode"] == 2) {
           passwordController.text = response.data["rData"]["password"];
         } else if (response.data["rCode"] == 0) {
           Get.defaultDialog(
+            barrierDismissible: false,
             title: "Thông báo",
             middleText: "Tài khoản hoặc mật khẩu không đúng !",
             confirmTextColor: Colors.orangeAccent,
@@ -110,32 +158,93 @@ class LoginController extends GetxController {
         var accessToken = await prefs.setString(AppConstants.KEY_ACCESS_TOKEN,
             "${response.data["rData"]["token"]}");
         Get.defaultDialog(
+          barrierDismissible: false,
           title: "Thông báo",
           middleText:
               "Tạo thành công :  ${response.data["rData"]["password"]} ${response.data["rMsg"]}",
           confirmTextColor: Colors.orangeAccent,
           backgroundColor: Colors.white,
+          confirm: Container(
+            height: 35,
+            width: 100,
+            decoration: BoxDecoration(
+              border: Border.all(
+                width: 1,
+                color: Colors.orangeAccent,
+              ),
+              borderRadius: BorderRadius.circular(15),
+              color: Colors.orangeAccent,
+            ),
+            child: TextButton(
+              onPressed: () {
+                Get.defaultDialog(
+                  barrierDismissible: false,
+                  title: "Thông báo",
+                  middleText: "Bạn có muốn đổi mật khẩu !",
+                  confirmTextColor: Colors.orangeAccent,
+                  backgroundColor: Colors.white,
+                  cancel: Container(
+                    height: 35,
+                    width: 100,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        width: 1,
+                        color: Colors.orangeAccent,
+                      ),
+                      borderRadius: BorderRadius.circular(15),
+                      color: Colors.white,
+                    ),
+                    child: TextButton(
+                      onPressed: () {
+                        Get.toNamed(Routes.MANAGER_LEAVE_FORM_SCREEN);
+                      },
+                      child: const Text(
+                        "Không",
+                        style: TextStyle(color: Colors.orangeAccent),
+                      ),
+                    ),
+                  ),
+                  confirm: Container(
+                    height: 35,
+                    width: 100,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        width: 1,
+                        color: Colors.orangeAccent,
+                      ),
+                      borderRadius: BorderRadius.circular(15),
+                      color: Colors.orangeAccent,
+                    ),
+                    child: TextButton(
+                      onPressed: () {
+                        Get.toNamed(
+                          Routes.CHANGE_PASSWORD_SCREEN,
+                          arguments: [
+                            username,
+                            response.data["rData"]["password"]
+                          ],
+                        );
+                      },
+                      child: const Text(
+                        "Đồng ý",
+                        style: TextStyle(
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+              child: const Text(
+                "Oke",
+                style: TextStyle(
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
           onConfirm: () {
             // Get.back();
-            Get.defaultDialog(
-              title: "Thông báo",
-              middleText: "Bạn có muốn đổi mật khẩu !",
-              confirmTextColor: Colors.orangeAccent,
-              backgroundColor: Colors.white,
-              cancel: TextButton(
-                  onPressed: () {
-                    Get.toNamed(Routes.MANAGER_LEAVE_FORM_SCREEN);
-                  },
-                  child: const Text("Không")),
-              confirm: TextButton(
-                  onPressed: () {
-                    Get.toNamed(
-                      Routes.CHANGE_PASSWORD_SCREEN,
-                      arguments: [username, response.data["rData"]["password"]],
-                    );
-                  },
-                  child: const Text("Đồng ý")),
-            );
           },
         );
       }
@@ -159,5 +268,11 @@ class LoginController extends GetxController {
       },
       buttonColor: Colors.orangeAccent.withOpacity(0.4),
     );
+  }
+
+  @override
+  void onClose() {
+    Get.deleteAll();
+    super.onClose();
   }
 }

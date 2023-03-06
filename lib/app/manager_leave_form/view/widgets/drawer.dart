@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tbs_logistics_phieunghi/app/manager_leave_form/controller/manager_leave_form_controller.dart';
 import 'package:tbs_logistics_phieunghi/app/manager_leave_form/model/user_model.dart';
+import 'package:tbs_logistics_phieunghi/config/routes/pages.dart';
 
 import 'package:tbs_logistics_phieunghi/config/share_prefs.dart';
 
@@ -40,28 +41,6 @@ class MenuDrawer extends StatelessWidget {
                         child: Column(
                           // mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            Container(
-                              height: size.width * 0.2,
-                              width: size.width * 0.2,
-                              decoration: BoxDecoration(
-                                border:
-                                    Border.all(color: Colors.white, width: 1),
-                                borderRadius: BorderRadius.circular(100),
-                                image: const DecorationImage(
-                                  image: AssetImage(
-                                    "assets/images/person.png",
-                                  ),
-                                ),
-                              ),
-
-                              // child: Image.asset(
-                              //   "assets/images/person.png",
-                              //   fit: BoxFit.cover,
-                              // ),
-                            ),
-                            SizedBox(
-                              height: size.width * 0.2,
-                            ),
                             FutureBuilder(
                                 future: controller.getInfo(),
                                 builder: (context, snapshot) {
@@ -69,6 +48,29 @@ class MenuDrawer extends StatelessWidget {
                                     var items = snapshot.data as UserModel;
                                     return Column(
                                       children: [
+                                        Container(
+                                          height: size.width * 0.2,
+                                          width: size.width * 0.2,
+                                          decoration: BoxDecoration(
+                                            border: Border.all(
+                                                color: Colors.white, width: 1),
+                                            borderRadius:
+                                                BorderRadius.circular(100),
+                                            image: const DecorationImage(
+                                              image: AssetImage(
+                                                "assets/images/person.png",
+                                              ),
+                                            ),
+                                          ),
+
+                                          // child: Image.asset(
+                                          //   "assets/images/person.png",
+                                          //   fit: BoxFit.cover,
+                                          // ),
+                                        ),
+                                        SizedBox(
+                                          height: size.width * 0.1,
+                                        ),
                                         Text(
                                           "Họ và tên : ${items.lastName} ${items.firstName}",
                                           style: const TextStyle(
@@ -79,6 +81,14 @@ class MenuDrawer extends StatelessWidget {
                                         ),
                                         Text(
                                           "MSNV : ${items.empID}",
+                                          style: const TextStyle(
+                                              color: Colors.orangeAccent),
+                                        ),
+                                        const SizedBox(
+                                          height: 10,
+                                        ),
+                                        Text(
+                                          "Bộ phận : ${items.jobpositionName}",
                                           style: const TextStyle(
                                               color: Colors.orangeAccent),
                                         ),
@@ -116,29 +126,58 @@ class MenuDrawer extends StatelessWidget {
                       ),
                     ],
                   ),
-                  Card(
-                    color: Colors.black,
-                    child: ListTile(
-                      onTap: () async {
-                        await SharePerApi().postLogout();
-                      },
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        side: const BorderSide(color: Colors.orangeAccent),
-                      ),
-                      title: const Text(
-                        "Đăng xuất",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.orangeAccent,
+                  Column(
+                    children: [
+                      Card(
+                        color: Colors.black,
+                        child: ListTile(
+                          onTap: () {
+                            Get.toNamed(Routes.CHANGE_PASSWORD_PAGE);
+                          },
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            side: const BorderSide(color: Colors.orangeAccent),
+                          ),
+                          title: const Text(
+                            "Đổi Password",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.orangeAccent,
+                            ),
+                          ),
+                          trailing: const Icon(
+                            Icons.lock,
+                            color: Colors.orangeAccent,
+                          ),
                         ),
                       ),
-                      trailing: const Icon(
-                        Icons.logout_outlined,
-                        color: Colors.orangeAccent,
-                      ),
-                    ),
+                      const SizedBox(height: 10),
+                      Card(
+                        color: Colors.black,
+                        child: ListTile(
+                          onTap: () async {
+                            await SharePerApi().postLogout();
+                          },
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            side: const BorderSide(color: Colors.orangeAccent),
+                          ),
+                          title: const Text(
+                            "Đăng xuất",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.orangeAccent,
+                            ),
+                          ),
+                          trailing: const Icon(
+                            Icons.logout_outlined,
+                            color: Colors.orangeAccent,
+                          ),
+                        ),
+                      )
+                    ],
                   )
                 ],
               ),

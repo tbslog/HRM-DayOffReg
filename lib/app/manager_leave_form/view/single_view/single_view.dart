@@ -17,6 +17,7 @@ class SingleViewManagerScreen extends GetView<DetailSingleController> {
   @override
   Widget build(BuildContext context) {
     var day = DateFormat("dd/MM/yyyy");
+    Size size = MediaQuery.of(context).size;
     return GetBuilder<DetailSingleController>(
       init: DetailSingleController(),
       builder: (controller) => Container(
@@ -41,40 +42,61 @@ class SingleViewManagerScreen extends GetView<DetailSingleController> {
                     child: CircularProgressIndicator(),
                   );
                 }),
-            const SizedBox(height: 15),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Obx(
-                  () {
-                    // ignore: unused_local_variable
-                    var listType = controller.selectedDepartmentsValue.value;
-
-                    return Text(
-                      controller.selectedDepartmentsValue.value,
-                      style: const TextStyle(
-                        color: Colors.green,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    );
-                  },
-                ),
-                ElevatedButton(
-                  style: ButtonStyle(
-                    backgroundColor:
-                        MaterialStateProperty.all<Color>(Colors.orangeAccent),
-                  ),
-                  onPressed: () {
-                    controller.selectedDepartmentsId.value = "";
-                    controller.selectedDepartmentsValue.value = "";
-                    controller.showMultiSelect();
-                  },
-                  child: const Text('Chọn loại phép'),
-                ),
-              ],
+            const Divider(
+              height: 1,
+              thickness: 1,
+              indent: 5,
+              endIndent: 5,
+              color: Colors.orangeAccent,
             ),
-            const SizedBox(height: 15),
+            Container(
+              height: 35,
+              padding: const EdgeInsets.only(left: 5),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Obx(
+                    () {
+                      // ignore: unused_local_variable
+                      var listType = controller.selectedDepartmentsValue.value;
+
+                      return Text(
+                        controller.selectedDepartmentsValue.value == ""
+                            ? "Danh sách đơn"
+                            : controller.selectedDepartmentsValue.value,
+                        style: const TextStyle(
+                          color: Colors.green,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      );
+                    },
+                  ),
+                  SizedBox(
+                    // color: Colors.orangeAccent,
+                    // decoration: BoxDecoration(
+                    //   border: Border.all(
+                    //     width: 1,
+                    //     color: Colors.orangeAccent,
+                    //   ),
+                    // ),
+                    height: 35,
+                    width: 60,
+                    child: IconButton(
+                      onPressed: () {
+                        controller.selectedDepartmentsId.value = "";
+                        controller.selectedDepartmentsValue.value = "";
+                        controller.showMultiSelect();
+                      },
+                      icon: const Icon(
+                        Icons.menu,
+                        size: 30,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
             Obx(
               () {
                 var number = controller.selectedDepartmentsId.value;
@@ -87,7 +109,6 @@ class SingleViewManagerScreen extends GetView<DetailSingleController> {
                         if (snapshot.hasData) {
                           var dayoffletters =
                               snapshot.data as List<DayOffLettersSingleModel>;
-
                           return ListView.builder(
                               itemCount: dayoffletters.length,
                               itemBuilder: (context, index) {
@@ -129,9 +150,85 @@ class SingleViewManagerScreen extends GetView<DetailSingleController> {
                                 );
                               });
                         }
-                        return const Center(
-                          child: CircularProgressIndicator(),
-                        );
+                        return ListView.builder(
+                            itemCount: 6,
+                            itemBuilder: (context, index) {
+                              return Card(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  side: BorderSide(
+                                    color: Colors.black.withOpacity(0.4),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: ListTile(
+                                  leading: Container(
+                                    height: 40,
+                                    width: 40,
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withOpacity(0.4),
+                                      borderRadius: BorderRadius.circular(100),
+                                    ),
+                                  ),
+                                  title: Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        height: 15,
+                                        width: size.width * 0.2,
+                                        decoration: BoxDecoration(
+                                          color: Colors.black.withOpacity(0.3),
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 15),
+                                      Container(
+                                        height: 15,
+                                        width: size.width * 0.2,
+                                        decoration: BoxDecoration(
+                                          color: Colors.black.withOpacity(0.3),
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  subtitle: Container(
+                                    height: 15,
+                                    width: size.width * 0.1,
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withOpacity(0.3),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                  trailing: Column(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
+                                    children: [
+                                      Container(
+                                        height: 15,
+                                        width: size.width * 0.15,
+                                        decoration: BoxDecoration(
+                                          color: Colors.black.withOpacity(0.3),
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                      ),
+                                      Container(
+                                        height: 15,
+                                        width: size.width * 0.15,
+                                        decoration: BoxDecoration(
+                                          color: Colors.black.withOpacity(0.3),
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            });
                       }),
                 );
               },
@@ -201,29 +298,35 @@ class SingleViewManagerScreen extends GetView<DetailSingleController> {
       {required VoidCallback onPressed,
       required String MSNV,
       required String UserName}) {
-    return ListTile(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-        side: const BorderSide(
-          color: Colors.orangeAccent,
-          width: 1,
-        ),
-      ),
-      title: Text("$MSNV  /  $UserName"),
-      trailing: Container(
-        decoration: BoxDecoration(
-          color: Colors.green,
-          borderRadius: BorderRadius.circular(100),
-        ),
-        child: IconButton(
-          onPressed: onPressed,
-          icon: const Icon(
-            Icons.add_circle_outlined,
-            color: Colors.white,
-            size: 30,
+    return Container(
+      height: 35,
+      padding: const EdgeInsets.only(left: 10, bottom: 5),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(30)),
+      child: Row(children: [
+        Expanded(
+          flex: 8,
+          child: Text(
+            "$MSNV  /  $UserName",
+            style: const TextStyle(
+              fontSize: 18,
+            ),
           ),
         ),
-      ),
+        Expanded(
+          flex: 2,
+          child: Container(
+            height: 35,
+            width: 20,
+            decoration: BoxDecoration(
+              color: Colors.green,
+              borderRadius: BorderRadius.circular(100),
+              image: const DecorationImage(
+                image: AssetImage("assets/images/add.png"),
+              ),
+            ),
+          ),
+        ),
+      ]),
     );
   }
 }

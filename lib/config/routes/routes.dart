@@ -7,6 +7,8 @@ abstract class Routes {
   //login
   static const LOGIN_PAGE = "/LOGIN_PAGE";
   static const CHANGE_PASSWORD_SCREEN = "/CHANGE_PASSWORD_SCREEN";
+  static const CHANGE_PASSWORD__FULL_SCREEN = "/CHANGE_PASSWORD__FULL_SCREEN";
+  static const CHANGE_PASSWORD_PAGE = "/CHANGE_PASSWORD_PAGE";
   //create_leave
   static const CREATE_LEAVE_FORM_SCREEN = "/CREATE_LEAVE_FORM_SCREEN";
   static const CREATE_LEAVE_FORM_PAGE = "/CREATE_LEAVE_FORM_PAGE";

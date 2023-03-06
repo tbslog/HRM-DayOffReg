@@ -45,32 +45,36 @@ class DetailSingleController extends GetxController {
 
   void showMultiSelect() async {
     await showDialog(
-        context: Get.context!,
-        builder: (ctx) {
-          return MultiSelectDialog(
-            listType: MultiSelectListType.LIST,
-            initialValue: selectedDepartments,
-            items: departments
-                .map((player) =>
-                    MultiSelectItem<DepartmentsModel>(player, player.name!))
-                .toList(),
-            title: const Text("Loại đơn"),
-            selectedColor: Colors.blue,
-            searchable: true,
-            onConfirm: (results) {
-              selectedDepartments = results;
-              selectedDepartmentsValue.value = "";
-              // ignore: avoid_function_literals_in_foreach_calls
-              selectedDepartments.forEach((element) {
+      context: Get.context!,
+      builder: (ctx) {
+        return MultiSelectDialog(
+          height: 250,
+          listType: MultiSelectListType.LIST,
+          initialValue: selectedDepartments,
+          items: departments
+              .map((player) =>
+                  MultiSelectItem<DepartmentsModel>(player, player.name!))
+              .toList(),
+          title: const Text("Chọn loại đơn"),
+          selectedColor: Colors.blue,
+          searchable: true,
+          onConfirm: (results) {
+            selectedDepartments = results;
+            selectedDepartmentsValue.value = "";
+            // ignore: avoid_function_literals_in_foreach_calls
+            selectedDepartments.forEach(
+              (element) {
                 selectedDepartmentsValue.value =
                     // ignore: prefer_interpolation_to_compose_strings
                     selectedDepartmentsValue.value + element.name + ",";
                 selectedDepartmentsId.value =
                     selectedDepartmentsId.value + element.id.toString();
-              });
-            },
-          );
-        });
+              },
+            );
+          },
+        );
+      },
+    );
   }
 
   void selectDate() async {

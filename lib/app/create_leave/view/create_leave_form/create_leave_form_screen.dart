@@ -22,16 +22,17 @@ class CreateLeaveFormScreen extends GetView<CreateLeaveFormController> {
               scrollDirection: Axis.vertical,
               child: Container(
                 padding: EdgeInsets.only(
-                    bottom: MediaQuery.of(context).viewInsets.bottom,
-                    left: 10,
-                    right: 10,
-                    top: 15),
+                  bottom: MediaQuery.of(context).viewInsets.bottom,
+                  left: 10,
+                  right: 10,
+                ),
                 child: FutureBuilder(
                     future: controller.getInfo(),
                     builder: (context, snapshot) {
                       if (snapshot.hasData) {
                         var items = snapshot.data as UserModel;
                         return Form(
+                          autovalidateMode: AutovalidateMode.always,
                           key: controller.formKey,
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.start,
@@ -45,6 +46,7 @@ class CreateLeaveFormScreen extends GetView<CreateLeaveFormController> {
                                     InkWell(
                                       onTap: () {
                                         Get.defaultDialog(
+                                          barrierDismissible: false,
                                           title: "Hướng Dẫn Quy Định/Quy Trình",
                                           titleStyle: const TextStyle(
                                             fontSize: 14,
@@ -54,6 +56,17 @@ class CreateLeaveFormScreen extends GetView<CreateLeaveFormController> {
                                             width: size.width * 0.9,
                                             child: Image.asset(
                                                 "assets/images/QuyDinh.png"),
+                                          ),
+                                          confirm: TextButton(
+                                            onPressed: () {
+                                              Get.back();
+                                            },
+                                            child: const Text(
+                                              "Xác nhận",
+                                              style: TextStyle(
+                                                color: Colors.orangeAccent,
+                                              ),
+                                            ),
                                           ),
                                         );
                                       },
@@ -144,7 +157,7 @@ class CreateLeaveFormScreen extends GetView<CreateLeaveFormController> {
                               _buildReason(
                                 size: size,
                                 hintText: "Nhập địa chỉ",
-                                title: "Địa chỉ nghỉ phép *",
+                                title: "Địa chỉ nghỉ phép ",
                                 maxLines: 2,
                                 height: 80,
                                 controller: controller.addressController,
@@ -168,11 +181,16 @@ class CreateLeaveFormScreen extends GetView<CreateLeaveFormController> {
                                           ),
                                         ),
                                         onPressed: () {
-                                          var validate = controller.formKey.currentState!.validate();
-                                          if (!validate) {
+                                          var validate = controller
+                                              .formKey.currentState!
+                                              .validate();
+                                          if (!validate &&
+                                              controller.selectedLoaiphep
+                                                      .toString() !=
+                                                  "") {
                                             controller.postRegister(
                                               type: int.parse(controller
-                                                  .selectedTaixe
+                                                  .selectedLoaiphep
                                                   .toString()),
                                               reason: controller
                                                   .reasonController.text,
@@ -206,13 +224,18 @@ class CreateLeaveFormScreen extends GetView<CreateLeaveFormController> {
                                           ),
                                         ),
                                         onPressed: () {
-                                          if (controller.formKey.currentState!
-                                              .validate()) {
+                                          var validate = controller
+                                              .formKey.currentState!
+                                              .validate();
+                                          if (!validate &&
+                                              controller.selectedLoaiphep
+                                                      .toString() !=
+                                                  "") {
                                             // If the form is valid, display a snackbar. In the real world,
                                             // you'd often call a server or save the information in a database.
                                             controller.postRegister(
                                               type: int.parse(controller
-                                                  .selectedTaixe
+                                                  .selectedLoaiphep
                                                   .toString()),
                                               reason: controller
                                                   .reasonController.text,
@@ -357,9 +380,9 @@ class CreateLeaveFormScreen extends GetView<CreateLeaveFormController> {
                       ),
                       color: Colors.white,
                     ),
-                    height: 80,
+                    height: 35,
                     width: size.width * 0.35,
-                    margin: EdgeInsets.symmetric(vertical: size.height * 0.02),
+                    // margin: EdgeInsets.symmetric(vertical: size.height * 0.02),
                     child: TextFormField(
                       validator: (value) {
                         // ignore: unrelated_type_equality_checks
@@ -370,15 +393,13 @@ class CreateLeaveFormScreen extends GetView<CreateLeaveFormController> {
                       },
                       controller: controller.dayController,
                       decoration: const InputDecoration(
-                        contentPadding: EdgeInsets.only(top: 5),
-                        hintText: "2",
+                        contentPadding: EdgeInsets.only(
+                          top: 5,
+                        ),
+                        hintMaxLines: 2,
+                        hintText: "Nhập số ngày",
                         border: InputBorder.none,
                         isDense: true,
-                        icon: Icon(
-                          Icons.calendar_month,
-                          color: Colors.orangeAccent,
-                          size: 25,
-                        ),
                       ),
                     ),
                   ),
@@ -426,9 +447,9 @@ class CreateLeaveFormScreen extends GetView<CreateLeaveFormController> {
                       ),
                       color: Colors.white,
                     ),
-                    height: 60,
+                    height: 35,
                     width: size.width * 0.35,
-                    margin: EdgeInsets.symmetric(vertical: size.height * 0.02),
+                    // margin: EdgeInsets.symmetric(vertical: size.height * 0.02),
                     child: TextFormField(
                       validator: (value) {
                         if (value == null || value == "") {
@@ -463,7 +484,7 @@ class CreateLeaveFormScreen extends GetView<CreateLeaveFormController> {
   Widget _buildLoaiPhep(Size size) {
     return Card(
       child: SizedBox(
-        height: 80,
+        height: 70,
         child: Row(
           children: [
             Expanded(
@@ -501,7 +522,8 @@ class CreateLeaveFormScreen extends GetView<CreateLeaveFormController> {
                     return item.note == sItem.note && item.name == sItem.name;
                   },
                   onChanged: (ListOffTypeModel? newValue) {
-                    controller.selectedTaixe = newValue!.offTypeID.toString();
+                    controller.selectedLoaiphep =
+                        newValue!.offTypeID.toString();
                   },
                   dropdownDecoratorProps: const DropDownDecoratorProps(
                     dropdownSearchDecoration: InputDecoration(
@@ -543,7 +565,7 @@ class CreateLeaveFormScreen extends GetView<CreateLeaveFormController> {
       {required String title, required String content, required Size size}) {
     return Card(
       child: SizedBox(
-        height: 50,
+        height: 35,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
