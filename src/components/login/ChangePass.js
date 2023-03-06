@@ -5,6 +5,7 @@ import { login } from "../../actions/auth";
 import { Navigate, useNavigate } from "react-router-dom";
 import { Modal } from "bootstrap";
 import { getData, postData } from "../../services/user.service";
+import { toast } from "react-toastify";
 
 const ChangePass = (props) => {
   let navigate = useNavigate();
@@ -60,7 +61,7 @@ const ChangePass = (props) => {
     Password: {
       required: "Không được để trống",
       maxLength: {
-        value: 10,
+        value: 15,
         message: " không được hơn 10 kí tự",
       },
     },
@@ -97,11 +98,23 @@ const ChangePass = (props) => {
       });
 
       if (create.isSuccess === 1) {
-        alert("Đổi mật khẩu thành công \n" + create.note);
+        toast.success("Đổi mật khẩu thành công \n" + create.note, {
+          autoClose: 2000,
+          className: "",
+          position: "top-center",
+          theme: "colored",
+        });
         setValue("Password", data.passwordNew);
+
+        window.location.reload();
         hideModal();
       } else {
-        alert("Đổi mật khẩu thất bại Lỗi: \n" + create.note);
+        toast.success("Đổi mật khẩu thất bại Lỗi: \n" + create.note, {
+          autoClose: 2000,
+          className: "",
+          position: "top-center",
+          theme: "colored",
+        });
       }
     }
   };
@@ -262,7 +275,7 @@ const ChangePass = (props) => {
                                           autoComplete="off"
                                         >
                                           <div className="form-group">
-                                            <label>MẬT KHẨU CỦ</label>
+                                            <label>MẬT KHẨU Cũ</label>
                                             <input
                                               id="Password"
                                               {...register(

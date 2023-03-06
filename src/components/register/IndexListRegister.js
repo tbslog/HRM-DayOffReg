@@ -1,14 +1,16 @@
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import React, { useState, useEffect } from "react";
-import { getData, getDataCustom } from "../../services/user.service";
+import { getData, getfile, getDataCustom } from "../../services/user.service";
 import StaffPage from "./StaffPage";
 import ManagerPage from "./ManagerPage";
 import Usermanual from "../usermanual/Usermanual";
+import Cookies from "js-cookie";
 const IndexListRegister = () => {
   const [tabIndex, setTabIndex] = useState(0);
   const HandleOnChangeTabs = (tabIndex) => {
     setTabIndex(tabIndex);
   };
+  let info = JSON.parse(Cookies.get("info"));
 
   const [open, setOpen] = useState(false);
   useEffect(() => {
@@ -23,6 +25,19 @@ const IndexListRegister = () => {
       } else setOpen(false);
     })();
   }, []);
+  const onSubmitDownload = async () => {
+    let res = await getfile("Get-period");
+    console.log(res);
+    //const url = window.URL.createObjectURL(new Blob([res]));//list file
+    const url = window.URL.createObjectURL(res); // một file
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "Data.xlsx");
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  };
+
   return (
     <>
       {open ? (
@@ -58,6 +73,11 @@ const IndexListRegister = () => {
                       <Usermanual />
                     </div>
                   </TabPanel>
+                  {info.DeptID === "NS" && (
+                    <TabPanel>
+                      <div style={{ height: "100vh" }}>aaaa</div>
+                    </TabPanel>
+                  )}
                 </Tabs>
               </div>
             </div>
@@ -72,6 +92,14 @@ const IndexListRegister = () => {
             <TabList>
               <Tab>Đơn Của Tôi</Tab>
               <Tab>Hướng Dẫn Quy Trình</Tab>
+              {info?.DeptID === "NS" && (
+                <button
+                  className="btn btn-sm btn-success mr-3 mb-2"
+                  onClick={onSubmitDownload}
+                >
+                  File tổng hợp
+                </button>
+              )}
             </TabList>
 
             <TabPanel>

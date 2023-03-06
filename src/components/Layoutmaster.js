@@ -19,13 +19,13 @@ const Header = ({ children }) => {
     (async () => {
       let data = await getData("getEmpInfo");
 
-      // console.log(data);
       Cookies.set(
         "info",
         JSON.stringify({
           FirstName: data.rData.FirstName,
           LastName: data.rData.LastName,
           JobpositionName: data.rData.JobpositionName,
+          DeptID: data.rData.DeptID,
         })
       );
       setname(data.rData.FirstName + " " + data.rData.LastName);

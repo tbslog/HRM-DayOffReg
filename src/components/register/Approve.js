@@ -6,6 +6,7 @@ import { Navigate, useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import Loading from "../common/loading/Loading";
 import { useForm, Controller } from "react-hook-form";
+import "./style.css";
 
 const Approve = (props) => {
   const {
@@ -149,7 +150,11 @@ const Approve = (props) => {
       setIsLoading(false);
     })(show);
   }, [props, props.dataRegByID, props.isShow]);
-
+  const validateForm = {
+    comment: {
+      required: "Không được để trống",
+    },
+  };
   const Trangtt = (props) => {
     if (props.dataRegByID.rData?.aStatus === 1) {
       setShowstream1("Chờ Duyệt");
@@ -170,7 +175,7 @@ const Approve = (props) => {
 
   function ListItem(props) {
     const listItems = props.dataRegByID.rData?.apprInf;
-    //console.log(listItems);
+    console.log(listItems);
     return (
       <>
         {listItems?.map((item) => (
@@ -180,7 +185,7 @@ const Approve = (props) => {
                 <span style={{ minWidth: "120px" }}>Trạng Thái</span>
                 <input
                   readOnly
-                  className="form-control ml-3 "
+                  className="form-controlCustomer ml-3 "
                   value={item.StateName}
                 />
               </div>
@@ -219,8 +224,6 @@ const Approve = (props) => {
                 <textarea
                   type="text"
                   className="form-control ml-3 "
-                  {...register("comment")}
-                  id="comment"
                   readOnly
                   value={item.Comment}
                 />
@@ -275,10 +278,13 @@ const Approve = (props) => {
   };
   return (
     <form>
-      <section className="content" style={{ minHeight: "620px" }}>
+      <section className="content" style={{}}>
         {/* Default box */}
 
-        <div className="card  " style={{ minHeight: "630px" }}>
+        <div
+          className="card  "
+          style={{ maxHeight: "100vh", minHeight: "80vh" }}
+        >
           {IsLoading ? (
             <Loading />
           ) : (
@@ -286,7 +292,7 @@ const Approve = (props) => {
               <div>
                 <h2
                   className=" d-flex justify-content-center position-relative pb-1"
-                  style={{ background: "rgb(224 224 224)" }}
+                  style={{ background: "rgb(224 224 224)", fontSize: "20px" }}
                 >
                   <span>THÔNG TIN ĐƠN NGHỈ PHÉP</span>
                 </h2>
@@ -301,19 +307,23 @@ const Approve = (props) => {
 
               <div className="row mt-3 pt-3">
                 <div className="col-md-6 d-flex">
-                  MSNV
-                  <p style={{ color: "red", minWidth: "74px" }}>(*)</p>
+                  <span className="spancustomer" style={{ minWidth: "120px" }}>
+                    MSNV <span style={{ color: "red" }}>*</span>
+                  </span>
                   <input
                     value={MSNV}
-                    className="form-control ml-3 "
+                    className="form-controlCustomer ml-3 "
                     readOnly
                     style={{ maxWidth: "200px" }}
                   />
                 </div>
                 <div className="col-md-6 d-flex">
-                  <span style={{ minWidth: "120px" }}> Đ.Vị/B.Phận</span>
+                  <span className="spancustomer" style={{ minWidth: "120px" }}>
+                    {" "}
+                    Đ.Vị/B.Phận
+                  </span>
                   <input
-                    className="form-control ml-3"
+                    className="form-controlCustomer ml-3"
                     value={departmentName}
                     readOnly
                   />
@@ -321,13 +331,22 @@ const Approve = (props) => {
               </div>
               <div className="row mt-2">
                 <div className="col-md-6 d-flex">
-                  <span style={{ minWidth: "120px" }}>Họ và tên</span>
-                  <input value={name} readOnly className="form-control ml-3 " />
+                  <span className="spancustomer" style={{ minWidth: "120px" }}>
+                    Họ và tên
+                  </span>
+                  <input
+                    value={name}
+                    readOnly
+                    className="form-controlCustomer ml-3 "
+                  />
                 </div>
                 <div className="col-md-6 d-flex">
-                  <span style={{ minWidth: "120px" }}> Chức Vụ</span>
+                  <span className="spancustomer" style={{ minWidth: "120px" }}>
+                    {" "}
+                    Chức Vụ
+                  </span>
                   <input
-                    className="form-control ml-3"
+                    className="form-controlCustomer ml-3"
                     value={jPLevelName}
                     readOnly
                   />
@@ -335,17 +354,22 @@ const Approve = (props) => {
               </div>
               <div className="row mt-2">
                 <div className="col-md-6 d-flex">
-                  <span style={{ minWidth: "120px" }}>Ngày vào Làm</span>
+                  <span className="spancustomer" style={{ minWidth: "120px" }}>
+                    Ngày vào Làm
+                  </span>
                   <input
                     readOnly
-                    className="form-control ml-3 "
+                    className="form-controlCustomer ml-3 "
                     value={comeDate}
                   />
                 </div>
                 <div className="col-md-6 d-flex">
-                  <span style={{ minWidth: "120px" }}> Vị trí CV</span>
+                  <span className="spancustomer" style={{ minWidth: "120px" }}>
+                    {" "}
+                    Vị trí CV
+                  </span>
                   <input
-                    className="form-control ml-3"
+                    className="form-controlCustomer ml-3"
                     value={jobpositionName}
                     readOnly
                   />
@@ -353,19 +377,21 @@ const Approve = (props) => {
               </div>
               <div className="row mt-2">
                 <div className="col-md-6 d-flex">
-                  <span style={{ minWidth: "120px" }}>
+                  <span className="spancustomer" style={{ minWidth: "120px" }}>
                     Loại Phép <span style={{ color: "red" }}>*</span>
                   </span>
                   <input
-                    className="form-control ml-3"
+                    className="form-controlCustomer ml-3"
                     value={checkType(type)}
                     readOnly
                   />
                 </div>
                 <div className="col-md-6 d-flex justify-content-between">
-                  <span style={{ minWidth: "120px" }}>Số phép năm hiện có</span>
+                  <span className="spancustomer" style={{ minWidth: "120px" }}>
+                    Số phép năm hiện có
+                  </span>
                   <input
-                    className="form-control ml-3 "
+                    className="form-controlCustomer ml-3 "
                     value={annualLeave}
                     readOnly
                     style={{ maxWidth: "80px" }}
@@ -374,23 +400,23 @@ const Approve = (props) => {
               </div>
               <div className="row mt-2">
                 <div className="col-md-6 d-flex">
-                  <span style={{ minWidth: "120px" }}>
+                  <span className="spancustomer" style={{ minWidth: "120px" }}>
                     Bắt đầu nghỉ từ <span style={{ color: "red" }}>*</span>
                   </span>
                   <input
-                    className="form-control ml-3"
+                    className="form-controlCustomer ml-3"
                     value={RegDate}
                     readOnly
                   />
                 </div>
                 <div className="col-md-6 d-flex justify-content-between">
-                  <span style={{ minWidth: "120px" }}>
+                  <span className="spancustomer" style={{ minWidth: "120px" }}>
                     Số Ngày Nghỉ <span style={{ color: "red" }}>*</span>
                   </span>
                   <div className="w-100 ml-3" style={{ maxWidth: "120px" }}>
                     <input
                       type="text"
-                      className="form-control "
+                      className="form-controlCustomer "
                       value={Period}
                       readOnly
                     />
@@ -399,11 +425,11 @@ const Approve = (props) => {
               </div>
               <div className="row mt-2">
                 <div className="col-md-12 d-flex">
-                  <span style={{ minWidth: "120px" }}>
+                  <span className="spancustomer" style={{ minWidth: "120px" }}>
                     Lí do nghỉ phép<span style={{ color: "red" }}>*</span>
                   </span>
                   <textarea
-                    className="form-control ml-3 "
+                    className="form-controlCustomer ml-3 "
                     value={Reason}
                     readOnly
                   />
@@ -411,12 +437,12 @@ const Approve = (props) => {
               </div>
               <div className="row mt-2">
                 <div className="col-md-12 d-flex">
-                  <span style={{ minWidth: "120px" }}>
+                  <span className="spancustomer" style={{ minWidth: "120px" }}>
                     Địa chỉ nghỉ phép<span style={{ color: "red" }}>*</span>
                   </span>
                   <textarea
                     type="text"
-                    className="form-control ml-3 "
+                    className="form-controlCustomer ml-3 "
                     value={Address}
                     readOnly
                   />
@@ -435,14 +461,14 @@ const Approve = (props) => {
                         <span style={{ minWidth: "120px" }}>Trạng Thái</span>
                         <input
                           readOnly
-                          className="form-control ml-3 "
+                          className="form-controlCustomer ml-3 "
                           value={aStatus}
                         />
                       </div>
                       <div className="col-md-6 d-flex">
                         <span style={{ minWidth: "120px" }}> Ngày Duyệt</span>
                         <input
-                          className="form-control ml-3"
+                          className="form-controlCustomer ml-3"
                           value={approvalDate}
                           readOnly
                         />
@@ -453,14 +479,14 @@ const Approve = (props) => {
                         <span style={{ minWidth: "120px" }}>Người Duyệt</span>
                         <input
                           readOnly
-                          className="form-control ml-3 "
+                          className="form-controlCustomer ml-3 "
                           value={approName}
                         />
                       </div>
                       <div className="col-md-6 d-flex">
                         <span style={{ minWidth: "120px" }}> Chức vụ</span>
                         <input
-                          className="form-control ml-3"
+                          className="form-controlCustomer ml-3"
                           value={approJobName}
                           readOnly
                         />
@@ -473,8 +499,8 @@ const Approve = (props) => {
                         </span>
                         <textarea
                           type="text"
-                          className="form-control ml-3 "
-                          {...register("comment")}
+                          className="form-controlCustomer ml-3 "
+                          {...register("comment", validateForm.comment)}
                           id="comment"
                           readOnly={show}
                           onChange={(e) => {
@@ -483,6 +509,16 @@ const Approve = (props) => {
                           value={comment}
                         />
                       </div>
+                      <span
+                        className=""
+                        style={{
+                          color: "red",
+                          fontSize: "10px",
+                          marginLeft: "145px",
+                        }}
+                      >
+                        {errors.comment?.message}
+                      </span>
                     </div>
                   </>
                 )}

@@ -18,6 +18,23 @@ const getDataCustom = async (url, data, header = null) => {
     });
   return dataReturn;
 };
+const getfile = async (url) => {
+  let data;
+  await axios
+    .get(API_URL + url, {
+      headers: authHeader().headers,
+      responseType: "blob",
+    })
+    .then((response) => {
+      data = response.data;
+    })
+    .catch((error) => {
+      console.log(`${error.response.data}`);
+    });
+
+  return data;
+};
+
 const getData = async (url) => {
   let data;
   await axios
@@ -101,4 +118,4 @@ const putData = async (url, data, header = null) => {
 
   return { isSuccess, note };
 };
-export { getDataCustom, getData, postData, putData };
+export { getDataCustom, getData, postData, putData, getfile };

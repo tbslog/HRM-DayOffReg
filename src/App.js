@@ -7,6 +7,8 @@ import Demo2 from "./components/demo2";
 import Cookies from "js-cookie";
 import "react-tabs/style/react-tabs.css";
 import "react-datepicker/dist/react-datepicker.css";
+import { ToastContainer, Bounce } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 let token = Cookies.get("user");
 
 function App() {
@@ -47,6 +49,7 @@ function App() {
               })}
         </Routes>
       </div>
+      <ToastContainer transition={Bounce} />
     </Router>
   );
 }

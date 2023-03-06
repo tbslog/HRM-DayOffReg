@@ -7,6 +7,7 @@ import DatePicker from "react-datepicker";
 import { Navigate, useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import Loading from "../common/loading/Loading";
+import { toast } from "react-toastify";
 
 let emID = Cookies.get("empid");
 
@@ -87,12 +88,24 @@ const Register = () => {
     });
     console.log(create);
     if (create.isSuccess === 1) {
-      alert("lưu đơn thành công \n" + create.note);
+      toast.success("lưu đơn thành công \n" + create.note, {
+        autoClose: 2000,
+        className: "",
+        position: "top-center",
+        theme: "colored",
+      });
+
       navigate("/indexListRegister");
       reset();
       setIsLoading(false);
     } else {
-      alert("Lưu đơn thất bại Lỗi: \n" + create.note);
+      toast.success("lưu  thất bại Lỗi \n" + create.note, {
+        autoClose: 2000,
+        className: "",
+        position: "top-center",
+        theme: "colored",
+      });
+
       setIsLoading(false);
     }
   };
@@ -110,12 +123,23 @@ const Register = () => {
     });
     console.log(create);
     if (create.isSuccess === 1) {
-      alert("Gửi đơn thành công \n" + create.note);
+      toast.success("Gửi đơn thành công \n" + create.note, {
+        autoClose: 2000,
+        className: "",
+        position: "top-center",
+        theme: "colored",
+      });
+
       navigate("/indexListRegister");
       reset();
       setIsLoading(false);
     } else {
-      alert("Gửi đơn thất bại Lỗi: \n" + create.note);
+      toast.danger("Gửi đơn thất bại Lỗi: \n" + create.note, {
+        autoClose: 2000,
+        className: "",
+        position: "top-center",
+        theme: "colored",
+      });
       setIsLoading(false);
     }
   };

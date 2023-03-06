@@ -86,13 +86,31 @@ const StaffPage = (props) => {
   ];
   const aStatusShow = (aStatus) => {
     if (aStatus === 1) {
-      return <i className="fas fa-long-arrow-alt-right" title="Chờ Duyệt" />;
+      return (
+        <i
+          className="fas fa-long-arrow-alt-right  "
+          style={{ fontSize: "20px", color: "#ffc107" }}
+          title="Chờ Duyệt"
+        />
+      );
     }
     if (aStatus === 3) {
-      return <i className="fas fa-times" title="Từ Chối" />;
+      return (
+        <i
+          className="fas fa-times"
+          style={{ fontSize: "20px", color: "#dc3545" }}
+          title="Từ Chối"
+        />
+      );
     }
     if (aStatus === 2) {
-      return <i className="fas fa-check-circle" title="Đã Duyệt" />;
+      return (
+        <i
+          className="fas fa-check-circle"
+          style={{ fontSize: "20px", color: "#0d6efd" }}
+          title="Đã Duyệt"
+        />
+      );
     }
   };
 
@@ -129,7 +147,7 @@ const StaffPage = (props) => {
           type="button"
           data-toggle="modal"
           data-target="#exampleModalCenter"
-          className="btn btn-primary ml-1"
+          className="btn btn-success ml-1"
           onClick={() =>
             handleInfo(
               id,
@@ -202,7 +220,7 @@ const StaffPage = (props) => {
             <div className="pt-1 ">
               {/* style={{ alignSelf: "end" }} */}
               <a href="/Register" className="btn btn-sm btn-success mr-3 mb-2">
-                <i className="fas fa-plus" /> Tạo đơn
+                <i className="fas fa-plus" /> Tạo Đơn
               </a>
             </div>
           </div>

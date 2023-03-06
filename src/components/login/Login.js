@@ -125,9 +125,13 @@ const Login = (props) => {
   }, [isLoggedIn]);
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="d-flex justify-content-center"
+      style={{ alignItems: "center", width: "100%", height: "100vh" }}
+    >
       <section
-        className="h-100 gradient-form"
+        className="h-100 gradient-form pt-3"
         style={{ backgroundColor: "white" }}
       >
         <div
@@ -285,7 +289,7 @@ const Login = (props) => {
                     </div>
                   </div>
                   <div className="col-lg-6 d-flex align-items-center gradient-custom-2">
-                    <div className="text-white px-3 py-4 p-md-5 mx-md-4">
+                    <div className="text-white px-3 py-4  mx-md-4">
                       <h4 className="mb-4">
                         "TBS LOGISTICS là đối tác uy tín và đáng tin cậy của các
                         Khách Hàng hàng đầu Thế Giới."

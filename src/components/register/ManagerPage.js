@@ -91,7 +91,7 @@ const ManagerPage = (props) => {
     {
       name: "Số Ngày",
       selector: (row) => row.Period,
-      minWidth: "90px",
+
       maxWidth: "92px",
       sortable: true,
     },
