@@ -18,6 +18,7 @@ const Header = ({ children }) => {
   useEffect(() => {
     (async () => {
       let data = await getData("getEmpInfo");
+      console.log(data);
 
       Cookies.set(
         "info",

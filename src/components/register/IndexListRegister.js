@@ -57,6 +57,14 @@ const IndexListRegister = () => {
                     <Tab>Đơn Cần Phê Duyệt</Tab>
                     <Tab>Đơn Của Tôi</Tab>
                     <Tab>Hướng Dẫn Quy Trình</Tab>
+                    {info?.DeptID === "NS" && (
+                      <button
+                        className="btn btn-sm btn-success mr-3 mb-2"
+                        onClick={onSubmitDownload}
+                      >
+                        File tổng hợp
+                      </button>
+                    )}
                   </TabList>
                   <TabPanel>
                     <div style={{ height: "100vh" }}>
