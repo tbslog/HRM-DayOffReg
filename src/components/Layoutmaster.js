@@ -123,7 +123,7 @@ const Header = ({ children }) => {
                 >
                   {/* Add icons to the links using the .nav-icon class
          with font-awesome or any other icon font library */}
-                  <li className="nav-item ">
+                  <li className="nav-item menu-open">
                     <a className="nav-link active">
                       <i className="nav-icon fas fa-tachometer-alt" />
                       <p>
