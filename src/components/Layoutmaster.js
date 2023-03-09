@@ -38,7 +38,7 @@ const Header = ({ children }) => {
       <div className="hold-transition sidebar-mini layout-fixed">
         <div className="wrapper">
           {/* Navbar */}
-          <nav className="main-header navbar navbar-expand navbar-white navbar-light d-flex justify-content-between">
+          <nav className="main-header navbar navbar-expand navbar-white navbar-light">
             {/* Left navbar links */}
             <ul className="navbar-nav">
               <li className="nav-item">
@@ -57,23 +57,27 @@ const Header = ({ children }) => {
                 </a>
               </li>
             </ul>
-            <li className="nav-item d-none d-sm-inline-block">
-              <a
-                href="/"
-                className="nav-link"
-                style={{ color: "rgba(0,0,0,.5)" }}
-                onClick={logOut}
-              >
-                Đăng xuất
-              </a>
-            </li>
             {/* Right navbar links */}
+            <ul className="navbar-nav ml-auto">
+              {/* Navbar Search */}
+              <li className="nav-item">
+                <a
+                  href="/"
+                  className="nav-link"
+                  style={{ color: "rgba(0,0,0,.5)" }}
+                  onClick={logOut}
+                >
+                  Đăng xuất
+                </a>
+              </li>
+            </ul>
           </nav>
+
           {/* /.navbar */}
           {/* Main Sidebar Container */}
           <aside className="main-sidebar main-sidebar-custom sidebar-dark-primary elevation-4">
             {/* Brand Logo */}
-            <a href="index3.html" className="brand-link">
+            <a href="/" className="brand-link">
               <span className="brand-text font-weight-light">
                 TBS Logistics
               </span>
@@ -120,7 +124,7 @@ const Header = ({ children }) => {
                   {/* Add icons to the links using the .nav-icon class
          with font-awesome or any other icon font library */}
                   <li className="nav-item ">
-                    <a href="#" className="nav-link active">
+                    <a className="nav-link active">
                       <i className="nav-icon fas fa-tachometer-alt" />
                       <p>
                         Danh Mục

@@ -81,11 +81,6 @@ const IndexListRegister = () => {
                       <Usermanual />
                     </div>
                   </TabPanel>
-                  {info.DeptID === "NS" && (
-                    <TabPanel>
-                      <div style={{ height: "100vh" }}>aaaa</div>
-                    </TabPanel>
-                  )}
                 </Tabs>
               </div>
             </div>

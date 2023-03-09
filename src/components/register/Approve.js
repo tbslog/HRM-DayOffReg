@@ -258,8 +258,10 @@ const Approve = (props) => {
       comment: data.comment,
       state: 0,
     });
+    reset();
     if (create.isSuccess === 1) {
       console.log("từ chối");
+      setComment("");
       props.fetchData();
       props.hideModal();
     }
