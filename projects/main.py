@@ -1,3 +1,4 @@
+import os
 from fastapi import Depends,HTTPException,status
 import numpy as np
 from  projects.models import *
@@ -10,14 +11,12 @@ import pandas as pd
 # import functions as fn
 from  projects import functions as fn
 from projects.security import validate_token
-from fastapi.middleware.cors import CORSMiddleware
 from  projects.setting import  app
 import random
-import string, math
+import string
 from datetime import timedelta
-
-
-
+from fastapi.responses import FileResponse
+# from fastapi.exceptions import RequestValidationError
 
 # ------------------------------------------------------------------------------------------------------------
 cn = fn.cn
@@ -95,7 +94,7 @@ async def change(form:ChangePass):
     if len(result) > 0:
         # -- a Thái
         if (fn.check_pw(form.currentPassword,result[0][1])):
-            if form.newPassword == form.confirmPass and form.newPassword != '' and len(form.newPassword) < 7:
+            if form.newPassword == form.confirmPass and form.newPassword != '' and 5 < len(form.newPassword) < 7:
                 s = f"""
                     UPDATE dbo.Users SET Password = '{fn.hashpw(form.confirmPass)}'
                     WHERE EmpID = '{result[0][0]}'
@@ -231,6 +230,9 @@ async def offDayRegister(form: Offregister,emplid: str = Depends(validate_token)
             else:
                 return note
             
+            if form.reason == "":
+                return {'rCode': 0,'rMsg':'Vui lòng nhập lý do nghĩ phép'}
+            
             #code cải tiến (viết lần 2)
             if fn.checkEmplIDUser(emplid):
                 s = f'''
@@ -273,12 +275,19 @@ async def offDayRegister(form: Offregister,emplid: str = Depends(validate_token)
         return {'rCode':0,'rData':{},'rMsg':'chưa chọn typeID (loại phép)'}
 
 
-#(lấy đơn theo status: tạo mới, đã gửi, duyệt, chưa duyệt,...)
-@app.post("/day-off-letters",tags=['OffRegister'],summary='truyền vào số 1: lấy đơn quản lý, còn lại: lấy đơn chính mình')
-async def getsListoffstatus(form: Getlist,emplid: int = Depends(validate_token)): #, astatus: list = None,
+
+
+@app.get("/day-off-letters",tags=['OffRegister'],summary='truyền vào số 1: lấy đơn quản lý, còn lại: lấy đơn chính mình')
+async def getsListoffstatus(needAppr: int = "",astatus:str = "1,2,3",emplid: int = Depends(validate_token)): #, astatus: list = None,
 # no parametter: lấy các d-o-letters của người đang đăng nhập(có token)     
 # needAppr = 1:  lấy các d-o-letters cần người đang đăng nhập(có token) phê duyệt
-    if form.needAppr == 1:
+    list_astatus = []
+    if astatus != "":
+        split_ = astatus.split(",") #tách phần tử --> trả về list
+        for i in range(0, len(split_)):
+            if split_[i].isnumeric(): # kiểm tra phẩn tử phải là số không
+                list_astatus.append(int(split_[i]))
+    if needAppr == 1:
         s = f"""
                 SELECT e.DeptID,j.JPLevel FROM dbo.Employee e
                 LEFT JOIN dbo.JobPosition j ON j.JobPosID = e.PosID
@@ -292,10 +301,10 @@ async def getsListoffstatus(form: Getlist,emplid: int = Depends(validate_token))
         jplevel_TP_PP = ((int(jplevel/10)+1)*10)+9
         if jplevel <= 50:
             query = fn.depart_manager(emplid,jplevel_TP_PP) + fn.roommates(depid,jplevel)
-            if len(form.astatus)>0:
+            if len(list_astatus)>0:
                 ketqua = [] #kết quả đầu ra
                 for i in query:
-                    if i['aStatus'] in form.astatus:#i['aStatus']: lấy value của key, kiểm tra xem có nằm trong list đầu vào không
+                    if i['aStatus'] in list_astatus:#i['aStatus']: lấy value của key, kiểm tra xem có nằm trong list đầu vào không
                         ketqua.append(i)
                 return {'rCode':1,'rData': ketqua,'rMsg': 'Lấy danh sách quản lý (filter astutus) thành công'}
             return {'rCode':1,'rData': query,'rMsg':'lấy danh sách quản lý (ALL) thành công'} 
@@ -304,10 +313,10 @@ async def getsListoffstatus(form: Getlist,emplid: int = Depends(validate_token))
     else:
         #lấy của chính mình
         query = fn.myself(emplid)#kết quả truy vấn
-        if len(form.astatus)>0:
+        if len(list_astatus)>0:
             ketqua= [] #kết quả đầu ra
             for i in query:
-                if i['aStatus'] in form.astatus: #i['aStatus']: lấy value của key, kiểm tra xem có nằm trong list đầu vào không
+                if i['aStatus'] in list_astatus: #i['aStatus']: lấy value của key, kiểm tra xem có nằm trong list đầu vào không
                     ketqua.append(i) 
             return {'rCode':1,'rData': ketqua,'rMsg': 'Lấy danh sách myself (filter astutus) thành công'}
         return {'rCode':1,'rData': query,'rMsg': 'lấy danh sách myself (ALL) thành công'}
@@ -437,6 +446,8 @@ async def dayoffregID(regid = None):
            
 
 
+
+
 # phê duyệt
 @app.post("/approve",tags=['Approve'])
 async def approve(form: Approve,approver: str = Depends(validate_token)): #form: Approve
@@ -493,70 +504,201 @@ async def approve(form: Approve,approver: str = Depends(validate_token)): #form:
    
 
 
-
-# xuất file excel (số ngày PN còn lại, số ngày PN sử dụng trong tháng - số ngày phép việc riêng(bệnh ốm,thai sản,tai nạn,chờ việc,hiếu hỉ-tang lễ) sử dụng trong tháng ) của mỗi nhân viên
-# @app.get("/summary",tags=['Plus'])
-async def sum_OffType_employee():
+#@app.post("/day-off-summary",tags=['Version 2']) #chỉnh sửa lại method
+async def sum(form:DayOffSummary):
+    m = form.date.month
+    y = form.date.year
     s = f'''
-            SELECT e.EmpID,e.FirstName,e.LastName,e.ComeDate,e.DeptID,e.Sex,
-            j.Name,j.JPLevel,
-            a.AnnualLeave,
-            ot.Note,
-            o.Type,o.Period,SUM(ap.ApprovalState) AS 'ApprovalState' --o.regID,o.RegDate,
-            FROM dbo.Employee AS e
-            LEFT JOIN dbo.JobPosition AS j ON j.JobPosID = e.PosID
-            LEFT JOIN dbo.AnnualLeave AS a ON a.EmpID = e.EmpID
-            INNER JOIN dbo.OffRegister AS o ON o.EmpID = e.EmpID
-            INNER JOIN dbo.OffType AS ot ON ot.OffTypeID = o.Type
-            INNER JOIN dbo.Approval AS ap ON ap.regID = o.regID
-            WHERE ap.ApprovalState >= 1
-            GROUP BY e.EmpID,e.FirstName,e.LastName,e.ComeDate,e.DeptID,e.Sex,
-                    j.Name,j.JPLevel,
-                    a.AnnualLeave,
-                    o.regID,o.RegDate,
-                    ot.Note,
-                    o.Type,o.Period
-            ORDER BY e.EmpID,o.Type ASC
-            '''
-    query_result = fn.get_data(s,1)
-    if len(query_result)>0:
-        output_result = []
-        list_key = []
-        for row in query_result:
-            # empid = row['EmpID']
-            # offtype = row['Type']
-            # # key = empid + "-" + offtype
-            key = str(row['EmpID']) + "-" + row['Type']
-            if key not in list_key:
-                list_key.append(key)
-                output_result.append(row)
-            else:
-                number = 0
-                for i in output_result:
-                    if str(i['EmpID']) + "-" + i['Type'] == key:
-                        output_result[number]['Period'] = output_result[number]['Period'] + row['Period']
-                    number +=1
-        df = pd.DataFrame(output_result)
-        df.to_excel(r'D:\data.xlsx',index=False,)
-        
-        print(df)
-        return {'rCode':1,'rData': output_result,'rMsg':'Lấy thông tin thành công'}
-    else:
-        return {'rCode': 0,'rData':{},'rMsg':'Không có đơn nghỉ phép'}
+            SELECT o.EmpID,ot.Name AS 'OffTypeName',SUM(o.Period) AS 'Period',
+                        MONTH(o.RegDate) AS month,
+						YEAR(o.RegDate) AS year,
+                        e.FirstName,e.LastName,FORMAT(e.ComeDate,'yyyy-MM-dd') AS ComeDate,
+                        j.Name AS 'JobPositionName',
+                        d.Name AS 'departmentName',
+                        al.AnnualLeave
+                FROM dbo.OffRegister o
+                INNER JOIN dbo.Approval a ON a.regID = o.regID
+                INNER JOIN dbo.OffType ot ON ot.OffTypeID = o.Type
+                INNER JOIN dbo.Employee e ON e.EmpID = o.EmpID
+                INNER JOIN dbo.JobPosition j ON j.JobPosID = e.PosID
+                INNER JOIN dbo.Department d ON d.DeptID = e.DeptID
+                LEFT JOIN dbo.AnnualLeave al ON al.EmpID = e.EmpID
+                WHERE a.ApprOrder = 1 AND a.ApprovalState = 1
+                    AND YEAR(o.RegDate) = {y}
+					AND MONTH(o.RegDate) = {m}
+                GROUP BY o.EmpID,o.Type,
+                        ot.Name,
+                        e.FirstName,e.LastName,e.DeptID,e.PosID,ComeDate,
+                        j.Name,
+                        d.Name,
+                        MONTH(o.RegDate),
+						YEAR(o.RegDate),al.AnnualLeave
+                order by ot.name asc
+        '''
+    result_query = fn.get_data(s,1)
     
+    key = []
+    list_key = []
+    output_result = []
+    for row in result_query:
+        key = row['EmpID']
+        if key not in list_key:
+            list_key.append(key)
+            row[row['OffTypeName']] = row['Period']
+            del row['OffTypeName'], row['Period']
+            output_result.append(row)
+        else:
+            number = 0
+            for i in output_result:
+                if key == i['EmpID']:
+                    output_result[number][row['OffTypeName']] = row['Period']
+                number += 1
+
+    #     if NOT output.exists(key):
+    #         output[key] = row
+    #         output[key][row['OffTypeName']] = row['Period']
+    #         del output[key]['OffTypeName'], output[key]['Period']
+    #     else:
+    #         if NOT output[key].exists(row['OffTypeName']):
+    #             output[key][row['OffTypeName']] = 0
+                
+    #         output[key][row['OffTypeName']] += row['Period']
+    # i =0
+    # for each key in output.keys:
+    #     output_result[i] = output[key]
+    #     i++
+    # -------------------------------------------------------------------
+    df = pd.DataFrame(output_result)
+    s1 = """
+            SELECT Name FROM dbo.OffType
+            """
+    result_query1 = fn.get_data(s1)
+
+    headers = []
+    offtype = []
+    for row in result_query1:
+        offtype.append(row[0])
+    for index in output_result:
+        # print(index)
+        for x in index:
+            # print(x)
+            if x not in headers:
+                headers.append(x)
+                # print(headers)
+
+    for index in offtype:
+        if index not in headers:
+            df[index] = ""
     
-
-
-
-
-
+    df.to_excel(excel_writer='file.xlsx',sheet_name='summary',index= False)
+    
    
+    # print(df)
+    # df = pd.DataFrame(output_result).to_excel("data.xlsx",index= False)
+    # df = pd.DataFrame(output_result)
+    # print(df)
+    # return {'rCode': 1, 'rData': output_result, 'rMsg':'Lấy danh sách loại phép thành công'}
+    return FileResponse('file.xlsx',filename='Data.xlsx')
+    
+# đăng ký nghỉ phép - gửi mail 
+#@app.post("/day-off-letter-test", tags=['Version 2'],dependencies=[Depends(validate_token)])#,dependencies=[Depends(validate_token)]
+# async def offDayRegister(empID:int,type:int,reason:str,period:int,startDate:datetime.date | None = (datetime.datetime.now() + datetime.timedelta(days=2)).strftime("%Y%m%d")):
+async def offDayRegister(form: Offregister,emplid: str = Depends(validate_token)): #Done
+    note = {'rCode': 0,'rMsg':'anh chị vui lòng chọn lưu đơn (nhập số 0) hoặc gửi đơn (nhập số 1)'}
+    note1 = {'rCode': 0,'rMsg':'EmpID chưa được tạo Users'}
+    offtypeId = []
+    s = f'''
+            SELECT OffTypeID FROM dbo.OffType
+            '''
+    result = fn.get_data(s)
+    for row in result:
+        offtypeId.append(int(row[0]))
+
+    if form.type in offtypeId:
+        if form.period > 0:
+            #if form.startdate >= datetime.date.today() + timedelta(days=2) and form.startdate.isoweekday() != 7: #isoweekday lấy số nguyên theo thứ trong tuần (7 là ngày chủ nhật)
+            #trường hợp lưu lại: regdate = NULL #comment là trạng thái 0: lưu , 1: gửi đơn
+            a = []
+            b = []
+            if form.startdate < datetime.date.today() + timedelta(days=2):
+                a = ['Vui lòng đăng ký ngày nghỉ phép trước 2 ngày cho lần sau']
+            if form.startdate.isoweekday() == 7:
+                b = ['Ngày nghỉ phép là ngày chủ nhật']
+
+            if form.command == 0:
+                c = 'NULL'
+                rMsg = ['Đơn đã lưu']
+            elif form.command == 1:
+                c = 'SYSDATETIME()'
+                rMsg = ['Đơn đã gửi']
+            else:
+                return note
+            #code cải tiến (viết lần 2)
+            if fn.checkEmplIDUser(emplid):
+                s = f'''
+                    INSERT INTO dbo.OffRegister(EmpID,Type,Reason,Startdate,Period,RegDate,AnnualLeave,Address) 
+                    VALUES ('{emplid}','{form.type}',N'{form.reason}','{form.startdate}','{form.period}',{c},0,N'{form.address}')           
+                    ''' 
+                fn.insert_data(s)
+                #gửi mail nếu như đã phê duyệt đồng ý
+                email_notifi = ['Đơn chưa được gửi mail']
+                if form.command == 1:
+                    mails = fn.get_receiver_email(emplid)
+                    if len(mails)>0:
+                        fn.sentMail(mails)
+                        email_notifi = []
+                if a == [] and b == [] and email_notifi == []:
+                    return {'rCode':1,'rMsg': rMsg}
+                return {'rCode':1,'rMsg': rMsg + email_notifi,'rError':{'startdate': a + b}}
+            else:
+                return note1
+        else:
+            return {'rCode':0,'rData':{},'rMsg':'vui lòng nhập số ngày nghĩ'}
+    else:
+        return {'rCode':0,'rData':{},'rMsg':'chưa chọn typeID (loại phép)'}
+
+
+# Nhân sự lấy đơn đã duyệt (tiếp nhận)
+#@app.get("/day-off-letter-HRM",tags=['Version 2'])
+async def dayOffLetterHrm(emplid: int = Depends(validate_token)):
+    s = f'''
+            SELECT e.DeptID,j.JPLevel FROM dbo.Employee e
+            INNER JOIN dbo.JobPosition j ON j.JobPosID = e.PosID
+            WHERE e.DeptID = 'NS' AND j.JPLevel <= 50 AND e.EmpID = '{emplid}'
+                '''
+    query_s = fn.get_data(s)
+    
+    if len(query_s)>0:
+        s1 = f'''
+                SELECT o.regID,o.EmpID,e.FirstName,e.LastName,o.Type,o.Reason,o.StartDate,o.Period,o.RegDate,o.Address,
+                a.ApprOrder,a.Approver,a.Comment,a.ApprovalDate,
+                epl.FirstName AS Approver_FirstName,epl.LastName AS Approver_LastName,
+                j.Name AS Approver_jobPosition
+                FROM dbo.OffRegister o
+                INNER JOIN dbo.Approval a ON a.regID = o.regID
+                INNER JOIN	dbo.Employee e ON e.EmpID = o.EmpID
+                INNER JOIN dbo.Employee epl ON epl.EmpID = a.Approver
+                INNER JOIN dbo.JobPosition j ON j.JobPosID = epl.PosID
+                WHERE o.regID IN (
+                                SELECT regID FROM dbo.Approval
+                                WHERE ApprovalState = 1
+                                GROUP BY regID
+                                HAVING SUM(ApprOrder) = 1
+                                )
+                '''
+        query_s1 = fn.get_data(s1,1)
+        return {'rCode':1,'rData':query_s1,'rMsg':'lấy danh sách nghĩ phép thành công'}
+    return {'rCode':0,'rData':{},'rMsg':'Bạn không phải là nhân viên NS hoặc không đủ quyền'}
 
 
 
 
+#cập nhật hàm đăng ký phép (ràng buộc lý do nghĩ phép)
+#chỉnh sửa hàm lấy đơn nghĩ phép
+    
 
-#----------------------------------------------------------khu vực test--------------------------------------------------------------------
+
+#----------------------------------------------------------khu vực test--------------------------------------------------------------------------------------------------------------------------
 
 # truy vấn
 # @app.post("/hello")
@@ -1128,3 +1270,144 @@ async def dayoffregID2(regid = None):
                 #     if row['ApprOrder'] == 1:
 
                 #         row['sta'] = ''
+                
+
+# xuất file excel (số ngày PN còn lại, số ngày PN sử dụng trong tháng - số ngày phép việc riêng(bệnh ốm,thai sản,tai nạn,chờ việc,hiếu hỉ-tang lễ) sử dụng trong tháng ) của mỗi nhân viên
+# @app.get("/summary",tags=['Plus'])
+async def sum_OffType_employee():
+    s = f'''
+            SELECT e.EmpID,e.FirstName,e.LastName,e.ComeDate,e.Sex,
+            j.Name as JobPositionName,
+            a.AnnualLeave,
+            d.Name AS departmentName,
+            ot.Note,
+            o.Type,o.Period,SUM(ap.ApprovalState) AS 'ApprovalState' --o.regID,o.RegDate,
+            FROM dbo.Employee AS e
+            LEFT JOIN dbo.JobPosition AS j ON j.JobPosID = e.PosID
+            LEFT JOIN dbo.AnnualLeave AS a ON a.EmpID = e.EmpID
+            LEFT JOIN dbo.Department d ON d.DeptID = e.DeptID
+            INNER JOIN dbo.OffRegister AS o ON o.EmpID = e.EmpID
+            INNER JOIN dbo.OffType AS ot ON ot.OffTypeID = o.Type
+            INNER JOIN dbo.Approval AS ap ON ap.regID = o.regID
+            WHERE ap.ApprovalState >= 1
+            GROUP BY e.EmpID,e.FirstName,e.LastName,e.ComeDate,e.Sex,
+                    j.Name,
+                    a.AnnualLeave,
+                    d.Name,
+                    o.regID,o.RegDate,
+                    ot.Note,
+                    o.Type,o.Period
+            ORDER BY o.Type,e.EmpID ASC
+            '''
+    query_result = fn.get_data(s,1)
+  
+    if len(query_result)>0:
+        output_result = []
+        list_key = []
+        for row in query_result:
+            # empid = row['EmpID']
+            # offtype = row['Type']
+            # # key = empid + "-" + offtype
+            key = str(row['EmpID']) + "-" + row['Type']
+            if key not in list_key:
+                list_key.append(key)
+                output_result.append(row)
+                number = 0
+                for i in output_result: #test
+                    if i['AnnualLeave'] == None:#test
+                        output_result[number]['AnnualLeave'] = 0 #test
+                    number += 1 #test
+
+            else:
+                number = 0
+                for i in output_result:
+                    if str(i['EmpID']) + "-" + i['Type'] == key:
+                        output_result[number]['Period'] = output_result[number]['Period'] + row['Period']
+                    if i['AnnualLeave'] == None: #test
+                        output_result[number]['AnnualLeave'] = 0 #test
+                    number +=1
+        print(len(output_result))
+        df = pd.DataFrame(output_result)
+        
+        table = pd.pivot_table(df,values='Period',index=["EmpID","FirstName","LastName","ComeDate","departmentName","JobPositionName"],columns=["Note"],aggfunc=np.sum) #,"AnnualLeave"
+        
+        print(table)
+        # table.to_excel(r'D:\data.xlsx')
+        return {'rCode':1,'rData': {},'rMsg':'Tải file thành công'}
+    else:
+        return {'rCode': 0,'rData':{},'rMsg':'Không có đơn nghỉ phép'}
+    
+
+# @app.get("/get-period",tags=['Plus'])#response_class=FileResponse
+async def sum_period():
+    s = f'''
+            SELECT empID,Firstname,LastName,ComeDate,JobPositionName,departmentName,[Bệnh Ốm],[Việc Riêng],[Phép Năm],[Thai Sản],[Tai Nạn]
+            FROM
+            (SELECT o.EmpID,ot.Name AS 'OffTypeName',SUM(o.Period) AS 'Period',
+                        e.FirstName,e.LastName,FORMAT(e.ComeDate,'yyyy-MM-dd') AS ComeDate,
+                        j.Name AS 'JobPositionName',
+                        d.Name AS 'departmentName'
+                FROM dbo.OffRegister o
+                INNER JOIN dbo.Approval a ON a.regID = o.regID
+                INNER JOIN dbo.OffType ot ON ot.OffTypeID = o.Type
+                INNER JOIN dbo.Employee e ON e.EmpID = o.EmpID
+                INNER JOIN dbo.JobPosition j ON j.JobPosID = e.PosID
+                INNER JOIN dbo.Department d ON d.DeptID = e.DeptID
+                WHERE a.ApprOrder = 1 AND a.ApprovalState = 1
+                GROUP BY o.EmpID,o.Type,
+                        ot.Name,
+                        e.FirstName,e.LastName,e.DeptID,e.PosID,ComeDate,
+                        j.Name,
+                        d.Name) AS BangNguon
+            PIVOT
+            (
+            SUM(Period)
+            FOR OffTypeName IN ([Bệnh Ốm],[Việc Riêng],[Phép Năm],[Thai Sản],[Tai Nạn])
+            ) AS BangPivot;    
+            ''' 
+    query_result = fn.get_data(s,1)
+    print(query_result)
+    df = pd.DataFrame(query_result)
+    # df.to_excel(excel_writer='file.xlsx',sheet_name='summary',index= False)
+    print(df)
+    # return FileResponse('file.xlsx',filename='Data.xlsx')
+    return True
+
+#viết lần 1 (lấy đơn theo status: tạo mới, đã gửi, duyệt, chưa duyệt,...)
+# @app.post("/day-off-letters",tags=['OffRegister'],summary='truyền vào số 1: lấy đơn quản lý, còn lại: lấy đơn chính mình')
+async def getsListoffstatus(form: Getlist,emplid: int = Depends(validate_token)): #, astatus: list = None,
+# no parametter: lấy các d-o-letters của người đang đăng nhập(có token)     
+# needAppr = 1:  lấy các d-o-letters cần người đang đăng nhập(có token) phê duyệt
+    if form.needAppr == 1:
+        s = f"""
+                SELECT e.DeptID,j.JPLevel FROM dbo.Employee e
+                LEFT JOIN dbo.JobPosition j ON j.JobPosID = e.PosID
+                WHERE e.EmpID = '{emplid}'
+                    """
+        result = fn.get_data(s)
+        for i in result:
+            depid = i[0]
+            jplevel = i[1]
+        #lấy mã jplevel của TP,PP của phòng ban, trực thuộc quản lý  
+        jplevel_TP_PP = ((int(jplevel/10)+1)*10)+9
+        if jplevel <= 50:
+            query = fn.depart_manager(emplid,jplevel_TP_PP) + fn.roommates(depid,jplevel)
+            if len(form.astatus)>0:
+                ketqua = [] #kết quả đầu ra
+                for i in query:
+                    if i['aStatus'] in form.astatus:#i['aStatus']: lấy value của key, kiểm tra xem có nằm trong list đầu vào không
+                        ketqua.append(i)
+                return {'rCode':1,'rData': ketqua,'rMsg': 'Lấy danh sách quản lý (filter astutus) thành công'}
+            return {'rCode':1,'rData': query,'rMsg':'lấy danh sách quản lý (ALL) thành công'} 
+        else:
+            return{'rCode':0,'rData':[],'rMsg':''}  
+    else:
+        #lấy của chính mình
+        query = fn.myself(emplid)#kết quả truy vấn
+        if len(form.astatus)>0:
+            ketqua= [] #kết quả đầu ra
+            for i in query:
+                if i['aStatus'] in form.astatus: #i['aStatus']: lấy value của key, kiểm tra xem có nằm trong list đầu vào không
+                    ketqua.append(i) 
+            return {'rCode':1,'rData': ketqua,'rMsg': 'Lấy danh sách myself (filter astutus) thành công'}
+        return {'rCode':1,'rData': query,'rMsg': 'lấy danh sách myself (ALL) thành công'}

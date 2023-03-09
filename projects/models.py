@@ -1,6 +1,8 @@
 from pydantic import BaseModel
 import datetime
 
+
+
 class CreatedByEmpID(BaseModel):
     empID: int
     gmail: str
@@ -59,6 +61,20 @@ class AdjustDayOff(BaseModel):
     period: int
     address: str = ""
     command: int
+
+class DayOffSummary(BaseModel):
+    date: datetime.date
+    # @validator('date')
+    # def validate_date(cls, value):
+    #     try:
+    #         datetime.datetime(year=value,month=value,day=value)
+    #         return value
+    #     except ValueError:
+    #         raise ValueError("Bạn đã nhập ngày tháng không hợp lệ!")
+
+
+
+
 
 
 

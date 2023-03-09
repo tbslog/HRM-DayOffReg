@@ -1,11 +1,6 @@
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import create_engine, or_
-from sqlalchemy.engine.url import URL
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI
 from pathlib import Path
 import os
 
@@ -20,7 +15,9 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 ALLOWED_HOSTS = ["*"]
 MIDDLEWARE = []
 
-app = FastAPI()
+app = FastAPI(title="HRM-OffDayReg")
+# Cross Origin Resource Sharing - chia sẻ API (localhost) đến máy client khác
+# middleware phần mềm trung gian
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_HOSTS,
@@ -29,3 +26,4 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+   
