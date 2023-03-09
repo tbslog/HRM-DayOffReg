@@ -8,7 +8,7 @@ function Home() {
       <div className="content-wrapper">
         <div
           className="form-horizontal"
-          style={{ height: "calc(100vh - 118px)" }}
+          style={{ height: "calc(100vh - 114px)" }}
         >
           <img
             style={{
