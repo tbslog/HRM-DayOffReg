@@ -1,15 +1,8 @@
 # 03/09/2023
-API	day-off-letters - lấy đơn nghĩ phép (đổi method post --> get)				
-		parameter:			
-               needAppr:	1	lấy đơn quản lý
-                           khác	lấy chính mình
-               astatus (truyền vào 1,2,3,…):	1	Chờ Duyệt
-                                             2	Đã Duyệt
-                                             3	Từ Chối
-                                             4	NS Tiếp Nhận
-                                             5	GD Kiểm soát
+API:	day-off-letters - lấy đơn nghĩ phép (đổi method post --> get),				
+	day-off-letter (Đăng ký nghĩ phép) - thêm điều kiện: nghĩ phép phải có lý do		
 					
-	day-off-letter (Đăng ký nghĩ phép) - thêm điều kiện: nghĩ phép phải có lý do			
+				
 
 
 
