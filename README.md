@@ -13,7 +13,7 @@ API	day-off-letters - lấy đơn nghĩ phép (đổi method post --> get)
 
 
 
-# update 02/18/2023 function 
+# 02/18/2023
 lấy typeID(loại phép) mới nhất khi có cập nhật trên sever
 lấy thêm thông tin đơn (tên vị trí làm việc,số ngày phép còn lại,ngày vào,) của cấp dưới
 sửa tên "accept" về lại tiếng việt (hàm lấy đơn them regID)
