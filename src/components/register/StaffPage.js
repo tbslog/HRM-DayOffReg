@@ -30,17 +30,13 @@ const StaffPage = (props) => {
 
   useEffect(() => {
     (async () => {
-      let data = await getDataCustom("day-off-letters", {
-        needAppr: 0,
-        astatus: [],
-      });
+      let data = await getData("day-off-letters");
       setdbTable(data.rData);
 
-      let dataMana = await getDataCustom("day-off-letters", {
-        needAppr: 1,
-        astatus: [],
-      });
-      // console.log(dataMana);
+      let dataMana = await getData(
+        "day-off-letters?needAppr=1&astatus=1%2C2%2C3"
+      );
+      console.log(dataMana);
 
       if (dataMana.rData.length > 0) {
         setOpen(true);
@@ -165,7 +161,6 @@ const StaffPage = (props) => {
   const handleInfo = async (id) => {
     showModalForm();
     let dataReg = await getData(`day-off-letter?regid=${id}`);
-    //console.log(dataReg);
     setDataRegByID(dataReg);
   };
   const handleEditButtonClick = async (id) => {
@@ -240,7 +235,6 @@ const StaffPage = (props) => {
             selectableRowsHighlight
             highlightOnHover
             subHeader
-            subHeaderComponent={<input type="text" placeholder="Search" />}
           />
         </div>
       </form>

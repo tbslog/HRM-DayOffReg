@@ -18,7 +18,7 @@ const Header = ({ children }) => {
   useEffect(() => {
     (async () => {
       let data = await getData("getEmpInfo");
-      console.log(data);
+      //console.log(data);
 
       Cookies.set(
         "info",
@@ -162,7 +162,6 @@ const Header = ({ children }) => {
             <strong>
               Copyright © 2022<a href="https://adminlte.io"> TBSL</a>.
             </strong>
-            All rights reserved.
             <div className="float-right d-none d-sm-inline-block">
               <b>Version</b> 1.0.0
             </div>

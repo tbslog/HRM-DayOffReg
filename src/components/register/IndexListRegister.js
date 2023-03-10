@@ -15,10 +15,9 @@ const IndexListRegister = () => {
   const [open, setOpen] = useState(false);
   useEffect(() => {
     (async () => {
-      let dataMana = await getDataCustom("day-off-letters", {
-        needAppr: 1,
-        astatus: [],
-      });
+      let dataMana = await getData(
+        "day-off-letters?needAppr=1&astatus=1%2C2%2C3"
+      );
       //console.log(dataMana);
       if (dataMana.rData.length > 0) {
         setOpen(true);

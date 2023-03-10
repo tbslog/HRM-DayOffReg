@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import DataTable from "react-data-table-component";
 import { getData, postData, getDataCustom } from "../../services/user.service";
 import moment from "moment";
@@ -19,6 +19,9 @@ const ManagerPage = (props) => {
   const [modal, setModal] = useState(null);
   const parseExceptionModal = useRef();
 
+  const [filterText, setFilterText] = useState("");
+  const [resetPaginationToggle, setResetPaginationToggle] = useState(false);
+
   const showModalForm = () => {
     const modal = new Modal(parseExceptionModal.current, {
       keyboard: false,
@@ -30,9 +33,57 @@ const ManagerPage = (props) => {
   const hideModal = () => {
     modal.hide();
   };
+  // const FilterComponent = ({ onChange, onClear }) => (
+  //   <>
+  //     <div className="input-group mb-2" style={{ width: "30%" }}>
+  //       <input
+  //         type="text"
+  //         id="search"
+  //         className="form-control"
+  //         placeholder="Search..."
+  //         aria-label="Search Input"
+  //         value={filterText}
+  //         onChange={onChange}
+  //       />
+  //       <div className="input-group-append">
+  //         <button className="btn btn-primary" type="button" onClick={onClear}>
+  //           <i className="fas fa-times"> </i>
+  //         </button>
+  //       </div>
+  //     </div>
+  //   </>
+  // );
+
+  useEffect(() => {
+    setftTableMana(
+      dbTableMana.filter(
+        (item) =>
+          item.FirstName &&
+          item.FirstName.toLowerCase().includes(filterText.toLowerCase())
+      )
+    );
+  }, [filterText]);
+
+  const handleClear = () => {
+    // if (filterText) {
+    setResetPaginationToggle(!resetPaginationToggle);
+    setFilterText("");
+    setftTableMana(dbTableMana);
+    // }
+  };
+  // const Searchdatatable = useMemo(() => {
+
+  //   return (
+  //     <FilterComponent
+  //       // filterText={filterText}
+  //       onChange={(e) => setFilterText(e.target.value)}
+  //       onClear={handleClear}
+  //     />
+  //   );
+  // }, [filterText, resetPaginationToggle]);
 
   const fetchData = async () => {
-    let dataMana = await getDataCustom("day-off-letters", {
+    let dataMana = await getData("day-off-letters", {
       needAppr: 1,
       astatus: [0, 1, 2, 3, 4, 5],
     });
@@ -42,11 +93,10 @@ const ManagerPage = (props) => {
 
   useEffect(() => {
     (async () => {
-      let dataMana = await getDataCustom("day-off-letters", {
-        needAppr: 1,
-        astatus: [0, 1, 2, 3, 4, 5],
-      });
-      //console.log(dataMana);
+      let dataMana = await getData(
+        "day-off-letters?needAppr=1&astatus=1%2C2%2C3"
+      );
+      console.log(dataMana);
 
       setdbTableMana(dataMana.rData);
       setftTableMana(dataMana.rData);
@@ -235,11 +285,13 @@ const ManagerPage = (props) => {
             data={ftTableMana}
             pagination
             paginationRowsPerPageOptions={[25, 50, 100]}
+            paginationResetDefaultPage={resetPaginationToggle}
             fixedHeader
             fixedHeaderScrollHeight={props.sizeContenTB}
             selectableRows
             selectableRowsHighlight
             highlightOnHover
+            persistTableHead
             subHeader
             subHeaderComponent={
               <div className="d-flex justify-content-between w-100">
@@ -266,7 +318,26 @@ const ManagerPage = (props) => {
                     <option value="3">Từ Chối</option>
                   </select>
                 </div>
-                <input type="text" placeholder="Search"></input>
+                <div className="input-group mb-2" style={{ width: "30%" }}>
+                  <input
+                    type="text"
+                    id="search"
+                    className="form-control"
+                    placeholder="Search..."
+                    aria-label="Search Input"
+                    value={filterText}
+                    onChange={(e) => setFilterText(e.target.value)}
+                  />
+                  <div className="input-group-append">
+                    <button
+                      className="btn btn-primary"
+                      type="button"
+                      onClick={handleClear}
+                    >
+                      <i className="fas fa-times"> </i>
+                    </button>
+                  </div>
+                </div>
               </div>
             }
           />
