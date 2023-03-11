@@ -32,6 +32,14 @@ class RData {
   String? regDate;
   int? annualLeave;
   String? address;
+  String? firstName;
+  String? lastName;
+  String? comedate;
+  String? deptID;
+  int? posID;
+  String? jobPositionName;
+  String? departmentName;
+  String? position;
   int? aStatus;
   List<ApprInf>? apprInf;
 
@@ -45,6 +53,14 @@ class RData {
       this.regDate,
       this.annualLeave,
       this.address,
+      this.firstName,
+      this.lastName,
+      this.comedate,
+      this.deptID,
+      this.posID,
+      this.jobPositionName,
+      this.departmentName,
+      this.position,
       this.aStatus,
       this.apprInf});
 
@@ -58,6 +74,14 @@ class RData {
     regDate = json['RegDate'];
     annualLeave = json['AnnualLeave'];
     address = json['Address'];
+    firstName = json['FirstName'];
+    lastName = json['LastName'];
+    comedate = json['comedate'];
+    deptID = json['DeptID'];
+    posID = json['PosID'];
+    jobPositionName = json['JobPositionName'];
+    departmentName = json['departmentName'];
+    position = json['Position'];
     aStatus = json['aStatus'];
     if (json['apprInf'] != null) {
       apprInf = <ApprInf>[];
@@ -78,6 +102,14 @@ class RData {
     data['RegDate'] = regDate;
     data['AnnualLeave'] = annualLeave;
     data['Address'] = address;
+    data['FirstName'] = firstName;
+    data['LastName'] = lastName;
+    data['comedate'] = comedate;
+    data['DeptID'] = deptID;
+    data['PosID'] = posID;
+    data['JobPositionName'] = jobPositionName;
+    data['departmentName'] = departmentName;
+    data['Position'] = position;
     data['aStatus'] = aStatus;
     if (apprInf != null) {
       data['apprInf'] = apprInf!.map((v) => v.toJson()).toList();
@@ -99,6 +131,8 @@ class ApprInf {
   String? approLastName;
   String? approFirstName;
   String? approJobName;
+  String? departmentName;
+  String? position;
   String? stateName;
 
   ApprInf(
@@ -114,6 +148,8 @@ class ApprInf {
       this.approLastName,
       this.approFirstName,
       this.approJobName,
+      this.departmentName,
+      this.position,
       this.stateName});
 
   ApprInf.fromJson(Map<String, dynamic> json) {
@@ -129,6 +165,8 @@ class ApprInf {
     approLastName = json['ApproLastName'];
     approFirstName = json['ApproFirstName'];
     approJobName = json['ApproJobName'];
+    departmentName = json['departmentName'];
+    position = json['Position'];
     stateName = json['StateName'];
   }
 
@@ -146,6 +184,8 @@ class ApprInf {
     data['ApproLastName'] = approLastName;
     data['ApproFirstName'] = approFirstName;
     data['ApproJobName'] = approJobName;
+    data['departmentName'] = departmentName;
+    data['Position'] = position;
     data['StateName'] = stateName;
     return data;
   }

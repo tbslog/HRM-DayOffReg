@@ -64,17 +64,24 @@ class ManagerLeaveFormScreen extends GetView<ManagerLeaveFormController> {
                         ),
                       ),
                       const SizedBox(height: 10),
-                      Expanded(
-                        child: TabBarView(
-                          controller: controller.controller,
-                          children: [
-                            const SingleViewManagerScreen(),
-                            controller.isChangePage.value == false
-                                ? const AccessSingleScreen()
-                                : const AccessLeaveScreen()
-                          ],
-                        ),
-                      ),
+                      Obx(() {
+                        return Expanded(
+                          child: TabBarView(
+                            controller: controller.controller,
+                            children: [
+                              const SingleViewManagerScreen(),
+                              controller.userName.value.jPLevelID == 70 ||
+                                      controller.userName.value.jPLevelID ==
+                                          71 ||
+                                      controller.userName.value.jPLevelID ==
+                                          72 ||
+                                      controller.userName.value.jPLevelID == 73
+                                  ? const AccessLeaveScreen()
+                                  : const AccessSingleScreen()
+                            ],
+                          ),
+                        );
+                      })
                     ],
                   ),
                 ),

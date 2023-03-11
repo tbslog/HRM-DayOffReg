@@ -26,254 +26,259 @@ class CreateLeaveFormScreen extends GetView<CreateLeaveFormController> {
                   left: 10,
                   right: 10,
                 ),
-                child: FutureBuilder(
-                    future: controller.getInfo(),
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData) {
-                        var items = snapshot.data as UserModel;
-                        return Form(
-                          autovalidateMode: AutovalidateMode.always,
-                          key: controller.formKey,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.only(right: 5),
-                                height: 40,
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    InkWell(
-                                      onTap: () {
-                                        Get.defaultDialog(
-                                          barrierDismissible: false,
-                                          title: "Hướng Dẫn Quy Định/Quy Trình",
-                                          titleStyle: const TextStyle(
-                                            fontSize: 14,
-                                          ),
-                                          content: SizedBox(
-                                            height: size.height * 0.6,
-                                            width: size.width * 0.9,
-                                            child: Image.asset(
-                                                "assets/images/QuyDinh.png"),
-                                          ),
-                                          confirm: TextButton(
-                                            onPressed: () {
-                                              Get.back();
-                                            },
-                                            child: const Text(
-                                              "Xác nhận",
-                                              style: TextStyle(
-                                                color: Colors.orangeAccent,
+                child: Form(
+                  autovalidateMode: AutovalidateMode.always,
+                  key: controller.formKeyCreateLetter,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      FutureBuilder(
+                          future: controller.getInfo(),
+                          builder: (ctx, snap) {
+                            if (snap.hasData) {
+                              var items = snap.data as UserModel;
+                              return Column(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.only(right: 5),
+                                    height: 40,
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        InkWell(
+                                          onTap: () {
+                                            Get.defaultDialog(
+                                              barrierDismissible: false,
+                                              title:
+                                                  "Hướng Dẫn Quy Định/Quy Trình",
+                                              titleStyle: const TextStyle(
+                                                fontSize: 14,
                                               ),
+                                              content: SizedBox(
+                                                height: size.height * 0.6,
+                                                width: size.width * 0.9,
+                                                child: Image.asset(
+                                                    "assets/images/QuyDinh.png"),
+                                              ),
+                                              confirm: TextButton(
+                                                onPressed: () {
+                                                  Get.back();
+                                                },
+                                                child: const Text(
+                                                  "Xác nhận",
+                                                  style: TextStyle(
+                                                    color: Colors.orangeAccent,
+                                                  ),
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                          child: const Text(
+                                            "HD Quy định/Quy trình !",
+                                            style: TextStyle(
+                                              color: Colors.green,
                                             ),
                                           ),
-                                        );
-                                      },
-                                      child: const Text(
-                                        "HD Quy định/Quy trình !",
-                                        style: TextStyle(
-                                          color: Colors.green,
-                                        ),
-                                      ),
-                                    )
-                                  ],
-                                ),
-                              ),
-                              _buildFormText(
-                                title: "MSNV",
-                                content: "${items.empID}",
-                                size: size,
-                              ),
-                              _buildFormText(
-                                title: "Họ và Tên",
-                                content: "${items.lastName} ${items.firstName}",
-                                size: size,
-                              ),
-                              _buildFormText(
-                                title: "Ngày vào",
-                                content: day.format(
-                                  DateTime.parse(
-                                    items.comeDate.toString(),
+                                        )
+                                      ],
+                                    ),
                                   ),
-                                ),
-                                size: size,
-                              ),
-                              _buildFormText(
-                                title: "Đ.Vị/B.Phận",
-                                content: "${items.deptID}",
-                                size: size,
-                              ),
-                              _buildFormText(
-                                title: "Chức vụ",
-                                content: "${items.jPLevelName}",
-                                size: size,
-                              ),
-                              _buildFormText(
-                                title: "Vị trí CV",
-                                content: "${items.jobpositionName}",
-                                size: size,
-                              ),
-                              _buildLoaiPhep(size),
-                              _buildDateTime(
-                                title: "Bắt đầu nghỉ từ *",
-                                content: day.format(timeNow),
-                                size: size,
-                                controller: controller.timeController,
-                                hintText: day.format(
-                                  DateTime.parse(
-                                    timeNow.toString(),
+                                  _buildFormText(
+                                    title: "MSNV",
+                                    content: "${items.empID}",
+                                    size: size,
                                   ),
-                                ),
-                                onTap: () {
-                                  controller.selectDate();
-                                },
-                              ),
-                              _buildFormText(
-                                title: "Phép năm hiện có *",
-                                content: items.annualLeave != null
-                                    ? "${items.annualLeave}"
-                                    : "0",
-                                size: size,
-                              ),
-                              _buildDayFree(
-                                size: size,
-                                text: "Số ngày nghỉ",
-                              ),
-                              _buildReason(
-                                size: size,
-                                hintText: "Nhập lý do",
-                                title: "Lý do nghỉ phép *",
-                                maxLines: 3,
-                                height: 120,
-                                controller: controller.reasonController,
-                                validator: (value) {
-                                  if (value == null || value == "") {
-                                    return "Nhập lý do";
-                                  }
-                                  return "";
-                                },
-                              ),
-                              _buildReason(
-                                size: size,
-                                hintText: "Nhập địa chỉ",
-                                title: "Địa chỉ nghỉ phép ",
-                                maxLines: 2,
-                                height: 80,
-                                controller: controller.addressController,
-                                validator: null,
-                              ),
-                              const SizedBox(height: 15),
-                              SizedBox(
-                                height: 70,
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceAround,
-                                  children: [
-                                    SizedBox(
-                                      width: size.width * 0.25,
-                                      height: size.width * 0.1,
-                                      child: TextButton(
-                                        style: ButtonStyle(
-                                          backgroundColor:
-                                              MaterialStateProperty.all<Color>(
-                                            Colors.yellow.shade800,
-                                          ),
-                                        ),
-                                        onPressed: () {
-                                          var validate = controller
-                                              .formKey.currentState!
-                                              .validate();
-                                          if (!validate &&
-                                              controller.selectedLoaiphep
-                                                      .toString() !=
-                                                  "") {
-                                            controller.postRegister(
-                                              type: int.parse(controller
-                                                  .selectedLoaiphep
-                                                  .toString()),
-                                              reason: controller
-                                                  .reasonController.text,
-                                              startdate: controller
-                                                  .timeController.text,
-                                              period: int.parse(controller
-                                                  .dayController.text),
-                                              address: controller
-                                                  .addressController.text,
-                                              command: 0,
-                                            );
-                                          }
-                                        },
-                                        child: const Text(
-                                          "Lưu",
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 16,
-                                          ),
-                                        ),
+                                  _buildFormText(
+                                    title: "Họ và Tên",
+                                    content:
+                                        "${items.lastName} ${items.firstName}",
+                                    size: size,
+                                  ),
+                                  _buildFormText(
+                                    title: "Ngày vào",
+                                    content: day.format(
+                                      DateTime.parse(
+                                        items.comeDate.toString(),
                                       ),
                                     ),
-                                    SizedBox(
-                                      width: size.width * 0.25,
-                                      height: size.width * 0.1,
-                                      child: TextButton(
-                                        style: ButtonStyle(
-                                          backgroundColor:
-                                              MaterialStateProperty.all<Color>(
-                                            Colors.green,
-                                          ),
-                                        ),
-                                        onPressed: () {
-                                          var validate = controller
-                                              .formKey.currentState!
-                                              .validate();
-                                          if (!validate &&
-                                              controller.selectedLoaiphep
-                                                      .toString() !=
-                                                  "") {
-                                            // If the form is valid, display a snackbar. In the real world,
-                                            // you'd often call a server or save the information in a database.
-                                            controller.postRegister(
-                                              type: int.parse(controller
-                                                  .selectedLoaiphep
-                                                  .toString()),
-                                              reason: controller
-                                                  .reasonController.text,
-                                              startdate: controller
-                                                  .timeController.text,
-                                              period: int.parse(controller
-                                                  .dayController.text),
-                                              address: controller
-                                                  .addressController.text,
-                                              command: 1,
-                                            );
-                                          }
-                                        },
-                                        child: const Text(
-                                          "Gửi đơn",
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 16,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                                    size: size,
+                                  ),
+                                  _buildFormText(
+                                    title: "Đ.Vị/B.Phận",
+                                    content: "${items.deptID}",
+                                    size: size,
+                                  ),
+                                  _buildFormText(
+                                    title: "Chức vụ",
+                                    content: "${items.jPLevelName}",
+                                    size: size,
+                                  ),
+                                  _buildFormText(
+                                    title: "Vị trí CV",
+                                    content: "${items.jobpositionName}",
+                                    size: size,
+                                  ),
+                                  _buildFormText(
+                                    title: "Phép năm hiện có *",
+                                    content: items.annualLeave != null
+                                        ? "${items.annualLeave}"
+                                        : "0",
+                                    size: size,
+                                  ),
+                                ],
+                              );
+                            }
+                            return Container();
+                          }),
+                      Column(
+                        children: [
+                          _buildLoaiPhep(size),
+                          _buildDateTime(
+                            title: "Bắt đầu nghỉ từ *",
+                            content: day.format(timeNow),
+                            size: size,
+                            controller: controller.timeController,
+                            hintText: day.format(
+                              DateTime.parse(
+                                timeNow.toString(),
                               ),
-                              Container(
-                                height: 80,
-                              ),
-                            ],
+                            ),
+                            onTap: () {
+                              controller.selectDate();
+                            },
                           ),
-                        );
-                      }
-                      return const Center(
-                        child: CircularProgressIndicator(
-                          color: Colors.orangeAccent,
-                        ),
-                      );
-                    }),
+                          _buildDayFree(
+                            size: size,
+                            text: "Số ngày nghỉ",
+                          ),
+                          _buildReason(
+                            size: size,
+                            hintText: "Nhập lý do",
+                            title: "Lý do nghỉ phép *",
+                            maxLines: 3,
+                            height: 120,
+                            controller: controller.reasonController,
+                            validator: (value) {
+                              if (value == null || value == "") {
+                                return "Nhập lý do";
+                              }
+                              return "";
+                            },
+                          ),
+                          _buildReason(
+                            size: size,
+                            hintText: "Nhập địa chỉ",
+                            title: "Địa chỉ nghỉ phép ",
+                            maxLines: 3,
+                            height: 120,
+                            controller: controller.addressController,
+                            validator: null,
+                          ),
+                          const SizedBox(height: 15),
+                          SizedBox(
+                            height: 70,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                SizedBox(
+                                  width: size.width * 0.25,
+                                  height: size.width * 0.1,
+                                  child: TextButton(
+                                    style: ButtonStyle(
+                                      backgroundColor:
+                                          MaterialStateProperty.all<Color>(
+                                        Colors.yellow.shade800,
+                                      ),
+                                    ),
+                                    onPressed: () {
+                                      var validate = controller
+                                          .formKeyCreateLetter.currentState!
+                                          .validate();
+                                      if (!validate &&
+                                          controller.selectedLoaiphep
+                                                  .toString() !=
+                                              "") {
+                                        controller.postRegister(
+                                          type: int.parse(controller
+                                              .selectedLoaiphep
+                                              .toString()),
+                                          reason:
+                                              controller.reasonController.text,
+                                          startdate:
+                                              controller.timeController.text,
+                                          period: int.parse(
+                                              controller.dayController.text),
+                                          address:
+                                              controller.addressController.text,
+                                          command: 0,
+                                        );
+                                      }
+                                    },
+                                    child: const Text(
+                                      "Lưu",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: size.width * 0.25,
+                                  height: size.width * 0.1,
+                                  child: TextButton(
+                                    style: ButtonStyle(
+                                      backgroundColor:
+                                          MaterialStateProperty.all<Color>(
+                                        Colors.green,
+                                      ),
+                                    ),
+                                    onPressed: () {
+                                      var validate = controller
+                                          .formKeyCreateLetter.currentState!
+                                          .validate();
+                                      if (!validate &&
+                                          controller.selectedLoaiphep
+                                                  .toString() !=
+                                              "") {
+                                        // If the form is valid, display a snackbar. In the real world,
+                                        // you'd often call a server or save the information in a database.
+                                        controller.postRegister(
+                                          type: int.parse(controller
+                                              .selectedLoaiphep
+                                              .toString()),
+                                          reason:
+                                              controller.reasonController.text,
+                                          startdate:
+                                              controller.timeController.text,
+                                          period: int.parse(
+                                              controller.dayController.text),
+                                          address:
+                                              controller.addressController.text,
+                                          command: 1,
+                                        );
+                                      }
+                                    },
+                                    child: const Text(
+                                      "Gửi đơn",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      Container(
+                        height: 80,
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ));
   }
@@ -319,6 +324,7 @@ class CreateLeaveFormScreen extends GetView<CreateLeaveFormController> {
                   vertical: 10,
                 ),
                 child: TextFormField(
+                  keyboardType: TextInputType.text,
                   validator: validator,
                   maxLines: maxLines,
                   controller: controller,
@@ -341,7 +347,7 @@ class CreateLeaveFormScreen extends GetView<CreateLeaveFormController> {
                       left: 5,
                     ),
                     hintText: hintText,
-                    border: InputBorder.none,
+                    // border: InputBorder.none,
                     isDense: true,
                   ),
                 ),
@@ -384,6 +390,7 @@ class CreateLeaveFormScreen extends GetView<CreateLeaveFormController> {
                     width: size.width * 0.35,
                     // margin: EdgeInsets.symmetric(vertical: size.height * 0.02),
                     child: TextFormField(
+                      keyboardType: TextInputType.number,
                       validator: (value) {
                         // ignore: unrelated_type_equality_checks
                         if (value == "" || value == 0 || value == null) {

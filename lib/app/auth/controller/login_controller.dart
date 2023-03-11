@@ -17,11 +17,11 @@ class LoginController extends GetxController {
   TextEditingController passwordController = TextEditingController(text: "");
   RxBool obcureText = true.obs;
 
-  // final formKey = GlobalKey<FormState>();
+  final formKeyLogin = GlobalKey<FormState>();
 
   @override
   void onInit() {
-    // formKey;
+    formKeyLogin;
     super.onInit();
   }
 

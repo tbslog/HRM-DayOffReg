@@ -9,8 +9,6 @@ class LoginPage extends GetView<LoginController> {
   LoginPage({super.key});
   final String routes = "/LOGIN_PAGE";
 
-  final _formKey = GlobalKey<FormState>();
-
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -24,7 +22,7 @@ class LoginPage extends GetView<LoginController> {
               gradient: CustomColor.gradient,
             ),
             child: Form(
-              key: _formKey,
+              key: controller.formKeyLogin,
               autovalidateMode: AutovalidateMode.always,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -186,7 +184,7 @@ class LoginPage extends GetView<LoginController> {
     BuildContext context,
     // LoginController controller,
   ) {
-    var validate = _formKey.currentState!.validate();
+    var validate = controller.formKeyLogin.currentState!.validate();
 
     if (!validate) {
       controller.getLogin(

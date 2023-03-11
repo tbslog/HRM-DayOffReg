@@ -31,23 +31,16 @@ class CreateLeaveFormController extends GetxController
   var selectedLoaiphep = "";
 
   RxList listOffType = [].obs;
-  final formKey = GlobalKey<FormState>();
+  GlobalKey<FormState> formKeyCreateLetter = GlobalKey<FormState>();
   var loaiPhep = "";
 
   @override
   void onInit() {
-    formKey;
+    formKeyCreateLetter;
     getInfo();
     tabController = TabController(vsync: this, length: tabCreate.length);
     super.onInit();
   }
-
-  // @override
-  // void onClose() {
-  //   Get.deleteAll();
-
-  //   super.onClose();
-  // }
 
   final List<Tab> tabCreate = <Tab>[
     const Tab(
@@ -120,6 +113,9 @@ class CreateLeaveFormController extends GetxController
 
       if (response.statusCode == 200) {
         var data = response.data;
+        dayController.text = "";
+        reasonController.text = "";
+        addressController.text = "";
 
         if (data["rCode"] == 0) {
           // print("Lỗi");
@@ -136,7 +132,7 @@ class CreateLeaveFormController extends GetxController
             ),
           );
         } else if (data["rCode"] == 1) {
-          Get.toNamed(Routes.MANAGER_LEAVE_FORM_SCREEN);
+          Get.back();
           Get.snackbar(
             "Thông báo",
             "${data["rMsg"]} !",

@@ -14,7 +14,7 @@ class ChangePasswordFullScreen extends GetView<ChangePaswordController> {
   final String routes = "/CHANGE_PASSWORD__FULL_SCREEN";
   @override
   var controller = Get.put(ChangePaswordController());
-  final _formKey = GlobalKey<FormState>();
+  final _formKeyChangePass = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +44,7 @@ class ChangePasswordFullScreen extends GetView<ChangePaswordController> {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
           child: Form(
-            key: _formKey,
+            key: _formKeyChangePass,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [

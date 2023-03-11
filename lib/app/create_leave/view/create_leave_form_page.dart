@@ -72,9 +72,8 @@ class CreateLeaveFormPage extends GetView<CreateLeaveController> {
                           children: [
                             const CreateLeaveFormScreen(),
                             // ignore: unrelated_type_equality_checks
-                            controller.isload == false
-                                ? AccessLeaveFormScreen()
-                                : const CreateLeaveFormScreen(),
+
+                            AccessLeaveFormScreen()
                           ],
                         ),
                       ),

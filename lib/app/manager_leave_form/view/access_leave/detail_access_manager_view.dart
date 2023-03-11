@@ -29,6 +29,7 @@ class DetailAccessManagerView extends GetView<DetailAccessSingleController> {
                 if (snapshot.hasData) {
                   var items = snapshot.data as DetailSingleModel;
                   var detail = items.rData;
+                  print(items.rData!.apprInf!.length);
                   return Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
@@ -84,7 +85,9 @@ class DetailAccessManagerView extends GetView<DetailAccessSingleController> {
                             )
                           : _buildFormText(
                               title: "Ý kiến",
-                              content: "${items.rData!.apprInf![0].comment}",
+                              content: items.rData!.apprInf!.length != 0
+                                  ? "${items.rData!.apprInf![0].comment}"
+                                  : "",
                               size: size,
                             ),
                       // ignore: unrelated_type_equality_checks

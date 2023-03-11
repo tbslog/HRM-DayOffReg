@@ -39,7 +39,6 @@ class MenuDrawer extends StatelessWidget {
                         right: 0,
                         left: 0,
                         child: Column(
-                          // mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             FutureBuilder(
                                 future: controller.getInfo(),

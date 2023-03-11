@@ -1,12 +1,12 @@
 class PostDayOffLettersModel {
   int? needAppr;
-  List<String>? astatus;
+  String? astatus;
 
   PostDayOffLettersModel({this.needAppr, this.astatus});
 
   PostDayOffLettersModel.fromJson(Map<String, dynamic> json) {
     needAppr = json['needAppr'];
-    astatus = json['astatus'].cast<String>();
+    astatus = json['astatus'];
   }
 
   Map<String, dynamic> toJson() {

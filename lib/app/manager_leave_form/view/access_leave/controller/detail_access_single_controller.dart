@@ -35,6 +35,7 @@ class DetailAccessSingleController extends GetxController
     };
     // ignore: unnecessary_brace_in_string_interps
     var url = "${AppConstants.urlBase}/day-off-letter?regid=${regID}";
+    print(regID);
     try {
       response = await dio.get(
         url,

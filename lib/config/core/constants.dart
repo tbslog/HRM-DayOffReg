@@ -21,8 +21,8 @@ class AppConstants {
 
   // static const String urlBase = "http://103.149.28.137:300";
   // static const String urlBase = "http://192.168.0.103:300";
-  // static const String urlBase = "http://192.168.0.114:300";
-  static const String urlBase = "http://192.168.0.45:300";
+  static const String urlBase = "http://tlogapi.tbslogistics.com.vn:202";
+  // static const String urlBase = "http://192.168.0.45:300";
 
   // Url Client
   //Tài xế

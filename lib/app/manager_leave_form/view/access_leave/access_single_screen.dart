@@ -54,12 +54,11 @@ class AccessSingleScreen extends GetView<ManagerLeaveFormController> {
             ),
             Obx(() {
               var number = controller.selectedDepartmentsId.value;
-              var listNumber = number.split("");
 
               return Expanded(
                 child: FutureBuilder(
                     future: controller.getDayOffLetterSingler(
-                        needAppr: 1, astatus: listNumber),
+                        needAppr: 1, astatus: number),
                     builder: (context, snapshot) {
                       if (snapshot.hasData) {
                         var dayoffletters =

@@ -7,10 +7,10 @@ import 'package:intl/intl.dart';
 import 'package:tbs_logistics_phieunghi/app/manager_leave_form/model/day_of_letter_single_model.dart';
 
 import 'package:tbs_logistics_phieunghi/app/manager_leave_form/model/user_model.dart';
-import 'package:tbs_logistics_phieunghi/app/manager_leave_form/view/single_view/controller/detail_single_controller.dart';
+import 'package:tbs_logistics_phieunghi/app/manager_leave_form/view/single_view/controller/single_view_controller.dart';
 import 'package:tbs_logistics_phieunghi/config/routes/pages.dart';
 
-class SingleViewManagerScreen extends GetView<DetailSingleController> {
+class SingleViewManagerScreen extends GetView<SingleViewController> {
   const SingleViewManagerScreen({super.key});
   final String routes = "/SINGLE_VIEW_MANAGER_SCREEN";
 
@@ -18,8 +18,8 @@ class SingleViewManagerScreen extends GetView<DetailSingleController> {
   Widget build(BuildContext context) {
     var day = DateFormat("dd/MM/yyyy");
     Size size = MediaQuery.of(context).size;
-    return GetBuilder<DetailSingleController>(
-      init: DetailSingleController(),
+    return GetBuilder<SingleViewController>(
+      init: SingleViewController(),
       builder: (controller) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 10),
         child: Column(
@@ -63,7 +63,8 @@ class SingleViewManagerScreen extends GetView<DetailSingleController> {
                       return Text(
                         controller.selectedDepartmentsValue.value == ""
                             ? "Danh sách đơn"
-                            : controller.selectedDepartmentsValue.value,
+                            // : controller.selectedDepartmentsValue.value,
+                            : controller.selectedDepartmentsId.value,
                         style: const TextStyle(
                           color: Colors.green,
                           fontWeight: FontWeight.bold,
@@ -100,11 +101,11 @@ class SingleViewManagerScreen extends GetView<DetailSingleController> {
             Obx(
               () {
                 var number = controller.selectedDepartmentsId.value;
-                var listNumber = number.split("");
+
                 return Expanded(
                   child: FutureBuilder(
                       future: controller.getDayOffLetterSingler(
-                          needAppr: 0, astatus: listNumber),
+                          needAppr: 0, astatus: number),
                       builder: (context, snapshot) {
                         if (snapshot.hasData) {
                           var dayoffletters =
@@ -314,14 +315,17 @@ class SingleViewManagerScreen extends GetView<DetailSingleController> {
         ),
         Expanded(
           flex: 2,
-          child: Container(
-            height: 35,
-            width: 20,
-            decoration: BoxDecoration(
-              color: Colors.green,
-              borderRadius: BorderRadius.circular(100),
-              image: const DecorationImage(
-                image: AssetImage("assets/images/add.png"),
+          child: InkWell(
+            onTap: onPressed,
+            child: Container(
+              height: 35,
+              width: 20,
+              decoration: BoxDecoration(
+                color: Colors.green,
+                borderRadius: BorderRadius.circular(100),
+                image: const DecorationImage(
+                  image: AssetImage("assets/images/add.png"),
+                ),
               ),
             ),
           ),

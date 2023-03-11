@@ -42,16 +42,18 @@ class DetailSingleView extends GetView<DetailSingleController> {
             backgroundColor: Colors.orangeAccent,
           ),
           body: SingleChildScrollView(
-            scrollDirection: Axis.vertical,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+                left: 10,
+                right: 10,
+              ),
               child: FutureBuilder(
                   future: controller.detailSingle(regID: regID),
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
                       var items = snapshot.data as DetailSingleModel;
                       var detail = items.rData;
-
                       return detail!.aStatus == 0
                           ? Column(
                               mainAxisAlignment: MainAxisAlignment.start,
@@ -64,6 +66,12 @@ class DetailSingleView extends GetView<DetailSingleController> {
                                 _buildFormText(
                                   title: "MSNV",
                                   content: "${detail.empID}",
+                                  size: size,
+                                  color: Colors.black,
+                                ),
+                                _buildFormText(
+                                  title: "Số ngày phép năm hiện có *",
+                                  content: "${detail.annualLeave}",
                                   size: size,
                                   color: Colors.black,
                                 ),
@@ -98,12 +106,6 @@ class DetailSingleView extends GetView<DetailSingleController> {
                                     controller.selectDate();
                                   },
                                 ),
-                                _buildFormText(
-                                  title: "Số ngày phép năm hiện có *",
-                                  content: "${detail.annualLeave}",
-                                  size: size,
-                                  color: Colors.black,
-                                ),
                                 _buildDayFree(size, "${detail.period}"),
                                 _buildReason(
                                   size: size,
@@ -120,7 +122,7 @@ class DetailSingleView extends GetView<DetailSingleController> {
                                       : detail.address.toString(),
                                   title: "Địa chỉ nghỉ phép *",
                                   maxLines: 3,
-                                  height: 80,
+                                  height: 120,
                                   controller: controller.addressController,
                                 ),
                                 const SizedBox(height: 15),
@@ -648,13 +650,12 @@ class DetailSingleView extends GetView<DetailSingleController> {
             Expanded(
               flex: 3,
               child: Container(
-                // height: 45,
-                width: size.width - 20,
                 padding: EdgeInsets.symmetric(
                   horizontal: size.width * 0.05,
                   vertical: 10,
                 ),
                 child: TextFormField(
+                  keyboardType: TextInputType.text,
                   maxLines: maxLines,
                   controller: controller,
                   decoration: InputDecoration(

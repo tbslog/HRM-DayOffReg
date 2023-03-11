@@ -84,9 +84,10 @@ class ManagerLeaveFormController extends GetxController
                     // ignore: prefer_interpolation_to_compose_strings
                     selectedDepartmentsValue.value + element.name + ",";
                 selectedDepartmentsId.value =
-                    selectedDepartmentsId.value + element.id.toString();
+                    selectedDepartmentsId.value + element.id.toString() + ",";
               },
             );
+            print(selectedDepartmentsValue.value);
           },
         );
       },
@@ -108,6 +109,9 @@ class ManagerLeaveFormController extends GetxController
       if (response.statusCode == 200) {
         var data = UserModel.fromJson(response.data["rData"]);
 
+        userName.value = data;
+        update();
+
         // ignore: unnecessary_cast
         return data as UserModel;
       }
@@ -118,7 +122,7 @@ class ManagerLeaveFormController extends GetxController
   }
 
   Future<List<DayOffLettersManagerModel>> getDayOffLetterManager(
-      {required int needAppr, required List<String> astatus}) async {
+      {required int needAppr, required String astatus}) async {
     // var tokens = AppConstants.tokens;
     var tokens = await SharePerApi().getToken();
     Response response;
@@ -149,7 +153,7 @@ class ManagerLeaveFormController extends GetxController
   }
 
   Future<List<DayOffLettersSingleModel>> getDayOffLetterSingler(
-      {required int needAppr, required List<String> astatus}) async {
+      {required int needAppr, required String astatus}) async {
     // var tokens = AppConstants.tokens;
     var tokens = await SharePerApi().getToken();
     Response response;
@@ -160,13 +164,13 @@ class ManagerLeaveFormController extends GetxController
     var post_letter =
         PostDayOffLettersModel(needAppr: needAppr, astatus: astatus);
     var jsonData = post_letter.toJson();
-    const url = "${AppConstants.urlBase}/day-off-letters";
+    var url =
+        "${AppConstants.urlBase}/day-off-letters?needAppr=$needAppr&astatus=$astatus";
 
     try {
-      response = await dio.post(
+      response = await dio.get(
         url,
         options: Options(headers: headers),
-        data: jsonData,
       );
       if (response.statusCode == 200) {
         List<dynamic> data = response.data["rData"];
@@ -227,7 +231,7 @@ class ManagerLeaveFormController extends GetxController
       if (response.statusCode == AppConstants.RESPONSE_CODE_SUCCESS) {
         var data = response.data;
         // Get.to(() => const AccessLeaveScreen());
-        getDayOffLetterSingler(astatus: [], needAppr: 1);
+        getDayOffLetterSingler(astatus: "", needAppr: 1);
 
         Get.snackbar(
           "Thông báo",
@@ -251,7 +255,7 @@ class ManagerLeaveFormController extends GetxController
   @override
   void onClose() {
     Get.deleteAll();
-    // controller.dispose();
+
     super.onClose();
   }
 }

@@ -59,7 +59,7 @@ abstract class AppPages {
     ),
     GetPage(
       name: Routes.DETAIL_SINGLE_VIEW,
-      page: () => const DetailSingleView(),
+      page: () => DetailSingleView(),
     ),
     GetPage(
         name: Routes.DETAIL_ACCESS_SINGLE_SCREEN,

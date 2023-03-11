@@ -13,7 +13,7 @@ class ChangePasswordScreen extends GetView<ChangePaswordController> {
   final String routes = "/CHANGE_PASSWORD_SCREEN";
   @override
   var controller = Get.put(ChangePaswordController());
-  final _formKey = GlobalKey<FormState>();
+  final _formKeyChangeNewPass = GlobalKey<FormState>();
   final String username;
   final String oldPass;
 
@@ -45,7 +45,7 @@ class ChangePasswordScreen extends GetView<ChangePaswordController> {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
           child: Form(
-            key: _formKey,
+            key: _formKeyChangeNewPass,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
