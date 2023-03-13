@@ -6,7 +6,7 @@ import 'package:tbs_logistics_phieunghi/config/core/data/color.dart';
 import 'package:tbs_logistics_phieunghi/config/core/data/validate.dart';
 
 class LoginPage extends GetView<LoginController> {
-  LoginPage({super.key});
+  const LoginPage({super.key});
   final String routes = "/LOGIN_PAGE";
 
   @override

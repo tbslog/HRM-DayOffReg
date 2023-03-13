@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
+
 import 'package:tbs_logistics_phieunghi/app/manager_leave_form/controller/manager_leave_form_controller.dart';
 
 class AccessLeaveScreen extends GetView<ManagerLeaveFormController> {
@@ -9,8 +9,6 @@ class AccessLeaveScreen extends GetView<ManagerLeaveFormController> {
 
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
-    var day = DateFormat("dd/MM/yyyy");
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: const [

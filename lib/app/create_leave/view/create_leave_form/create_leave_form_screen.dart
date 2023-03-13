@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:tbs_logistics_phieunghi/app/create_leave/model/list_off_type_model.dart';
 import 'package:tbs_logistics_phieunghi/app/create_leave/controller/create_leave_form_controller.dart';
-import 'package:tbs_logistics_phieunghi/app/manager_leave_form/model/user_model.dart';
 
 class CreateLeaveFormScreen extends GetView<CreateLeaveFormController> {
   const CreateLeaveFormScreen({super.key});
@@ -32,12 +31,9 @@ class CreateLeaveFormScreen extends GetView<CreateLeaveFormController> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      FutureBuilder(
-                          future: controller.getInfo(),
-                          builder: (ctx, snap) {
-                            if (snap.hasData) {
-                              var items = snap.data as UserModel;
-                              return Column(
+                      Obx(() {
+                        return controller.isUserInfo.value
+                            ? Column(
                                 children: [
                                   Container(
                                     padding: const EdgeInsets.only(right: 5),
@@ -85,51 +81,57 @@ class CreateLeaveFormScreen extends GetView<CreateLeaveFormController> {
                                   ),
                                   _buildFormText(
                                     title: "MSNV",
-                                    content: "${items.empID}",
+                                    content:
+                                        "${controller.userName.value.empID}",
                                     size: size,
                                   ),
                                   _buildFormText(
                                     title: "Họ và Tên",
                                     content:
-                                        "${items.lastName} ${items.firstName}",
+                                        "${controller.userName.value.lastName} ${controller.userName.value.firstName}",
                                     size: size,
                                   ),
                                   _buildFormText(
                                     title: "Ngày vào",
                                     content: day.format(
                                       DateTime.parse(
-                                        items.comeDate.toString(),
+                                        controller.userName.value.comeDate
+                                            .toString(),
                                       ),
                                     ),
                                     size: size,
                                   ),
                                   _buildFormText(
                                     title: "Đ.Vị/B.Phận",
-                                    content: "${items.deptID}",
+                                    content:
+                                        "${controller.userName.value.deptID}",
                                     size: size,
                                   ),
                                   _buildFormText(
                                     title: "Chức vụ",
-                                    content: "${items.jPLevelName}",
+                                    content:
+                                        "${controller.userName.value.jPLevelName}",
                                     size: size,
                                   ),
                                   _buildFormText(
                                     title: "Vị trí CV",
-                                    content: "${items.jobpositionName}",
+                                    content:
+                                        "${controller.userName.value.jobpositionName}",
                                     size: size,
                                   ),
                                   _buildFormText(
                                     title: "Phép năm hiện có *",
-                                    content: items.annualLeave != null
-                                        ? "${items.annualLeave}"
+                                    content: controller
+                                                .userName.value.annualLeave !=
+                                            null
+                                        ? "${controller.userName.value.annualLeave}"
                                         : "0",
                                     size: size,
                                   ),
                                 ],
-                              );
-                            }
-                            return Container();
-                          }),
+                              )
+                            : Column();
+                      }),
                       Column(
                         children: [
                           _buildLoaiPhep(size),

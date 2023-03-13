@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_interpolation_to_compose_strings
+
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -5,6 +7,7 @@ import 'package:get/get.dart' hide Response;
 import 'package:multi_select_flutter/dialog/mult_select_dialog.dart';
 import 'package:multi_select_flutter/util/multi_select_item.dart';
 import 'package:multi_select_flutter/util/multi_select_list_type.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tbs_logistics_phieunghi/app/manager_leave_form/model/approve_model.dart';
 import 'package:tbs_logistics_phieunghi/app/manager_leave_form/model/day_of_letter_single_model.dart';
 import 'package:tbs_logistics_phieunghi/app/manager_leave_form/model/day_off_letter_manager_model.dart';
@@ -20,6 +23,7 @@ class ManagerLeaveFormController extends GetxController
   var dio = Dio();
 
   RxBool isChangePage = false.obs;
+  RxBool isUserInfo = true.obs;
   // RxList<DayOffLettersModel> dayoffletters = <DayOffLettersModel>[].obs;
   final userName = UserModel().obs;
 
@@ -43,6 +47,9 @@ class ManagerLeaveFormController extends GetxController
   var selectedDepartmentsValue = "".obs;
   var selectedDepartmentsId = "".obs;
 
+  RefreshController refreshController =
+      RefreshController(initialRefresh: false);
+
   void itemChange(bool value, int index) {
     expiringContractStatus[index]["isCheck"] = value;
     update();
@@ -53,9 +60,9 @@ class ManagerLeaveFormController extends GetxController
   @override
   void onInit() {
     super.onInit();
-    // getDayOffLetter();
+
     getInfo();
-    update();
+
     controller = TabController(vsync: this, length: myTabs.length);
   }
 
@@ -81,26 +88,25 @@ class ManagerLeaveFormController extends GetxController
             selectedDepartments.forEach(
               (element) {
                 selectedDepartmentsValue.value =
-                    // ignore: prefer_interpolation_to_compose_strings
                     selectedDepartmentsValue.value + element.name + ",";
                 selectedDepartmentsId.value =
                     selectedDepartmentsId.value + element.id.toString() + ",";
               },
             );
-            print(selectedDepartmentsValue.value);
           },
         );
       },
     );
   }
 
-  Future<UserModel> getInfo() async {
+  void getInfo() async {
     var tokens = await SharePerApi().getToken();
     Response response;
     Map<String, dynamic> headers = {
       HttpHeaders.authorizationHeader: "Bearer $tokens",
     };
     const url = "${AppConstants.urlBase}/getEmpInfo";
+    isUserInfo(false);
     try {
       response = await dio.get(
         url,
@@ -110,14 +116,11 @@ class ManagerLeaveFormController extends GetxController
         var data = UserModel.fromJson(response.data["rData"]);
 
         userName.value = data;
-        update();
-
-        // ignore: unnecessary_cast
-        return data as UserModel;
       }
-      return response.data;
     } catch (e) {
       rethrow;
+    } finally {
+      isUserInfo(true);
     }
   }
 
@@ -160,10 +163,7 @@ class ManagerLeaveFormController extends GetxController
     Map<String, dynamic> headers = {
       HttpHeaders.authorizationHeader: "Bearer $tokens",
     };
-    // ignore: non_constant_identifier_names
-    var post_letter =
-        PostDayOffLettersModel(needAppr: needAppr, astatus: astatus);
-    var jsonData = post_letter.toJson();
+
     var url =
         "${AppConstants.urlBase}/day-off-letters?needAppr=$needAppr&astatus=$astatus";
 

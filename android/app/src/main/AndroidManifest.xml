@@ -1,10 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.tbslogistics.hrm">
     <uses-permission android:name="android.permission.INTERNET"/>
-  
    <application
-        
-
         android:label="Nghỉ Phép HRM"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">

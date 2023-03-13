@@ -11,9 +11,11 @@ class ChangePaswordController extends GetxController {
   TextEditingController passwordNew = TextEditingController(text: "");
   TextEditingController passwordOld = TextEditingController(text: "");
   TextEditingController rePasswordNew = TextEditingController(text: "");
+
+  var userName = Get.arguments[0];
+  var passWord = Get.arguments[1];
+
   Future<void> changePassword({
-    required String userName,
-    required String oldPassword,
     required String newPassword,
     required String confirmPassword,
   }) async {
@@ -21,7 +23,7 @@ class ChangePaswordController extends GetxController {
 
     var changePassword = FormChangePasswordModel(
       username: userName,
-      currentPassword: oldPassword,
+      currentPassword: passWord,
       newPassword: newPassword,
       confirmPass: confirmPassword,
     );

@@ -8,7 +8,7 @@ import 'package:tbs_logistics_phieunghi/app/create_leave/model/list_off_type_mod
 import 'package:tbs_logistics_phieunghi/app/create_leave/model/register_model.dart';
 import 'package:tbs_logistics_phieunghi/app/manager_leave_form/model/user_model.dart';
 import 'package:tbs_logistics_phieunghi/config/core/constants.dart';
-import 'package:tbs_logistics_phieunghi/config/routes/pages.dart';
+
 import 'package:tbs_logistics_phieunghi/config/share_prefs.dart';
 
 class CreateLeaveFormController extends GetxController
@@ -22,8 +22,6 @@ class CreateLeaveFormController extends GetxController
   var selectedDate = DateTime.now().obs;
   var selectedTime = TimeOfDay.now().obs;
   var dio = Dio();
-  RxBool isload = false.obs;
-  RxBool isHide = false.obs;
 
   var numberDayFree = "".obs;
   var dayFreeError = RxnString(null);
@@ -33,6 +31,10 @@ class CreateLeaveFormController extends GetxController
   RxList listOffType = [].obs;
   GlobalKey<FormState> formKeyCreateLetter = GlobalKey<FormState>();
   var loaiPhep = "";
+
+  RxBool isload = false.obs;
+  RxBool isHide = false.obs;
+  RxBool isUserInfo = true.obs;
 
   @override
   void onInit() {
@@ -79,7 +81,7 @@ class CreateLeaveFormController extends GetxController
     }
   }
 
-  Future<void> postRegister({
+  void postRegister({
     required int type,
     required String reason,
     required String startdate,
@@ -170,15 +172,16 @@ class CreateLeaveFormController extends GetxController
             backgroundColor: Colors.white,
           );
         }
-        return data;
       }
     } catch (e) {
       rethrow;
     }
   }
 
-  Future<UserModel> getInfo() async {
+  void getInfo() async {
     var dio = Dio();
+
+    isUserInfo(false);
 
     var tokens = await SharePerApi().getToken();
     Response response;
@@ -195,12 +198,14 @@ class CreateLeaveFormController extends GetxController
       if (response.statusCode == 200) {
         var data = UserModel.fromJson(response.data["rData"]);
 
-        // ignore: unnecessary_cast
-        return data as UserModel;
+        userName.value = data;
       }
-      return response.data;
     } catch (e) {
       rethrow;
+    } finally {
+      Future.delayed(const Duration(seconds: 1), () {
+        isUserInfo(true);
+      });
     }
   }
 

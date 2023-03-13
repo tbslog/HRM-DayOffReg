@@ -12,11 +12,9 @@ class ChangePasswordPage extends GetView<ChangePaswordController> {
   final String routes = "/CHANGE_PASSWORD_PAGE";
   @override
   var controller = Get.put(ChangePaswordController());
-  final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
     if (Get.arguments != null) {
       var username = Get.arguments[0];
       var passwordOld = Get.arguments[1];

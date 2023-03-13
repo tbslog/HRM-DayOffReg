@@ -111,10 +111,8 @@ class ChangePasswordScreen extends GetView<ChangePaswordController> {
                   child: TextButton(
                     onPressed: () {
                       controller.changePassword(
-                        oldPassword: oldPass,
                         newPassword: controller.passwordNew.text,
                         confirmPassword: controller.rePasswordNew.text,
-                        userName: username,
                       );
                     },
                     style: ButtonStyle(

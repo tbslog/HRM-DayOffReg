@@ -8,7 +8,6 @@ import 'package:multi_select_flutter/util/multi_select_item.dart';
 import 'package:multi_select_flutter/util/multi_select_list_type.dart';
 import 'package:tbs_logistics_phieunghi/app/manager_leave_form/model/day_of_letter_single_model.dart';
 import 'package:tbs_logistics_phieunghi/app/manager_leave_form/model/departments_model.dart';
-import 'package:tbs_logistics_phieunghi/app/manager_leave_form/model/post_day_off_letter_model.dart';
 import 'package:tbs_logistics_phieunghi/app/manager_leave_form/model/user_model.dart';
 import 'package:tbs_logistics_phieunghi/config/core/constants.dart';
 import 'package:tbs_logistics_phieunghi/config/share_prefs.dart';
@@ -24,8 +23,21 @@ class SingleViewController extends GetxController {
     DepartmentsModel(id: 2, name: "Đã duyệt"),
     DepartmentsModel(id: 3, name: "Từ chối"),
   ];
+  RxList<DayOffLettersSingleModel> listDayOff =
+      <DayOffLettersSingleModel>[].obs;
+  Rx<UserModel> userInfo = UserModel().obs;
 
-  Future<UserModel> getInfo() async {
+  RxBool isLoadDayOff = true.obs;
+  RxBool isLoadUser = true.obs;
+
+  @override
+  void onInit() async {
+    getInfo();
+    getDayOffLetterSingler(astatus: '', needAppr: 0);
+    super.onInit();
+  }
+
+  void getInfo() async {
     var tokens = await SharePerApi().getToken();
     var dio = Dio();
     Response response;
@@ -33,6 +45,7 @@ class SingleViewController extends GetxController {
       HttpHeaders.authorizationHeader: "Bearer $tokens",
     };
     const url = "${AppConstants.urlBase}/getEmpInfo";
+    isLoadUser(false);
     try {
       response = await dio.get(
         url,
@@ -41,11 +54,14 @@ class SingleViewController extends GetxController {
       if (response.statusCode == 200) {
         var data = UserModel.fromJson(response.data["rData"]);
 
-        return data;
+        userInfo.value = data;
       }
-      return response.data;
     } catch (e) {
       rethrow;
+    } finally {
+      Future.delayed(const Duration(seconds: 1), () {
+        isLoadUser(true);
+      });
     }
   }
 
@@ -74,6 +90,7 @@ class SingleViewController extends GetxController {
                     // ignore: prefer_interpolation_to_compose_strings
                     selectedDepartmentsValue.value + element.name + ",";
                 selectedDepartmentsId.value =
+                    // ignore: prefer_interpolation_to_compose_strings
                     selectedDepartmentsId.value + element.id.toString() + ",";
               },
             );
@@ -83,19 +100,17 @@ class SingleViewController extends GetxController {
     );
   }
 
-  Future<List<DayOffLettersSingleModel>> getDayOffLetterSingler(
+  void getDayOffLetterSingler(
       {required int needAppr, required String astatus}) async {
     var dio = Dio();
-    // var tokens = AppConstants.tokens;
+
     var tokens = await SharePerApi().getToken();
     Response response;
     Map<String, dynamic> headers = {
       HttpHeaders.authorizationHeader: "Bearer $tokens",
     };
-    // ignore: non_constant_identifier_names
-    var post_letter =
-        PostDayOffLettersModel(needAppr: needAppr, astatus: astatus);
-    var jsonData = post_letter.toJson();
+    isLoadDayOff(false);
+
     var url = "${AppConstants.urlBase}/day-off-letters?astatus=$astatus";
 
     try {
@@ -106,11 +121,17 @@ class SingleViewController extends GetxController {
       if (response.statusCode == 200) {
         List<dynamic> data = response.data["rData"];
 
-        return data.map((e) => DayOffLettersSingleModel.fromJson(e)).toList();
+        listDayOff.value =
+            data.map((e) => DayOffLettersSingleModel.fromJson(e)).toList();
       }
-      return [];
     } catch (e) {
       rethrow;
+    } finally {
+      Future.delayed(const Duration(seconds: 1), () {
+        isLoadDayOff(true);
+
+        update();
+      });
     }
   }
 }

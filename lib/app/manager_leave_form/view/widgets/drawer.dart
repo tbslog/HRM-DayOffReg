@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tbs_logistics_phieunghi/app/manager_leave_form/controller/manager_leave_form_controller.dart';
-import 'package:tbs_logistics_phieunghi/app/manager_leave_form/model/user_model.dart';
 import 'package:tbs_logistics_phieunghi/config/routes/pages.dart';
 
 import 'package:tbs_logistics_phieunghi/config/share_prefs.dart';
@@ -40,12 +39,9 @@ class MenuDrawer extends StatelessWidget {
                         left: 0,
                         child: Column(
                           children: [
-                            FutureBuilder(
-                                future: controller.getInfo(),
-                                builder: (context, snapshot) {
-                                  if (snapshot.hasData) {
-                                    var items = snapshot.data as UserModel;
-                                    return Column(
+                            Obx(() {
+                              return controller.isUserInfo.value
+                                  ? Column(
                                       children: [
                                         Container(
                                           height: size.width * 0.2,
@@ -71,7 +67,7 @@ class MenuDrawer extends StatelessWidget {
                                           height: size.width * 0.1,
                                         ),
                                         Text(
-                                          "Họ và tên : ${items.lastName} ${items.firstName}",
+                                          "Họ và tên : ${controller.userName.value.lastName} ${controller.userName.value.firstName}",
                                           style: const TextStyle(
                                               color: Colors.orangeAccent),
                                         ),
@@ -79,7 +75,7 @@ class MenuDrawer extends StatelessWidget {
                                           height: 10,
                                         ),
                                         Text(
-                                          "MSNV : ${items.empID}",
+                                          "MSNV : ${controller.userName.value.empID}",
                                           style: const TextStyle(
                                               color: Colors.orangeAccent),
                                         ),
@@ -87,39 +83,38 @@ class MenuDrawer extends StatelessWidget {
                                           height: 10,
                                         ),
                                         Text(
-                                          "Bộ phận : ${items.jobpositionName}",
+                                          "Bộ phận : ${controller.userName.value.jobpositionName}",
                                           style: const TextStyle(
                                               color: Colors.orangeAccent),
                                         ),
                                       ],
+                                    )
+                                  : Column(
+                                      children: [
+                                        Container(
+                                          height: 15,
+                                          width: size.width * 0.3,
+                                          decoration: BoxDecoration(
+                                              color:
+                                                  Colors.white.withOpacity(0.4),
+                                              borderRadius:
+                                                  BorderRadius.circular(10)),
+                                        ),
+                                        const SizedBox(
+                                          height: 10,
+                                        ),
+                                        Container(
+                                          height: 15,
+                                          width: size.width * 0.4,
+                                          decoration: BoxDecoration(
+                                              color:
+                                                  Colors.white.withOpacity(0.4),
+                                              borderRadius:
+                                                  BorderRadius.circular(10)),
+                                        ),
+                                      ],
                                     );
-                                  }
-                                  return Column(
-                                    children: [
-                                      Container(
-                                        height: 15,
-                                        width: size.width * 0.3,
-                                        decoration: BoxDecoration(
-                                            color:
-                                                Colors.white.withOpacity(0.4),
-                                            borderRadius:
-                                                BorderRadius.circular(10)),
-                                      ),
-                                      const SizedBox(
-                                        height: 10,
-                                      ),
-                                      Container(
-                                        height: 15,
-                                        width: size.width * 0.4,
-                                        decoration: BoxDecoration(
-                                            color:
-                                                Colors.white.withOpacity(0.4),
-                                            borderRadius:
-                                                BorderRadius.circular(10)),
-                                      ),
-                                    ],
-                                  );
-                                }),
+                            }),
                           ],
                         ),
                       ),

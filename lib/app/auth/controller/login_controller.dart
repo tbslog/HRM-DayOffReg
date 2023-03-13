@@ -30,7 +30,7 @@ class LoginController extends GetxController {
     update();
   }
 
-  Future<void> getLogin({
+  void getLogin({
     required String username,
     required String password,
   }) async {
@@ -136,7 +136,7 @@ class LoginController extends GetxController {
     }
   }
 
-  Future<void> createAccount({
+  void createAccount({
     required String username,
   }) async {
     var users = LoginModel(

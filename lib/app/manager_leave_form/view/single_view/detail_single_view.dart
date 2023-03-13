@@ -16,441 +16,10 @@ class DetailSingleView extends GetView<DetailSingleController> {
     var timeNow = DateTime.now();
     var day = DateFormat("dd-MM-yyyy");
     var dayPost = DateFormat("yyyy-MM-dd");
-    if (Get.arguments != null && Get.arguments is int) {
-      var regID = Get.arguments;
-      return GetBuilder<DetailSingleController>(
-        init: DetailSingleController(),
-        builder: (controller) => Scaffold(
-          appBar: AppBar(
-            title: Text(
-              "Chi tiết đơn xin nghỉ",
-              style: TextStyle(
-                color: Theme.of(context).primaryColorDark,
-              ),
-            ),
-            centerTitle: true,
-            leading: IconButton(
-              onPressed: () {
-                Get.back();
-              },
-              icon: Icon(
-                Icons.arrow_back_ios_new_outlined,
-                color: Theme.of(context).primaryColorDark,
-                size: 25,
-              ),
-            ),
-            backgroundColor: Colors.orangeAccent,
-          ),
-          body: SingleChildScrollView(
-            child: Container(
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom,
-                left: 10,
-                right: 10,
-              ),
-              child: FutureBuilder(
-                  future: controller.detailSingle(regID: regID),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      var items = snapshot.data as DetailSingleModel;
-                      var detail = items.rData;
-                      return detail!.aStatus == 0
-                          ? Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                _buildFormText(
-                                    title: "Tình trạng",
-                                    content: "Chờ mới",
-                                    size: size,
-                                    color: Colors.green),
-                                _buildFormText(
-                                  title: "MSNV",
-                                  content: "${detail.empID}",
-                                  size: size,
-                                  color: Colors.black,
-                                ),
-                                _buildFormText(
-                                  title: "Số ngày phép năm hiện có *",
-                                  content: "${detail.annualLeave}",
-                                  size: size,
-                                  color: Colors.black,
-                                ),
-                                _buildLoaiPhep(
-                                  size,
-                                  items,
-                                  detail.type == "1"
-                                      ? "Phép Năm (PN)"
-                                      : detail.type == "2"
-                                          ? "Việc Riêng (VR)"
-                                          : detail.type == "3"
-                                              ? "Bệnh Ốm (BO)"
-                                              : detail.type == "4"
-                                                  ? "Thai Sản (TS)"
-                                                  : detail.type == "5"
-                                                      ? "Tai Nạn (TN)"
-                                                      : detail.type == "6"
-                                                          ? "Chờ Việc (CV)"
-                                                          : "Hiếu Hỉ, Tang lễ (HH-TL)",
-                                ),
-                                _buildDateTime(
-                                  title: "Bắt đầu nghỉ từ *",
-                                  content: day.format(timeNow),
-                                  size: size,
-                                  controller: controller.timeController,
-                                  hintText: day.format(
-                                    DateTime.parse(
-                                      detail.startDate.toString(),
-                                    ),
-                                  ),
-                                  onTap: () {
-                                    controller.selectDate();
-                                  },
-                                ),
-                                _buildDayFree(size, "${detail.period}"),
-                                _buildReason(
-                                  size: size,
-                                  hintText: "${detail.reason}",
-                                  title: "Lý do nghỉ phép *",
-                                  maxLines: 3,
-                                  height: 120,
-                                  controller: controller.reasonController,
-                                ),
-                                _buildReason(
-                                  size: size,
-                                  hintText: detail.address == null
-                                      ? ""
-                                      : detail.address.toString(),
-                                  title: "Địa chỉ nghỉ phép *",
-                                  maxLines: 3,
-                                  height: 120,
-                                  controller: controller.addressController,
-                                ),
-                                const SizedBox(height: 15),
-                                SizedBox(
-                                  height: 60,
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceAround,
-                                    children: [
-                                      SizedBox(
-                                        width: size.width * 0.25,
-                                        height: size.width * 0.1,
-                                        child: TextButton(
-                                          style: ButtonStyle(
-                                            backgroundColor:
-                                                MaterialStateProperty.all<
-                                                    Color>(
-                                              Colors.yellow.shade800,
-                                            ),
-                                          ),
-                                          onPressed: () {
-                                            controller.postDetailRegister(
-                                              type: controller
-                                                          .selectedLoaiPhep ==
-                                                      ""
-                                                  ? int.parse(
-                                                      detail.type.toString())
-                                                  : int.parse(controller
-                                                      .selectedLoaiPhep),
-                                              reason: controller
-                                                          .reasonController
-                                                          .text ==
-                                                      ""
-                                                  ? detail.reason.toString()
-                                                  : controller
-                                                      .reasonController.text,
-                                              startdate: controller
-                                                          .timeController
-                                                          .text ==
-                                                      ""
-                                                  ? dayPost.format(
-                                                      DateTime.parse(
-                                                        detail.startDate
-                                                            .toString(),
-                                                      ),
-                                                    )
-                                                  : controller
-                                                      .dayController.text,
-                                              period: controller
-                                                          .dayController.text ==
-                                                      ""
-                                                  ? int.parse(
-                                                      detail.period.toString())
-                                                  : int.parse(controller
-                                                      .dayController.text),
-                                              address: controller
-                                                          .addressController
-                                                          .text ==
-                                                      ""
-                                                  ? detail.address.toString()
-                                                  : controller
-                                                      .addressController.text,
-                                              command: 0,
-                                              regID: regID,
-                                            );
-                                          },
-                                          child: const Text(
-                                            "Lưu",
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 16,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      SizedBox(
-                                        width: size.width * 0.25,
-                                        height: size.width * 0.1,
-                                        child: TextButton(
-                                          style: ButtonStyle(
-                                            backgroundColor:
-                                                MaterialStateProperty.all<
-                                                    Color>(
-                                              Colors.green,
-                                            ),
-                                          ),
-                                          onPressed: () {
-                                            controller.postDetailRegister(
-                                              type: controller
-                                                          .selectedLoaiPhep ==
-                                                      ""
-                                                  ? int.parse(
-                                                      detail.type.toString())
-                                                  : int.parse(controller
-                                                      .selectedLoaiPhep),
-                                              reason: controller
-                                                          .reasonController
-                                                          .text ==
-                                                      ""
-                                                  ? detail.reason.toString()
-                                                  : controller
-                                                      .reasonController.text,
-                                              startdate: controller
-                                                          .timeController
-                                                          .text ==
-                                                      ""
-                                                  ? dayPost.format(
-                                                      DateTime.parse(
-                                                        detail.startDate
-                                                            .toString(),
-                                                      ),
-                                                    )
-                                                  : controller
-                                                      .dayController.text,
-                                              period: controller
-                                                          .dayController.text ==
-                                                      ""
-                                                  ? int.parse(
-                                                      detail.period.toString())
-                                                  : int.parse(controller
-                                                      .dayController.text),
-                                              address: controller
-                                                          .addressController
-                                                          .text ==
-                                                      ""
-                                                  ? detail.address.toString()
-                                                  : controller
-                                                      .addressController.text,
-                                              command: 1,
-                                              regID: regID,
-                                            );
-                                          },
-                                          child: const Text(
-                                            "Gửi đơn",
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 16,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Container(
-                                  height: 50,
-                                ),
-                              ],
-                            )
-                          : detail.aStatus == 1
-                              ? Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    _buildFormStatusText(
-                                      title: "Tình trạng",
-                                      content: detail.aStatus == 1
-                                          ? "Chờ duyệt"
-                                          : detail.aStatus == 2
-                                              ? "Đã duyệt"
-                                              : "Từ chối",
-                                      size: size,
-                                      color: detail.aStatus == 1
-                                          ? Colors.yellow
-                                          : detail.aStatus == 2
-                                              ? Colors.green
-                                              : Colors.red,
-                                    ),
-                                    _buildFormText(
-                                      color: Colors.black,
-                                      title: "MSNV",
-                                      content: "${detail.empID}",
-                                      size: size,
-                                    ),
-                                    _buildFormText(
-                                      color: Colors.black,
-                                      title: "Loại phép",
-                                      content: detail.type == "1"
-                                          ? "Phép Năm (PN)"
-                                          : detail.type == "2"
-                                              ? "Việc Riêng (VR)"
-                                              : detail.type == "3"
-                                                  ? "Bệnh Ốm (BO)"
-                                                  : detail.type == "4"
-                                                      ? "Thai Sản (TS)"
-                                                      : detail.type == "5"
-                                                          ? "Tai Nạn (TN)"
-                                                          : detail.type == "6"
-                                                              ? "Chờ Việc (CV)"
-                                                              : "Hiếu Hỉ, Tang lễ (HH-TL)",
-                                      size: size,
-                                    ),
-                                    _buildFormText(
-                                      color: Colors.black,
-                                      title: "Nghỉ bắt đầu từ ngày ",
-                                      content: day.format(
-                                        DateTime.parse(
-                                          detail.startDate.toString(),
-                                        ),
-                                      ),
-                                      size: size,
-                                    ),
-                                    _buildFormText(
-                                      color: Colors.black,
-                                      title: "Số ngày nghỉ",
-                                      content: "${detail.period}",
-                                      size: size,
-                                    ),
-                                    _buildFormText(
-                                      color: Colors.black,
-                                      title: "Lý do nghỉ phép",
-                                      content: "${detail.reason}",
-                                      size: size,
-                                    ),
-                                  ],
-                                )
-                              : Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    _buildFormStatusText(
-                                      title: "Tình trạng",
-                                      content: detail.aStatus == 1
-                                          ? "Chờ duyệt"
-                                          : detail.aStatus == 2
-                                              ? "Đã duyệt"
-                                              : "Từ chối",
-                                      size: size,
-                                      color: detail.aStatus == 1
-                                          ? Colors.yellow
-                                          : detail.aStatus == 2
-                                              ? Colors.green
-                                              : Colors.red,
-                                    ),
-                                    _buildFormText(
-                                      color: Colors.black,
-                                      title: "MSNV",
-                                      content: "${detail.empID}",
-                                      size: size,
-                                    ),
-                                    _buildFormText(
-                                      color: Colors.black,
-                                      title: "Loại phép",
-                                      content: detail.type == "1"
-                                          ? "Phép Năm (PN)"
-                                          : detail.type == "2"
-                                              ? "Việc Riêng (VR)"
-                                              : detail.type == "3"
-                                                  ? "Bệnh Ốm (BO)"
-                                                  : detail.type == "4"
-                                                      ? "Thai Sản (TS)"
-                                                      : detail.type == "5"
-                                                          ? "Tai Nạn (TN)"
-                                                          : detail.type == "6"
-                                                              ? "Chờ Việc (CV)"
-                                                              : "Hiếu Hỉ, Tang lễ (HH-TL)",
-                                      size: size,
-                                    ),
-                                    _buildFormText(
-                                      color: Colors.black,
-                                      title: "Nghỉ bắt đầu từ ngày ",
-                                      content: day.format(
-                                        DateTime.parse(
-                                          detail.startDate.toString(),
-                                        ),
-                                      ),
-                                      size: size,
-                                    ),
-                                    _buildFormText(
-                                      color: Colors.black,
-                                      title: "Số ngày nghỉ",
-                                      content: "${detail.period} ngày",
-                                      size: size,
-                                    ),
-                                    _buildFormText(
-                                      color: Colors.black,
-                                      title: "Lý do nghỉ phép",
-                                      content: "${detail.reason}",
-                                      size: size,
-                                    ),
-                                    SizedBox(
-                                      height: 300.0 *
-                                          double.parse(
-                                            detail.apprInf!.length.toString(),
-                                          ),
-                                      width: size.width,
-                                      child: ListView.builder(
-                                          physics:
-                                              const NeverScrollableScrollPhysics(),
-                                          itemCount: detail.apprInf!.length,
-                                          itemBuilder: (context, index) {
-                                            var apprInf =
-                                                detail.apprInf![index];
-                                            return _buildListApprove(
-                                              size: size,
-                                              firstName: apprInf.approFirstName
-                                                  .toString(),
-                                              lastName: apprInf.approLastName
-                                                  .toString(),
-                                              approveDate: day.format(
-                                                DateTime.parse(
-                                                  apprInf.approvalDate
-                                                      .toString(),
-                                                ),
-                                              ),
-                                              approveJobName: apprInf
-                                                  .approJobName
-                                                  .toString(),
-                                              comemt:
-                                                  apprInf.comment.toString(),
-                                              stateName:
-                                                  apprInf.stateName.toString(),
-                                            );
-                                          }),
-                                    ),
-                                  ],
-                                );
-                    }
-                    return const Center(
-                      child: CircularProgressIndicator(
-                        color: Colors.orangeAccent,
-                      ),
-                    );
-                  }),
-            ),
-          ),
-        ),
-      );
-    } else {
-      return Scaffold(
+
+    return GetBuilder<DetailSingleController>(
+      init: DetailSingleController(),
+      builder: (controller) => Scaffold(
         appBar: AppBar(
           title: Text(
             "Chi tiết đơn xin nghỉ",
@@ -471,17 +40,38 @@ class DetailSingleView extends GetView<DetailSingleController> {
           ),
           backgroundColor: Colors.orangeAccent,
         ),
-        body: SizedBox(
-          height: size.height,
-          width: size.width,
-          child: const Center(
-            child: CircularProgressIndicator(
-              color: Colors.orangeAccent,
-            ),
-          ),
+        body: Obx(
+          () {
+            // print(controller.detailsSingle.value.rData!.aStatus);
+            // print(controller.detailsSingle.value.rData!.regID);
+            return controller.isLoad.value
+                ? SingleChildScrollView(
+                    child: Container(
+                        padding: EdgeInsets.only(
+                          bottom: MediaQuery.of(context).viewInsets.bottom,
+                          left: 10,
+                          right: 10,
+                        ),
+                        child: controller.detailsSingle.value.rData!.aStatus ==
+                                0
+                            ? letterNew(size, timeNow, dayPost, day, context)
+                            : controller.detailsSingle.value.rData!.aStatus == 1
+                                ? letterWait(size, day)
+                                : letterFinished(size, day)),
+                  )
+                : SizedBox(
+                    height: size.height,
+                    width: size.width,
+                    child: const Center(
+                      child: CircularProgressIndicator(
+                        color: Colors.orangeAccent,
+                      ),
+                    ),
+                  );
+          },
         ),
-      );
-    }
+      ),
+    );
   }
 
   Widget _buildListApprove({
@@ -967,6 +557,361 @@ class DetailSingleView extends GetView<DetailSingleController> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget letterNew(Size size, DateTime timeNow, DateFormat dayPost,
+      DateFormat day, BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        _buildFormText(
+            title: "Tình trạng",
+            content: "Chờ mới",
+            size: size,
+            color: Colors.green),
+        _buildFormText(
+          title: "MSNV",
+          content: "${controller.detailsSingle.value.rData!.empID}",
+          size: size,
+          color: Colors.black,
+        ),
+        _buildFormText(
+          title: "Số ngày phép năm hiện có *",
+          content: "${controller.detailsSingle.value.rData!.annualLeave}",
+          size: size,
+          color: Colors.black,
+        ),
+        _buildLoaiPhep(
+          size,
+          controller.detailsSingle.value,
+          controller.detailsSingle.value.rData!.type == "1"
+              ? "Phép Năm (PN)"
+              : controller.detailsSingle.value.rData!.type == "2"
+                  ? "Việc Riêng (VR)"
+                  : controller.detailsSingle.value.rData!.type == "3"
+                      ? "Bệnh Ốm (BO)"
+                      : controller.detailsSingle.value.rData!.type == "4"
+                          ? "Thai Sản (TS)"
+                          : controller.detailsSingle.value.rData!.type == "5"
+                              ? "Tai Nạn (TN)"
+                              : controller.detailsSingle.value.rData!.type ==
+                                      "6"
+                                  ? "Chờ Việc (CV)"
+                                  : "Hiếu Hỉ, Tang lễ (HH-TL)",
+        ),
+        _buildDateTime(
+          title: "Bắt đầu nghỉ từ *",
+          content: day.format(timeNow),
+          size: size,
+          controller: controller.timeController,
+          hintText: day.format(
+            DateTime.parse(
+              controller.detailsSingle.value.rData!.startDate.toString(),
+            ),
+          ),
+          onTap: () {
+            controller.selectDate();
+          },
+        ),
+        _buildDayFree(size, "${controller.detailsSingle.value.rData!.period}"),
+        _buildReason(
+          size: size,
+          hintText: "${controller.detailsSingle.value.rData!.reason}",
+          title: "Lý do nghỉ phép *",
+          maxLines: 3,
+          height: 120,
+          controller: controller.reasonController,
+        ),
+        _buildReason(
+          size: size,
+          hintText: controller.detailsSingle.value.rData!.address == null
+              ? ""
+              : controller.detailsSingle.value.rData!.address.toString(),
+          title: "Địa chỉ nghỉ phép *",
+          maxLines: 3,
+          height: 120,
+          controller: controller.addressController,
+        ),
+        const SizedBox(height: 15),
+        SizedBox(
+          height: 60,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              SizedBox(
+                width: size.width * 0.25,
+                height: size.width * 0.1,
+                child: TextButton(
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all<Color>(
+                      Colors.yellow.shade800,
+                    ),
+                  ),
+                  onPressed: () {
+                    controller.postDetailRegister(
+                      type: controller.selectedLoaiPhep == ""
+                          ? int.parse(controller.detailsSingle.value.rData!.type
+                              .toString())
+                          : int.parse(controller.selectedLoaiPhep),
+                      reason: controller.reasonController.text == ""
+                          ? controller.detailsSingle.value.rData!.reason
+                              .toString()
+                          : controller.reasonController.text,
+                      startdate: controller.timeController.text == ""
+                          ? dayPost.format(
+                              DateTime.parse(
+                                controller.detailsSingle.value.rData!.startDate
+                                    .toString(),
+                              ),
+                            )
+                          : controller.dayController.text,
+                      period: controller.dayController.text == ""
+                          ? int.parse(controller
+                              .detailsSingle.value.rData!.period
+                              .toString())
+                          : int.parse(controller.dayController.text),
+                      address: controller.addressController.text == ""
+                          ? controller.detailsSingle.value.rData!.address
+                              .toString()
+                          : controller.addressController.text,
+                      command: 0,
+                      regID: controller.regID,
+                      context: context,
+                    );
+                  },
+                  child: const Text(
+                    "Lưu",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(
+                width: size.width * 0.25,
+                height: size.width * 0.1,
+                child: TextButton(
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all<Color>(
+                      Colors.green,
+                    ),
+                  ),
+                  onPressed: () {
+                    controller.postDetailRegister(
+                      type: controller.selectedLoaiPhep == ""
+                          ? int.parse(controller.detailsSingle.value.rData!.type
+                              .toString())
+                          : int.parse(controller.selectedLoaiPhep),
+                      reason: controller.reasonController.text == ""
+                          ? controller.detailsSingle.value.rData!.reason
+                              .toString()
+                          : controller.reasonController.text,
+                      startdate: controller.timeController.text == ""
+                          ? dayPost.format(
+                              DateTime.parse(
+                                controller.detailsSingle.value.rData!.startDate
+                                    .toString(),
+                              ),
+                            )
+                          : controller.dayController.text,
+                      period: controller.dayController.text == ""
+                          ? int.parse(controller
+                              .detailsSingle.value.rData!.period
+                              .toString())
+                          : int.parse(controller.dayController.text),
+                      address: controller.addressController.text == ""
+                          ? controller.detailsSingle.value.rData!.address
+                              .toString()
+                          : controller.addressController.text,
+                      command: 1,
+                      regID: controller.regID,
+                      context: context,
+                    );
+                  },
+                  child: const Text(
+                    "Gửi đơn",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Container(
+          height: 50,
+        ),
+      ],
+    );
+  }
+
+  Widget letterWait(Size size, DateFormat day) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        _buildFormStatusText(
+          title: "Tình trạng",
+          content: controller.detailsSingle.value.rData!.aStatus == 1
+              ? "Chờ duyệt"
+              : controller.detailsSingle.value.rData!.aStatus == 2
+                  ? "Đã duyệt"
+                  : "Từ chối",
+          size: size,
+          color: controller.detailsSingle.value.rData!.aStatus == 1
+              ? Colors.yellow
+              : controller.detailsSingle.value.rData!.aStatus == 2
+                  ? Colors.green
+                  : Colors.red,
+        ),
+        _buildFormText(
+          color: Colors.black,
+          title: "MSNV",
+          content: "${controller.detailsSingle.value.rData!.empID}",
+          size: size,
+        ),
+        _buildFormText(
+          color: Colors.black,
+          title: "Loại phép",
+          content: controller.detailsSingle.value.rData!.type == "1"
+              ? "Phép Năm (PN)"
+              : controller.detailsSingle.value.rData!.type == "2"
+                  ? "Việc Riêng (VR)"
+                  : controller.detailsSingle.value.rData!.type == "3"
+                      ? "Bệnh Ốm (BO)"
+                      : controller.detailsSingle.value.rData!.type == "4"
+                          ? "Thai Sản (TS)"
+                          : controller.detailsSingle.value.rData!.type == "5"
+                              ? "Tai Nạn (TN)"
+                              : controller.detailsSingle.value.rData!.type ==
+                                      "6"
+                                  ? "Chờ Việc (CV)"
+                                  : "Hiếu Hỉ, Tang lễ (HH-TL)",
+          size: size,
+        ),
+        _buildFormText(
+          color: Colors.black,
+          title: "Nghỉ bắt đầu từ ngày ",
+          content: day.format(
+            DateTime.parse(
+              controller.detailsSingle.value.rData!.startDate.toString(),
+            ),
+          ),
+          size: size,
+        ),
+        _buildFormText(
+          color: Colors.black,
+          title: "Số ngày nghỉ",
+          content: "${controller.detailsSingle.value.rData!.period}",
+          size: size,
+        ),
+        _buildFormText(
+          color: Colors.black,
+          title: "Lý do nghỉ phép",
+          content: "${controller.detailsSingle.value.rData!.reason}",
+          size: size,
+        ),
+      ],
+    );
+  }
+
+  Widget letterFinished(Size size, DateFormat day) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        _buildFormStatusText(
+          title: "Tình trạng",
+          content: controller.detailsSingle.value.rData!.aStatus == 1
+              ? "Chờ duyệt"
+              : controller.detailsSingle.value.rData!.aStatus == 2
+                  ? "Đã duyệt"
+                  : "Từ chối",
+          size: size,
+          color: controller.detailsSingle.value.rData!.aStatus == 1
+              ? Colors.yellow
+              : controller.detailsSingle.value.rData!.aStatus == 2
+                  ? Colors.green
+                  : Colors.red,
+        ),
+        _buildFormText(
+          color: Colors.black,
+          title: "MSNV",
+          content: "${controller.detailsSingle.value.rData!.empID}",
+          size: size,
+        ),
+        _buildFormText(
+          color: Colors.black,
+          title: "Loại phép",
+          content: controller.detailsSingle.value.rData!.type == "1"
+              ? "Phép Năm (PN)"
+              : controller.detailsSingle.value.rData!.type == "2"
+                  ? "Việc Riêng (VR)"
+                  : controller.detailsSingle.value.rData!.type == "3"
+                      ? "Bệnh Ốm (BO)"
+                      : controller.detailsSingle.value.rData!.type == "4"
+                          ? "Thai Sản (TS)"
+                          : controller.detailsSingle.value.rData!.type == "5"
+                              ? "Tai Nạn (TN)"
+                              : controller.detailsSingle.value.rData!.type ==
+                                      "6"
+                                  ? "Chờ Việc (CV)"
+                                  : "Hiếu Hỉ, Tang lễ (HH-TL)",
+          size: size,
+        ),
+        _buildFormText(
+          color: Colors.black,
+          title: "Nghỉ bắt đầu từ ngày ",
+          content: day.format(
+            DateTime.parse(
+              controller.detailsSingle.value.rData!.startDate.toString(),
+            ),
+          ),
+          size: size,
+        ),
+        _buildFormText(
+          color: Colors.black,
+          title: "Số ngày nghỉ",
+          content: "${controller.detailsSingle.value.rData!.period} ngày",
+          size: size,
+        ),
+        _buildFormText(
+          color: Colors.black,
+          title: "Lý do nghỉ phép",
+          content: "${controller.detailsSingle.value.rData!.reason}",
+          size: size,
+        ),
+        SizedBox(
+          height: 300.0 *
+              double.parse(
+                controller.detailsSingle.value.rData!.apprInf!.length
+                    .toString(),
+              ),
+          width: size.width,
+          child: ListView.builder(
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: controller.detailsSingle.value.rData!.apprInf!.length,
+              itemBuilder: (context, index) {
+                var apprInf =
+                    controller.detailsSingle.value.rData!.apprInf![index];
+                return _buildListApprove(
+                  size: size,
+                  firstName: apprInf.approFirstName.toString(),
+                  lastName: apprInf.approLastName.toString(),
+                  approveDate: day.format(
+                    DateTime.parse(
+                      apprInf.approvalDate.toString(),
+                    ),
+                  ),
+                  approveJobName: apprInf.approJobName.toString(),
+                  comemt: apprInf.comment.toString(),
+                  stateName: apprInf.stateName.toString(),
+                );
+              }),
+        ),
+      ],
     );
   }
 }

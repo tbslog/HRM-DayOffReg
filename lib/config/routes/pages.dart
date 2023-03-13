@@ -22,7 +22,7 @@ abstract class AppPages {
     //Login
     GetPage(
       name: Routes.LOGIN_PAGE,
-      page: () => LoginPage(),
+      page: () => const LoginPage(),
     ),
     GetPage(
       name: Routes.SPLASH,
@@ -59,7 +59,7 @@ abstract class AppPages {
     ),
     GetPage(
       name: Routes.DETAIL_SINGLE_VIEW,
-      page: () => DetailSingleView(),
+      page: () => const DetailSingleView(),
     ),
     GetPage(
         name: Routes.DETAIL_ACCESS_SINGLE_SCREEN,
