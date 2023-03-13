@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import DataTable from "react-data-table-component";
-import { getData, getDataCustom } from "../../services/user.service";
+import { getData } from "../../services/user.service";
 import moment from "moment";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import { Modal } from "bootstrap";
@@ -36,14 +36,14 @@ const StaffPage = (props) => {
       let dataMana = await getData(
         "day-off-letters?needAppr=1&astatus=1%2C2%2C3"
       );
-      console.log(dataMana);
+      //console.log(dataMana);
 
       if (dataMana.rData.length > 0) {
         setOpen(true);
       } else setOpen(false);
       // console.log(data.rData[0].EmpID);
       setdbEmpid(data.rData[0].EmpID);
-      setdbFullName(data.rData[0].FirstName + "" + data.rData[0].LastName);
+      setdbFullName(data.rData[0].LastName + "" + data.rData[0].FirstName);
 
       let dataTypeOff = await getData("dayOffType");
       setlistTypeOff(dataTypeOff.rData);
@@ -99,7 +99,7 @@ const StaffPage = (props) => {
         />
       );
     }
-    if (aStatus === 2) {
+    if (aStatus === 2 || aStatus === 4 || aStatus === 5) {
       return (
         <i
           className="fas fa-check-circle"
@@ -181,10 +181,7 @@ const StaffPage = (props) => {
   };
 
   const fetchData = async () => {
-    let data = await getDataCustom("day-off-letters", {
-      needAppr: 0,
-      astatus: [],
-    });
+    let data = await getData("day-off-letters");
     setdbTable(data.rData);
   };
   const checkRegDate = (regDate) => {
@@ -209,7 +206,7 @@ const StaffPage = (props) => {
           >
             <div className="pt-2 ml-2">
               {/* style={{ alignSelf: "end" }} */}
-              {empid}||{fullName}
+              {empid} || {fullName}
             </div>
 
             <div className="pt-1 ">

@@ -3,6 +3,7 @@ import DataTable from "react-data-table-component";
 import { getData, postData, getDataCustom } from "../../services/user.service";
 import moment from "moment";
 import Approve from "./Approve";
+import { toast } from "react-toastify";
 import { Modal } from "bootstrap";
 
 const ManagerPage = (props) => {
@@ -33,33 +34,15 @@ const ManagerPage = (props) => {
   const hideModal = () => {
     modal.hide();
   };
-  // const FilterComponent = ({ onChange, onClear }) => (
-  //   <>
-  //     <div className="input-group mb-2" style={{ width: "30%" }}>
-  //       <input
-  //         type="text"
-  //         id="search"
-  //         className="form-control"
-  //         placeholder="Search..."
-  //         aria-label="Search Input"
-  //         value={filterText}
-  //         onChange={onChange}
-  //       />
-  //       <div className="input-group-append">
-  //         <button className="btn btn-primary" type="button" onClick={onClear}>
-  //           <i className="fas fa-times"> </i>
-  //         </button>
-  //       </div>
-  //     </div>
-  //   </>
-  // );
 
   useEffect(() => {
     setftTableMana(
       dbTableMana.filter(
         (item) =>
-          item.FirstName &&
-          item.FirstName.toLowerCase().includes(filterText.toLowerCase())
+          (item.FirstName &&
+            item.FirstName.toLowerCase().includes(filterText.toLowerCase())) ||
+          (item.LastName &&
+            item.LastName.toLowerCase().includes(filterText.toLowerCase()))
       )
     );
   }, [filterText]);
@@ -83,10 +66,9 @@ const ManagerPage = (props) => {
   // }, [filterText, resetPaginationToggle]);
 
   const fetchData = async () => {
-    let dataMana = await getData("day-off-letters", {
-      needAppr: 1,
-      astatus: [0, 1, 2, 3, 4, 5],
-    });
+    let dataMana = await getData(
+      "day-off-letters?needAppr=1&astatus=1%2C2%2C3"
+    );
     setdbTableMana(dataMana.rData);
     setftTableMana(dataMana.rData);
   };
@@ -96,7 +78,7 @@ const ManagerPage = (props) => {
       let dataMana = await getData(
         "day-off-letters?needAppr=1&astatus=1%2C2%2C3"
       );
-      console.log(dataMana);
+      // console.log(dataMana);
 
       setdbTableMana(dataMana.rData);
       setftTableMana(dataMana.rData);
@@ -122,7 +104,7 @@ const ManagerPage = (props) => {
       name: "Họ tên NV",
       selector: (row) => (
         <div>
-          {row.FirstName} {row.LastName}
+          {row.LastName} {row.FirstName}
         </div>
       ),
       width: "150px",
@@ -247,7 +229,12 @@ const ManagerPage = (props) => {
       state: 1,
     });
     if (create.isSuccess === 1) {
-      console.log("Duyệt");
+      toast.success("Duyệt thành công \n", {
+        autoClose: 2000,
+        className: "",
+        position: "top-center",
+        theme: "colored",
+      });
     }
   };
 

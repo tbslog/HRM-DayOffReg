@@ -1,16 +1,17 @@
 {
   "files": {
     "main.css": "/static/css/main.04601b7d.css",
-    "main.js": "/static/js/main.05dcca8d.js",
+    "main.js": "/static/js/main.2bb60d03.js",
     "static/media/tbsgrop.jpg": "/static/media/tbsgrop.73985a40b178949e75f5.jpg",
     "static/media/huongdan.jpg": "/static/media/huongdan.b1bb73eb7a84fc29c72d.jpg",
+    "static/media/LOGO 2013_1.png": "/static/media/LOGO 2013_1.44874a9e0048a0399f2e.png",
     "static/media/logoTBS.jpg": "/static/media/logoTBS.0ff0a7ca82dadc3dcf2e.jpg",
     "index.html": "/index.html",
     "main.04601b7d.css.map": "/static/css/main.04601b7d.css.map",
-    "main.05dcca8d.js.map": "/static/js/main.05dcca8d.js.map"
+    "main.2bb60d03.js.map": "/static/js/main.2bb60d03.js.map"
   },
   "entrypoints": [
     "static/css/main.04601b7d.css",
-    "static/js/main.05dcca8d.js"
+    "static/js/main.2bb60d03.js"
   ]
 }

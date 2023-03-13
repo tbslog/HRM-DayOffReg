@@ -1,4 +1,5 @@
 import face1 from "../assets/imgs/face1.jpg";
+import logo from "../assets/imgs/LOGO 2013_1.png";
 import { Link } from "react-router-dom";
 import { logout } from "../actions/auth";
 import { useDispatch, useSelector } from "react-redux";
@@ -29,7 +30,7 @@ const Header = ({ children }) => {
           DeptID: data.rData.DeptID,
         })
       );
-      setname(data.rData.FirstName + " " + data.rData.LastName);
+      setname(data.rData.LastName + " " + data.rData.FirstName);
     })();
   }, []);
 
@@ -79,7 +80,8 @@ const Header = ({ children }) => {
             {/* Brand Logo */}
             <a href="/" className="brand-link">
               <span className="brand-text font-weight-light">
-                TBS Logistics
+                {/* <img src={logo} style={{ height: "70px", width: "150px" }} /> */}
+                <h5> TBS Logistics</h5>
               </span>
             </a>
             {/* Sidebar */}

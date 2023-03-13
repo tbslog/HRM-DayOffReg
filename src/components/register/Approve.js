@@ -6,6 +6,7 @@ import { Navigate, useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import Loading from "../common/loading/Loading";
 import { useForm, Controller } from "react-hook-form";
+import { toast } from "react-toastify";
 import "./style.css";
 
 const Approve = (props) => {
@@ -18,6 +19,7 @@ const Approve = (props) => {
     formState: { errors },
   } = useForm();
   const [IsLoading, setIsLoading] = useState(true);
+
   const [regID, setregID] = useState("");
   const [departmentName, setDepartmentName] = useState("");
   const [jobpositionName, setJobpositionName] = useState("");
@@ -41,6 +43,7 @@ const Approve = (props) => {
   const [Showstream, setShowstream] = useState(false);
   const [Showstream1, setShowstream1] = useState("");
   const [Showstreamx, setShowstreamx] = useState(false);
+  const [bg, setbg] = useState("#e9ecef");
 
   let info = JSON.parse(Cookies.get("info"));
 
@@ -58,9 +61,9 @@ const Approve = (props) => {
       setregID(props.dataRegByID.rData.regID);
       setMSNV(props.dataRegByID.rData.EmpID);
       setname(
-        props.dataRegByID.rData.FirstName +
+        props.dataRegByID.rData.LastName +
           " " +
-          props.dataRegByID.rData.LastName
+          props.dataRegByID.rData.FirstName
       );
       setDepartmentName(props.dataRegByID.rData.departmentName);
       setJobpositionName(props.dataRegByID.rData.JobPositionName);
@@ -94,7 +97,10 @@ const Approve = (props) => {
         setshow(false);
         setShowstreamx(false);
         setShowstream(false);
+        setbg("white");
+        console.log("first1");
       } else {
+        setbg("#e9ecef");
         if (props.isme === true) {
           if (props.dataRegByID.rData?.aStatus == 1) {
             setApprovalDate("");
@@ -125,7 +131,6 @@ const Approve = (props) => {
             setComment(props.dataRegByID.rData?.apprInf[0].Comment);
           }
         } else {
-          console.log("first1");
           //console.log(props.dataRegByID.rData);
           setShowstream(true);
           setShowstreamx(true);
@@ -204,7 +209,7 @@ const Approve = (props) => {
                 <input
                   readOnly
                   className="form-control ml-3 "
-                  value={item.ApproFirstName + " " + item.ApproLastName}
+                  value={item.ApproLastName + " " + item.ApproFirstName}
                 />
               </div>
               <div className="col-md-6 d-flex">
@@ -260,6 +265,13 @@ const Approve = (props) => {
     });
     reset();
     if (create.isSuccess === 1) {
+      setIsLoading(true);
+      toast.warn(" Đã từ chối\n", {
+        autoClose: 2000,
+        className: "",
+        position: "top-center",
+        theme: "colored",
+      });
       console.log("từ chối");
       setComment("");
       props.fetchData();
@@ -267,12 +279,19 @@ const Approve = (props) => {
     }
   };
   const handleApprove = async (data) => {
+    setIsLoading(true);
     var create = await postData("approve", {
       regid: regID,
       comment: data.comment,
       state: 1,
     });
     if (create.isSuccess === 1) {
+      toast.success("Duyệt thành công \n", {
+        autoClose: 2000,
+        className: "",
+        position: "top-center",
+        theme: "colored",
+      });
       console.log("Duyệt");
       props.fetchData();
       props.hideModal();
@@ -503,6 +522,7 @@ const Approve = (props) => {
                           type="text"
                           className="form-controlCustomer ml-3 "
                           {...register("comment", validateForm.comment)}
+                          style={{ backgroundColor: bg }}
                           id="comment"
                           readOnly={show}
                           onChange={(e) => {
