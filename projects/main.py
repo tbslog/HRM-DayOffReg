@@ -278,7 +278,7 @@ async def offDayRegister(form: Offregister,emplid: str = Depends(validate_token)
 
 
 @app.get("/day-off-letters",tags=['OffRegister'],summary='truyền vào số 1: lấy đơn quản lý, còn lại: lấy đơn chính mình')
-async def getsListoffstatus(needAppr: int = "",astatus:str = "1,2,3",emplid: int = Depends(validate_token)): #, astatus: list = None,
+async def getsListoffstatus(needAppr: int = "",astatus:str = "",emplid: int = Depends(validate_token)): #, astatus: list = None,
 # no parametter: lấy các d-o-letters của người đang đăng nhập(có token)     
 # needAppr = 1:  lấy các d-o-letters cần người đang đăng nhập(có token) phê duyệt
     list_astatus = []
@@ -504,10 +504,10 @@ async def approve(form: Approve,approver: str = Depends(validate_token)): #form:
    
 
 
-#@app.post("/day-off-summary",tags=['Version 2']) #chỉnh sửa lại method
-async def sum(form:DayOffSummary):
-    m = form.date.month
-    y = form.date.year
+@app.get("/day-off-summary",tags=['Version 2']) #chỉnh sửa lại method
+async def sum(date: datetime.date):
+    m = date.month
+    y = date.year
     s = f'''
             SELECT o.EmpID,ot.Name AS 'OffTypeName',SUM(o.Period) AS 'Period',
                         MONTH(o.RegDate) AS month,
@@ -643,9 +643,9 @@ async def offDayRegister(form: Offregister,emplid: str = Depends(validate_token)
                 #gửi mail nếu như đã phê duyệt đồng ý
                 email_notifi = ['Đơn chưa được gửi mail']
                 if form.command == 1:
-                    mails = fn.get_receiver_email(emplid)
-                    if len(mails)>0:
-                        fn.sentMail(mails)
+                    receiver_mails = fn.get_receiver_email(emplid)
+                    if len(receiver_mails)>0:
+                        fn.sentMail(receiver_mails)
                         email_notifi = []
                 if a == [] and b == [] and email_notifi == []:
                     return {'rCode':1,'rMsg': rMsg}
