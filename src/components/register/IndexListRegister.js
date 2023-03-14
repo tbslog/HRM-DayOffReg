@@ -5,13 +5,15 @@ import StaffPage from "./StaffPage";
 import ManagerPage from "./ManagerPage";
 import Usermanual from "../usermanual/Usermanual";
 import Cookies from "js-cookie";
+import DatePicker from "react-datepicker";
+import moment from "moment";
 const IndexListRegister = () => {
   const [tabIndex, setTabIndex] = useState(0);
   const HandleOnChangeTabs = (tabIndex) => {
     setTabIndex(tabIndex);
   };
   let info = JSON.parse(Cookies.get("info"));
-
+  const [startDate, setStartDate] = useState(new Date());
   const [open, setOpen] = useState(false);
   useEffect(() => {
     (async () => {
@@ -25,11 +27,24 @@ const IndexListRegister = () => {
     })();
   }, []);
   const onSubmitDownload = async () => {
-    let res = await getfile("Get-period");
+    let res = await getfile("day-off-summary");
     console.log(res);
     //const url = window.URL.createObjectURL(new Blob([res]));//list file
     const url = window.URL.createObjectURL(res); // một file
     const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "Data.xlsx");
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  };
+  const handelDownd = async (data) => {
+    let day = moment(new Date(data).toISOString()).format("YYYY-MM-DD");
+    let res = await getfile(`day-off-summary?date=${day}`);
+    console.log(res);
+    //const url = window.URL.createObjectURL(new Blob([res]));//list file
+    const url = window.URL.createObjectURL(res); // một file
+    const link = document.createElement("a"); // tao the a gan link
     link.href = url;
     link.setAttribute("download", "Data.xlsx");
     document.body.appendChild(link);
@@ -46,7 +61,7 @@ const IndexListRegister = () => {
             style={{ maxHeight: "100%", height: "100vh" }}
           >
             {/* Default box */}
-            <div className="card  " style={{ height: "100%" }}>
+            <div className="card " style={{ height: "100%" }}>
               <div className="card-header py-0 border-0">
                 <Tabs
                   selectedIndex={tabIndex}
@@ -57,12 +72,25 @@ const IndexListRegister = () => {
                     <Tab>Đơn Của Tôi</Tab>
                     <Tab>Hướng Dẫn Quy Trình</Tab>
                     {info?.DeptID === "NS" && (
-                      <button
-                        className="btn btn-sm btn-success mr-3 mb-2"
-                        onClick={onSubmitDownload}
-                      >
-                        File tổng hợp
-                      </button>
+                      <Tab>
+                        <div className="d-flex align-items-center ">
+                          <span
+                            style={{ fontSize: "12px", whiteSpace: "nowrap" }}
+                          >
+                            File tổng hợp &nbsp;
+                          </span>
+                          <DatePicker
+                            className="form-control"
+                            showicon
+                            selected={startDate}
+                            onChange={(date) =>
+                              handelDownd(date, setStartDate(date))
+                            }
+                            dateFormat="dd/MM/yyyy"
+                            placeholderText="Chọn ngày bắt đầu"
+                          />
+                        </div>
+                      </Tab>
                     )}
                   </TabList>
                   <TabPanel>
