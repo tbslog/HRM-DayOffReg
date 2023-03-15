@@ -11,6 +11,7 @@ import 'package:tbs_logistics_phieunghi/app/manager_leave_form/model/day_of_lett
 import 'package:tbs_logistics_phieunghi/app/manager_leave_form/model/detail_single_model.dart';
 import 'package:tbs_logistics_phieunghi/app/manager_leave_form/model/register_detail_model.dart';
 import 'package:tbs_logistics_phieunghi/config/core/constants.dart';
+import 'package:tbs_logistics_phieunghi/config/routes/pages.dart';
 
 import 'package:tbs_logistics_phieunghi/config/share_prefs.dart';
 
@@ -191,6 +192,7 @@ class DetailSingleController extends GetxController {
             ),
           );
         } else if (data["rCode"] == 1) {
+          await Get.toNamed(Routes.MANAGER_LEAVE_FORM_SCREEN);
           Get.back();
           Get.snackbar(
             "Thông báo",

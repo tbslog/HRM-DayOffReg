@@ -3,64 +3,65 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Response;
-import 'package:multi_select_flutter/dialog/mult_select_dialog.dart';
-import 'package:multi_select_flutter/util/multi_select_item.dart';
-import 'package:multi_select_flutter/util/multi_select_list_type.dart';
-import 'package:tbs_logistics_phieunghi/app/manager_leave_form/model/day_of_letter_single_model.dart';
+import 'package:multi_select_flutter/multi_select_flutter.dart';
+import 'package:tbs_logistics_phieunghi/app/manager_leave_form/model/approve_model.dart';
+import 'package:tbs_logistics_phieunghi/app/manager_leave_form/model/day_off_letter_manager_model.dart';
 import 'package:tbs_logistics_phieunghi/app/manager_leave_form/model/departments_model.dart';
-import 'package:tbs_logistics_phieunghi/app/manager_leave_form/model/user_model.dart';
 import 'package:tbs_logistics_phieunghi/config/core/constants.dart';
 import 'package:tbs_logistics_phieunghi/config/share_prefs.dart';
 
-class SingleViewController extends GetxController {
+class AccessSingleController extends GetxController {
+  late Response response;
+  var dio = Dio();
+
   List<dynamic> selectedDepartments = [];
   var selectedDepartmentsValue = "".obs;
   var selectedDepartmentsId = "".obs;
-
   List<DepartmentsModel> departments = [
-    DepartmentsModel(id: 0, name: "Đơn mới"),
     DepartmentsModel(id: 1, name: "Chờ duyệt"),
     DepartmentsModel(id: 2, name: "Đã duyệt"),
     DepartmentsModel(id: 3, name: "Từ chối"),
   ];
-  RxList<DayOffLettersSingleModel> listDayOff =
-      <DayOffLettersSingleModel>[].obs;
-  Rx<UserModel> userInfo = UserModel().obs;
 
-  RxBool isLoadDayOff = true.obs;
-  RxBool isLoadUser = true.obs;
+  RxList<DayOffLettersManagerModel> listDayOffManager =
+      <DayOffLettersManagerModel>[].obs;
+  RxBool isLoadDayOffManganer = true.obs;
 
   @override
-  void onInit() async {
-    getInfo();
-    getDayOffLetterSingler(astatus: "", needAppr: 0);
+  void onInit() {
+    getDayOffLetterManager(needAppr: 1, astatus: "");
+
     super.onInit();
   }
 
-  void getInfo() async {
+  void getDayOffLetterManager(
+      {required int needAppr, required String astatus}) async {
+    // var tokens = AppConstants.tokens;
     var tokens = await SharePerApi().getToken();
-    var dio = Dio();
-    Response response;
+
     Map<String, dynamic> headers = {
       HttpHeaders.authorizationHeader: "Bearer $tokens",
     };
-    const url = "${AppConstants.urlBase}/getEmpInfo";
-    isLoadUser(false);
+    isLoadDayOffManganer(false);
+    var url =
+        "${AppConstants.urlBase}/day-off-letters?needAppr=$needAppr&astatus=$astatus";
+
     try {
       response = await dio.get(
         url,
         options: Options(headers: headers),
       );
       if (response.statusCode == 200) {
-        var data = UserModel.fromJson(response.data["rData"]);
+        List<dynamic> data = response.data["rData"];
 
-        userInfo.value = data;
+        listDayOffManager.value =
+            data.map((e) => DayOffLettersManagerModel.fromJson(e)).toList();
       }
     } catch (e) {
       rethrow;
     } finally {
-      Future.delayed(const Duration(seconds: 1), () {
-        isLoadUser(true);
+      Future.delayed(Duration(seconds: 1), () {
+        isLoadDayOffManganer(true);
       });
     }
   }
@@ -70,7 +71,7 @@ class SingleViewController extends GetxController {
       context: Get.context!,
       builder: (ctx) {
         return MultiSelectDialog(
-          height: 250,
+          height: 200,
           listType: MultiSelectListType.LIST,
           initialValue: selectedDepartments,
           items: departments
@@ -87,53 +88,60 @@ class SingleViewController extends GetxController {
             selectedDepartments.forEach(
               (element) {
                 selectedDepartmentsValue.value =
-                    // ignore: prefer_interpolation_to_compose_strings
                     selectedDepartmentsValue.value + element.name + ",";
                 selectedDepartmentsId.value =
-                    // ignore: prefer_interpolation_to_compose_strings
                     selectedDepartmentsId.value + element.id.toString() + ",";
               },
             );
-            getDayOffLetterSingler(
-                needAppr: 0, astatus: selectedDepartmentsId.value);
+            getDayOffLetterManager(
+                needAppr: 1, astatus: selectedDepartmentsId.value);
           },
         );
       },
     );
   }
 
-  void getDayOffLetterSingler(
-      {required int needAppr, required String astatus}) async {
-    var dio = Dio();
-
-    var tokens = await SharePerApi().getToken();
+  void postApprove({
+    required int regID,
+    required String comment,
+    required int state,
+  }) async {
     Response response;
+    var tokens = await SharePerApi().getToken();
     Map<String, dynamic> headers = {
       HttpHeaders.authorizationHeader: "Bearer $tokens",
     };
-    isLoadDayOff(false);
-
-    var url = "${AppConstants.urlBase}/day-off-letters?astatus=$astatus";
-
+    var approve = ApproveModel(
+      regid: regID,
+      comment: comment,
+      state: state,
+    );
+    var jsonData = approve.toJson();
+    const url = "${AppConstants.urlBase}/approve";
     try {
-      response = await dio.get(
-        url,
-        options: Options(headers: headers),
-      );
-      if (response.statusCode == 200) {
-        List<dynamic> data = response.data["rData"];
+      response = await dio.post(url,
+          options: Options(headers: headers), data: jsonData);
+      if (response.statusCode == AppConstants.RESPONSE_CODE_SUCCESS) {
+        var data = response.data;
+        // Get.to(() => const AccessLeaveScreen());
+        getDayOffLetterManager(astatus: "", needAppr: 1);
 
-        listDayOff.value =
-            data.map((e) => DayOffLettersSingleModel.fromJson(e)).toList();
+        Get.snackbar(
+          "Thông báo",
+          "${data["rMsg"]} !",
+          titleText: const Text(
+            "Thông báo",
+            style: TextStyle(color: Colors.red),
+          ),
+          messageText: Text(
+            "${data["rMsg"]} !",
+            style: const TextStyle(color: Colors.green),
+          ),
+        );
+        update();
       }
     } catch (e) {
       rethrow;
-    } finally {
-      Future.delayed(const Duration(seconds: 1), () {
-        isLoadDayOff(true);
-
-        update();
-      });
     }
   }
 }

@@ -110,7 +110,7 @@ class SingleViewManagerScreen extends GetView<SingleViewController> {
               ),
             ),
             Obx(() {
-              // var number = controller.selectedDepartmentsId.value;
+              var number = controller.selectedDepartmentsId.value;
 
               return Expanded(
                   child: controller.isLoadDayOff.value

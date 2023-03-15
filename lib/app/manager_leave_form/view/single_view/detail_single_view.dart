@@ -42,8 +42,6 @@ class DetailSingleView extends GetView<DetailSingleController> {
         ),
         body: Obx(
           () {
-            // print(controller.detailsSingle.value.rData!.aStatus);
-            // print(controller.detailsSingle.value.rData!.regID);
             return controller.isLoad.value
                 ? SingleChildScrollView(
                     child: Container(
@@ -304,7 +302,6 @@ class DetailSingleView extends GetView<DetailSingleController> {
                     decoration: BoxDecoration(
                       border: Border.all(
                         width: 1,
-                        // color: Color(0xFFF3BD60),
                         color: Colors.white,
                       ),
                       color: Colors.white,
@@ -318,18 +315,12 @@ class DetailSingleView extends GetView<DetailSingleController> {
                       decoration: InputDecoration(
                         contentPadding: const EdgeInsets.only(
                           top: 25,
-                          // left: 10,
                           right: 10,
                           bottom: 10,
                         ),
                         hintText: hintText,
                         border: InputBorder.none,
                         isDense: true,
-                        // icon: const Icon(
-                        //   Icons.calendar_month,
-                        //   color: Colors.orangeAccent,
-                        //   size: 25,
-                        // ),
                       ),
                     ),
                   ),
@@ -372,7 +363,6 @@ class DetailSingleView extends GetView<DetailSingleController> {
                     decoration: BoxDecoration(
                       border: Border.all(
                         width: 1,
-                        // color: Color(0xFFF3BD60),
                         color: Colors.white,
                       ),
                       color: Colors.white,
@@ -387,18 +377,12 @@ class DetailSingleView extends GetView<DetailSingleController> {
                       decoration: InputDecoration(
                         contentPadding: const EdgeInsets.only(
                           top: 25,
-                          // left: 10,
                           right: 10,
                           bottom: 10,
                         ),
                         hintText: hintText,
                         border: InputBorder.none,
                         isDense: true,
-                        // icon: const Icon(
-                        //   Icons.calendar_month,
-                        //   color: Colors.orangeAccent,
-                        //   size: 25,
-                        // ),
                       ),
                     ),
                   ),

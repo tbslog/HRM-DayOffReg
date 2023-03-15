@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:tbs_logistics_phieunghi/app/manager_leave_form/controller/manager_leave_form_controller.dart';
-import 'package:tbs_logistics_phieunghi/app/manager_leave_form/model/day_of_letter_single_model.dart';
+import 'package:tbs_logistics_phieunghi/app/manager_leave_form/view/access_leave/controller/access_single_controller.dart';
 import 'package:tbs_logistics_phieunghi/config/routes/pages.dart';
 
-class AccessSingleScreen extends GetView<ManagerLeaveFormController> {
+class AccessSingleScreen extends GetView<AccessSingleController> {
   const AccessSingleScreen({super.key});
 
   @override
@@ -13,8 +12,8 @@ class AccessSingleScreen extends GetView<ManagerLeaveFormController> {
     // ignore: unused_local_variable
     Size size = MediaQuery.of(context).size;
     var day = DateFormat("dd/MM/yyyy");
-    return GetBuilder<ManagerLeaveFormController>(
-      init: ManagerLeaveFormController(),
+    return GetBuilder<AccessSingleController>(
+      init: AccessSingleController(),
       builder: (controller) => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
         child: Column(
@@ -53,175 +52,262 @@ class AccessSingleScreen extends GetView<ManagerLeaveFormController> {
               ],
             ),
             Obx(() {
-              var number = controller.selectedDepartmentsId.value;
-
               return Expanded(
-                child: FutureBuilder(
-                    future: controller.getDayOffLetterSingler(
-                        needAppr: 1, astatus: number),
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData) {
-                        var dayoffletters =
-                            snapshot.data as List<DayOffLettersSingleModel>;
-                        return dayoffletters.isNotEmpty
-                            ? ListView.builder(
-                                padding: const EdgeInsets.only(bottom: 50),
-                                itemCount: dayoffletters.length,
-                                itemBuilder: (context, index) {
-                                  var item = dayoffletters[index];
+                child: controller.isLoadDayOffManganer.value
+                    ? controller.listDayOffManager.isNotEmpty
+                        ? ListView.builder(
+                            padding: const EdgeInsets.only(bottom: 50),
+                            itemCount: controller.listDayOffManager.length,
+                            itemBuilder: (context, index) {
+                              var item = controller.listDayOffManager[index];
 
-                                  return _buildCustomListtile(
-                                    onTap: () {
-                                      Get.toNamed(
-                                        Routes.DETAIL_ACCESS_SINGLE_SCREEN,
-                                        arguments: item.regID,
-                                      );
-                                    },
-                                    stt: "${index + 1}",
-                                    fromDay: day.format(
-                                      DateTime.parse(
-                                        item.startDate.toString(),
-                                      ),
-                                    ),
-                                    endDay: item.comeDate != null
-                                        ? day.format(
-                                            DateTime.parse(
-                                              item.comeDate.toString(),
-                                            ),
-                                          )
-                                        : "",
-                                    type: '${item.reason}',
-                                    totalDay: '${item.period} ngày',
-                                    color: Colors.green,
-                                    child: item.aStatus != 1
-                                        ? Center(
-                                            child: Text(
-                                              item.aStatus == 2
-                                                  ? "Đã duyệt"
-                                                  : "Từ chối",
-                                              style: TextStyle(
-                                                color: item.aStatus == 2
-                                                    ? Colors.green
-                                                    : Colors.red,
-                                              ),
-                                            ),
-                                          )
-                                        : InkWell(
-                                            onTap: () {
-                                              controller.postApprove(
-                                                regID: item.regID!,
-                                                comment: "",
-                                                state: 1,
-                                              );
-                                            },
-                                            child: Container(
-                                              height: 60,
-                                              width: 60,
-                                              // color: Colors.green,
-                                              decoration: BoxDecoration(
-                                                // color: Colors.green,
-                                                borderRadius:
-                                                    BorderRadius.circular(10),
-                                                image: const DecorationImage(
-                                                  image: AssetImage(
-                                                      "assets/images/check.png"),
-                                                  fit: BoxFit.fill,
-                                                ),
-                                              ),
+                              return _buildCustomListtile(
+                                onTap: () {
+                                  Get.toNamed(
+                                    Routes.DETAIL_ACCESS_SINGLE_SCREEN,
+                                    arguments: item.regID,
+                                  );
+                                },
+                                stt: "${index + 1}",
+                                fromDay: day.format(
+                                  DateTime.parse(
+                                    item.startDate.toString(),
+                                  ),
+                                ),
+                                endDay: item.comeDate != null
+                                    ? day.format(
+                                        DateTime.parse(
+                                          item.comeDate.toString(),
+                                        ),
+                                      )
+                                    : "",
+                                type: '${item.reason}',
+                                totalDay: '${item.period} ngày',
+                                color: Colors.green,
+                                child: item.aStatus != 1
+                                    ? Center(
+                                        child: Text(
+                                          item.aStatus == 2
+                                              ? "Đã duyệt"
+                                              : "Từ chối",
+                                          style: TextStyle(
+                                            color: item.aStatus == 2
+                                                ? Colors.green
+                                                : Colors.red,
+                                          ),
+                                        ),
+                                      )
+                                    : InkWell(
+                                        onTap: () {
+                                          controller.postApprove(
+                                            regID: item.regID!,
+                                            comment: "",
+                                            state: 1,
+                                          );
+                                        },
+                                        child: Container(
+                                          height: 60,
+                                          width: 60,
+                                          // color: Colors.green,
+                                          decoration: BoxDecoration(
+                                            // color: Colors.green,
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                            image: const DecorationImage(
+                                              image: AssetImage(
+                                                  "assets/images/check.png"),
+                                              fit: BoxFit.fill,
                                             ),
                                           ),
-                                    msnv: item.empID.toString(),
-                                    name: "${item.lastName} ${item.firstName}",
-                                  );
-                                })
-                            : const Center(
-                                child: Text(
-                                  "Không có đơn !",
-                                  style: TextStyle(
-                                    color: Colors.red,
-                                    fontSize: 20,
-                                  ),
-                                ),
+                                        ),
+                                      ),
+                                msnv: item.empID.toString(),
+                                name: "${item.lastName} ${item.firstName}",
                               );
-                      }
-                      return ListView.builder(
-                          itemCount: 6,
-                          itemBuilder: (context, index) {
-                            return Card(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                side: BorderSide(
+                            })
+                        : const Center(
+                            child: Text(
+                              "Không có đơn !",
+                              style: TextStyle(
+                                color: Colors.red,
+                                fontSize: 20,
+                              ),
+                            ),
+                          )
+                    : ListView.builder(
+                        itemCount: 6,
+                        itemBuilder: (context, index) {
+                          return Card(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              side: BorderSide(
+                                color: Colors.black.withOpacity(0.4),
+                                width: 1,
+                              ),
+                            ),
+                            child: ListTile(
+                              leading: Container(
+                                height: 40,
+                                width: 40,
+                                decoration: BoxDecoration(
                                   color: Colors.black.withOpacity(0.4),
-                                  width: 1,
+                                  borderRadius: BorderRadius.circular(100),
                                 ),
                               ),
-                              child: ListTile(
-                                leading: Container(
-                                  height: 40,
-                                  width: 40,
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withOpacity(0.4),
-                                    borderRadius: BorderRadius.circular(100),
+                              title: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    height: 15,
+                                    width: size.width * 0.2,
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withOpacity(0.3),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
                                   ),
-                                ),
-                                title: Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Container(
-                                      height: 15,
-                                      width: size.width * 0.2,
-                                      decoration: BoxDecoration(
-                                        color: Colors.black.withOpacity(0.3),
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
+                                  const SizedBox(width: 15),
+                                  Container(
+                                    height: 15,
+                                    width: size.width * 0.2,
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withOpacity(0.3),
+                                      borderRadius: BorderRadius.circular(10),
                                     ),
-                                    const SizedBox(width: 15),
-                                    Container(
-                                      height: 15,
-                                      width: size.width * 0.2,
-                                      decoration: BoxDecoration(
-                                        color: Colors.black.withOpacity(0.3),
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                subtitle: Container(
-                                  height: 15,
-                                  width: size.width * 0.1,
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withOpacity(0.3),
-                                    borderRadius: BorderRadius.circular(10),
                                   ),
-                                ),
-                                trailing: Column(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    Container(
-                                      height: 15,
-                                      width: size.width * 0.15,
-                                      decoration: BoxDecoration(
-                                        color: Colors.black.withOpacity(0.3),
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                    ),
-                                    Container(
-                                      height: 15,
-                                      width: size.width * 0.15,
-                                      decoration: BoxDecoration(
-                                        color: Colors.black.withOpacity(0.3),
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                    ),
-                                  ],
+                                ],
+                              ),
+                              subtitle: Container(
+                                height: 15,
+                                width: size.width * 0.1,
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withOpacity(0.3),
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
                               ),
-                            );
-                          });
-                    }),
+                              trailing: Column(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  Container(
+                                    height: 15,
+                                    width: size.width * 0.15,
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withOpacity(0.3),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                  Container(
+                                    height: 15,
+                                    width: size.width * 0.15,
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withOpacity(0.3),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
               );
             }),
+            // Obx(() {
+            //   var number = controller.selectedDepartmentsId.value;
+
+            //   return Expanded(
+            //     child: FutureBuilder(
+            //         future: controller.getDayOffLetterSingler(
+            //             needAppr: 1, astatus: number),
+            //         builder: (context, snapshot) {
+            //           if (snapshot.hasData) {
+            //             var dayoffletters =
+            //                 snapshot.data as List<DayOffLettersSingleModel>;
+            //             return dayoffletters.isNotEmpty
+            //                 ? ListView.builder(
+            //                     padding: const EdgeInsets.only(bottom: 50),
+            //                     itemCount: dayoffletters.length,
+            //                     itemBuilder: (context, index) {
+            //                       var item = dayoffletters[index];
+
+            //                       return _buildCustomListtile(
+            //                         onTap: () {
+            //                           Get.toNamed(
+            //                             Routes.DETAIL_ACCESS_SINGLE_SCREEN,
+            //                             arguments: item.regID,
+            //                           );
+            //                         },
+            //                         stt: "${index + 1}",
+            //                         fromDay: day.format(
+            //                           DateTime.parse(
+            //                             item.startDate.toString(),
+            //                           ),
+            //                         ),
+            //                         endDay: item.comeDate != null
+            //                             ? day.format(
+            //                                 DateTime.parse(
+            //                                   item.comeDate.toString(),
+            //                                 ),
+            //                               )
+            //                             : "",
+            //                         type: '${item.reason}',
+            //                         totalDay: '${item.period} ngày',
+            //                         color: Colors.green,
+            //                         child: item.aStatus != 1
+            //                             ? Center(
+            //                                 child: Text(
+            //                                   item.aStatus == 2
+            //                                       ? "Đã duyệt"
+            //                                       : "Từ chối",
+            //                                   style: TextStyle(
+            //                                     color: item.aStatus == 2
+            //                                         ? Colors.green
+            //                                         : Colors.red,
+            //                                   ),
+            //                                 ),
+            //                               )
+            //                             : InkWell(
+            //                                 onTap: () {
+            //                                   controller.postApprove(
+            //                                     regID: item.regID!,
+            //                                     comment: "",
+            //                                     state: 1,
+            //                                   );
+            //                                 },
+            //                                 child: Container(
+            //                                   height: 60,
+            //                                   width: 60,
+            //                                   // color: Colors.green,
+            //                                   decoration: BoxDecoration(
+            //                                     // color: Colors.green,
+            //                                     borderRadius:
+            //                                         BorderRadius.circular(10),
+            //                                     image: const DecorationImage(
+            //                                       image: AssetImage(
+            //                                           "assets/images/check.png"),
+            //                                       fit: BoxFit.fill,
+            //                                     ),
+            //                                   ),
+            //                                 ),
+            //                               ),
+            //                         msnv: item.empID.toString(),
+            //                         name: "${item.lastName} ${item.firstName}",
+            //                       );
+            //                     })
+            //                 : const Center(
+            //                     child: Text(
+            //                       "Không có đơn !",
+            //                       style: TextStyle(
+            //                         color: Colors.red,
+            //                         fontSize: 20,
+            //                       ),
+            //                     ),
+            //                   );
+            //           }
+            //           return
+            //         }),
+            //   );
+            // }),
           ],
         ),
       ),

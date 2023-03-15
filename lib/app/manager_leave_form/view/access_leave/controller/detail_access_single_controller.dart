@@ -43,8 +43,6 @@ class DetailAccessSingleController extends GetxController
       );
       if (response.statusCode == AppConstants.RESPONSE_CODE_SUCCESS) {
         var data = DetailSingleModel.fromJson(response.data);
-        // var detail = data.rData;
-
         return data;
       }
       return response.data;
