@@ -1,3 +1,14 @@
+# 03/31/2023
+Cập nhật:
+function lấy tổng số ngày nghỉ phép của tháng
+function nhân sự lấy đơn nghỉ phép (những đơn đã được quản lý trực tiếp duyệt)
+function gửi mail (lồng vào function đăng ký nghỉ phép/phê duyệt)
+funtion upload/get ảnh
+
+
+
+
+
 # 03/09/2023
 API:	day-off-letters - lấy đơn nghĩ phép (đổi method post --> get),				
 	day-off-letter (Đăng ký nghĩ phép) - thêm điều kiện: nghĩ phép phải có lý do		
