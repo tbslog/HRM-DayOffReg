@@ -1,5 +1,5 @@
 import os
-from fastapi import Depends,HTTPException,status
+from fastapi import Depends,HTTPException,status,File,UploadFile
 import numpy as np
 from  projects.models import *
 
@@ -17,7 +17,13 @@ import string
 from datetime import timedelta
 from fastapi.responses import FileResponse
 # from fastapi.exceptions import RequestValidationError
+import uuid
 
+import tempfile
+import binascii
+import secrets
+import asyncio
+import shutil
 # ------------------------------------------------------------------------------------------------------------
 cn = fn.cn
 
@@ -25,63 +31,56 @@ cn = fn.cn
 
 
 # @app.post("/dangnhapUsernamePass", tags=['HRM'], dependencies=[Depends(validate_token)])
-@app.post("/Login", tags=['Login']) #done
+@app.post("/Login", tags=['Login'],summary='Đăng nhập') #done
 def index(formdata: CheckLogin): 
     s = ''
     if formdata.username.isnumeric():
-        s = f"""
-                    SELECT top 1 EmpID, Password FROM Users WHERE EmpID = '{formdata.username}'
-                """
+        s = f"""SELECT top 1 EmpID, Password FROM Users WHERE EmpID = '{formdata.username}'"""
     else:
-        s = f"""
-                    SELECT top 1 EmpID, Password FROM Users WHERE UserName = '{formdata.username}' 
-                """
-   
+        s = f"""SELECT top 1 EmpID, Password FROM Users WHERE UserName = '{formdata.username}'"""
     result = fn.get_data(s)
     if len(result) > 0:
         # -- a Thái
         if (fn.check_pw(formdata.password,result[0][1])):
-            return  {
-                        'rCode': 3,
-                        'rData':{'token':fn.generate_token(username=formdata.username,days=30),
-                                'empid':result[0][0]},
-                        'rMsg': 'Đăng nhập thành công'
-                        }
+            #đăng nhập thành công, có hình ảnh đại diện mặc định
+            s = f'''SELECT COUNT(*) FROM dbo.Image WHERE EmpID = {result[0][0]}'''
+            check = fn.get_data(s)
+            if check[0][0] < 1:
+                tempDir = os.path.join('tempDir','30b39c90-f927-4154-bbe7-acd069988a54.JPG')
+                s = f'''INSERT INTO dbo.Image(EmpID,ImageData)
+                        VALUES({result[0][0]},N'{tempDir}')'''
+                fn.insert_data(s)
+            return  {'rCode': 3,
+                    'rData':{'token':fn.generate_token(username=formdata.username,days=30),
+                    'empid':result[0][0]},
+                    'rMsg': 'Đăng nhập thành công'}
         else:
-            return {'rCode': 0,
-                    'rMsg': 'Tài khoản hoặc mật khẩu không đúng'
-                    }
-
+            return {'rCode': 0,'rMsg': 'Tài khoản hoặc mật khẩu không đúng'}
         # -- a Thái
     elif len(result) == 0:
-    
-        
         if fn.checkEmplID(formdata.username) == True:
-                
             if formdata.autogen == 1:
-                    # chuoi = string.ascii_letters + string.digits
-                    # kq_chuoi = ''.join((random.choice(chuoi) for i in range(6)))
-                    passWord = fn.genPass()
-                    s = f'''
-                    INSERT INTO dbo.Users(UserName,EmpID,Password,UserType,Email,Status,LastModify,Modifier) values ('{formdata.username}','{formdata.username}','{fn.hashpw(passWord)}',0,'{formdata.username+"@tbslogistics.com"}',0,SYSDATETIME(),0) 
-                    ''' 
-                    fn.insert_data(s)
-                    return {'rCode': 2,
-                            'rData':{'token':fn.generate_token(username=formdata.username,days=30),'password':passWord},
-                            'rMsg':'Anh/chị nhớ lưu lại password'
-                            }
+                # chuoi = string.ascii_letters + string.digits
+                # kq_chuoi = ''.join((random.choice(chuoi) for i in range(6)))
+                passWord = fn.genPass()
+                s = f'''INSERT INTO dbo.Users(UserName,EmpID,Password,UserType,Email,Status,LastModify,Modifier) 
+                values ('{formdata.username}','{formdata.username}','{fn.hashpw(passWord)}',0,'{formdata.username+"@tbslogistics.com"}',0,SYSDATETIME(),0)''' 
+                fn.insert_data(s)
+                return {'rCode': 2,
+                        'rData':{'token':fn.generate_token(username=formdata.username,days=30),'password':passWord},
+                        'rMsg':'Anh/chị nhớ lưu lại password'}
             else:
                 return {'rCode' : 1, 'rMsg' : "Đăng nhập không thành công, EmpID tồn tại"}
         else:
             return {'rCode': 0,'rMsg': 'Tài khoản không tồn tại'}
 
 #đổi password
-@app.post('/changePass',tags=['Login'])
+# @app.post('/changePass',tags=['Login'],summary='Thay đổi password')
 async def change(form:ChangePass):
     s = ''
     a = ['Xác nhận password không đúng']
     b = ['Password mới đang rỗng']
-    c = ['Password mới phải nhỏ hơn 7 ký tự']
+    c = ['Password mới phải lớn hơn 5 và nhỏ hơn 10 ký tự']
     if form.username.isnumeric():
         s = f"""
                     SELECT top 1 EmpID, Password FROM Users WHERE EmpID = '{form.username}'
@@ -94,7 +93,7 @@ async def change(form:ChangePass):
     if len(result) > 0:
         # -- a Thái
         if (fn.check_pw(form.currentPassword,result[0][1])):
-            if form.newPassword == form.confirmPass and form.newPassword != '' and 5 < len(form.newPassword) < 7:
+            if form.newPassword == form.confirmPass and form.newPassword != '' and 5 < len(form.newPassword) < 10:
                 s = f"""
                     UPDATE dbo.Users SET Password = '{fn.hashpw(form.confirmPass)}'
                     WHERE EmpID = '{result[0][0]}'
@@ -110,9 +109,36 @@ async def change(form:ChangePass):
             }
 
 
+#đổi password
+@app.post('/changePass',tags=['Login'],summary='Thay đổi password')
+async def change(form:ChangePass):
+    if form.username.isnumeric():
+        s = f"""SELECT top 1 EmpID, Password FROM Users WHERE EmpID = '{form.username}'"""
+    else:
+        s = f"""SELECT top 1 EmpID, Password FROM Users WHERE UserName = '{form.username}'"""
+    result = fn.get_data(s)
+    if len(result) > 0:
+        if (fn.check_pw(form.currentPassword,result[0][1])):
+            # if form.newPassword == form.confirmPass and form.newPassword != '' and 5 < len(form.newPassword) < 10:
+            if form.newPassword == '':
+                return {'rCode':0,'rError':'Password mới đang rỗng'}
+            if form.newPassword != form.confirmPass:
+                return {'rCode':0,'rError':'Xác nhận password không đúng'}
+            if len(form.newPassword) <= 5 or len(form.newPassword) > 10:
+                return {'rCode':0,'rError':'Password mới phải lớn hơn 5 và nhỏ hơn hoặc bằng 10 ký tự'}
+            s = f"""
+                UPDATE dbo.Users SET Password = '{fn.hashpw(form.confirmPass)}'
+                WHERE EmpID = '{result[0][0]}'
+                """
+            fn.insert_data(s)
+            return {'rCode':1,'rMsg':'Thay đổi password thành công'}
+    return {'rCode': 0,'rMsg': 'tài khoản hoặc mật khẩu không đúng'}
+
+
+
 
 # getEmpInfo -lấy thông tin nhân viên
-@app.get('/getEmpInfo',dependencies=[Depends(validate_token)], tags=['GetEmpInfo'])
+@app.get('/getEmpInfo',dependencies=[Depends(validate_token)], tags=['GetEmpInfo'],summary='Lấy thông tin nhân viên')
 async def getEmpInfo(empId: str = None,token: str = Depends(validate_token)): #Done
     note = {'statusCode': 0,'note': 'EmpID chưa được tạo Users'}
     note1 = {'statusCode': 0,'note':'Anh/Chị hãy nhập mã nhân viên'}
@@ -177,7 +203,7 @@ async def getEmpInfo(empId: str = None,token: str = Depends(validate_token)): #D
 
 
 # lấy list typyoff
-@app.get("/dayOffType", tags=['OffRegister']) #dependencies=[Depends(validate_token)], 
+@app.get("/dayOffType", tags=['OffRegister'],summary='lấy danh sách loại phép') #dependencies=[Depends(validate_token)], 
 async def getDayOffType(): #done
     s = f"""
             SELECT * FROM OffType
@@ -197,7 +223,7 @@ async def getDayOffType(): #done
 
 
 # đăng ký nghỉ phép --- 
-@app.post("/day-off-letter", tags=['OffRegister'],dependencies=[Depends(validate_token)])
+# @app.post("/day-off-letter", tags=['OffRegister'],dependencies=[Depends(validate_token)])
 # async def offDayRegister(empID:int,type:int,reason:str,period:int,startDate:datetime.date | None = (datetime.datetime.now() + datetime.timedelta(days=2)).strftime("%Y%m%d")):
 async def offDayRegister(form: Offregister,emplid: str = Depends(validate_token)): #Done
     note = {'rCode': 0,'rMsg':'anh chị vui lòng chọn lưu đơn (nhập số 0) hoặc gửi đơn (nhập số 1)'}
@@ -275,97 +301,162 @@ async def offDayRegister(form: Offregister,emplid: str = Depends(validate_token)
         return {'rCode':0,'rData':{},'rMsg':'chưa chọn typeID (loại phép)'}
 
 
-
-
-@app.get("/day-off-letters",tags=['OffRegister'],summary='truyền vào số 1: lấy đơn quản lý, còn lại: lấy đơn chính mình')
-async def getsListoffstatus(needAppr: int = "",astatus:str = "",emplid: int = Depends(validate_token)): #, astatus: list = None,
-# no parametter: lấy các d-o-letters của người đang đăng nhập(có token)     
-# needAppr = 1:  lấy các d-o-letters cần người đang đăng nhập(có token) phê duyệt
-    list_astatus = []
-    if astatus != "":
-        split_ = astatus.split(",") #tách phần tử --> trả về list
-        for i in range(0, len(split_)):
-            if split_[i].isnumeric(): # kiểm tra phẩn tử phải là số không
-                list_astatus.append(int(split_[i]))
-    if needAppr == 1:
-        s = f"""
-                SELECT e.DeptID,j.JPLevel FROM dbo.Employee e
-                LEFT JOIN dbo.JobPosition j ON j.JobPosID = e.PosID
-                WHERE e.EmpID = '{emplid}'
-                    """
-        result = fn.get_data(s)
-        for i in result:
-            depid = i[0]
-            jplevel = i[1]
-        #lấy mã jplevel của TP,PP của phòng ban, trực thuộc quản lý  
-        jplevel_TP_PP = ((int(jplevel/10)+1)*10)+9
-        if jplevel <= 50:
-            query = fn.depart_manager(emplid,jplevel_TP_PP) + fn.roommates(depid,jplevel)
-            if len(list_astatus)>0:
-                ketqua = [] #kết quả đầu ra
-                for i in query:
-                    if i['aStatus'] in list_astatus:#i['aStatus']: lấy value của key, kiểm tra xem có nằm trong list đầu vào không
-                        ketqua.append(i)
-                return {'rCode':1,'rData': ketqua,'rMsg': 'Lấy danh sách quản lý (filter astutus) thành công'}
-            return {'rCode':1,'rData': query,'rMsg':'lấy danh sách quản lý (ALL) thành công'} 
-        else:
-            return{'rCode':0,'rData':[],'rMsg':''}  
-    else:
-        #lấy của chính mình
-        query = fn.myself(emplid)#kết quả truy vấn
-        if len(list_astatus)>0:
-            ketqua= [] #kết quả đầu ra
-            for i in query:
-                if i['aStatus'] in list_astatus: #i['aStatus']: lấy value của key, kiểm tra xem có nằm trong list đầu vào không
-                    ketqua.append(i) 
-            return {'rCode':1,'rData': ketqua,'rMsg': 'Lấy danh sách myself (filter astutus) thành công'}
-        return {'rCode':1,'rData': query,'rMsg': 'lấy danh sách myself (ALL) thành công'}
-
-@app.put("/adjust-day-off",tags=['OffRegister'])   
-async def adjust(form: AdjustDayOff, emplid: int = Depends(validate_token)):
+# đăng ký nghỉ phép - gửi mail 
+@app.post("/day-off-letter", tags=['OffRegister'],summary='đăng ký nghỉ phép - gửi mail',dependencies=[Depends(validate_token)])#,dependencies=[Depends(validate_token)]
+async def offDayRegister(form: Offregister,emplid: str = Depends(validate_token)): #Done
+    note = {'rCode': 0,'rMsg':'anh chị vui lòng chọn lưu đơn (nhập số 0) hoặc gửi đơn (nhập số 1)'}
+    note1 = {'rCode': 0,'rMsg':'EmpID chưa được tạo Users'}
     offtypeId = []
-    s = f'''
-            SELECT OffTypeID FROM dbo.OffType
-            '''
+    s = f'''SELECT OffTypeID FROM dbo.OffType'''
     result = fn.get_data(s)
     for row in result:
-        offtypeId.append(int(row[0]))   
+        offtypeId.append(int(row[0]))
+    if form.type in offtypeId:
+        if form.period > 0:
+            #if form.startdate >= datetime.date.today() + timedelta(days=2) and form.startdate.isoweekday() != 7: #isoweekday lấy số nguyên theo thứ trong tuần (7 là ngày chủ nhật)
+            #trường hợp lưu lại: regdate = NULL #comment là trạng thái 0: lưu , 1: gửi đơn
+            warning = []
+            warning_2 = []
+            if form.period < 3:
+                if form.startdate < datetime.date.today() + timedelta(days=2):
+                    warning = ['Vui lòng đăng ký ngày nghỉ phép trước 2 ngày cho lần sau']
+            elif form.period < 7:
+                if form.startdate < datetime.date.today() + timedelta(days=5):
+                    warning = ['Anh/chị vui lòng đăng ký ngày nghỉ phép trước 5 ngày cho lần sau']
+            elif form.period >= 7:
+                if form.startdate < datetime.date.today() + timedelta(days=10):
+                    warning = ['Anh/chị vui lòng đăng ký ngày nghỉ phép trước 10 ngày cho lần sau']
+            if form.startdate.isoweekday() == 7:
+                warning_2 = ['Ngày nghỉ phép là ngày chủ nhật']
+            if form.command == 0:
+                c = 'NULL'
+                rMsg = ['Đơn đã lưu']
+                email_notifi = ['Đơn chưa được gửi mail']
+            elif form.command == 1:
+                c = 'SYSDATETIME()'
+                rMsg = ['Đơn đã gửi']
+                email_notifi = []
+                if form.reason == "":
+                    return {'rCode': 0,'rMsg':'Vui lòng nhập lý do nghĩ phép'}  
+            else:
+                return note
+            #code cải tiến (viết lần 2)
+            if fn.checkEmplIDUser(emplid):
+                s = f'''INSERT INTO dbo.OffRegister(EmpID,Type,Reason,Startdate,Period,RegDate,AnnualLeave,Address) 
+                    VALUES ('{emplid}','{form.type}',N'{form.reason}','{form.startdate}','{form.period}',{c},0,N'{form.address}')''' 
+                fn.insert_data(s)
+                #gửi mail nếu như đã phê duyệt đồng ý
+                if form.command == 1:
+                    receiver_mails_manag = fn.get_receiver_email_manag(emplid)
+                    # email_ApprovalOder = fn.get_email_ApprovalOder(emplid)
+                    # receiver_mails_manag.extend(email_ApprovalOder)
+                    print(receiver_mails_manag)
+                    if len(receiver_mails_manag)>0:
+                        fn.sentMail(receiver_mails_manag,0)
+                if warning == [] and warning_2 == [] and email_notifi == []:
+                    return {'rCode':1,'rMsg': rMsg}
+                return {'rCode':1,'rMsg': rMsg + email_notifi,'rError':{'startdate': warning + warning_2}}
+            else:
+                return note1
+        else:
+            return {'rCode':0,'rData':{},'rMsg':'vui lòng nhập số ngày nghĩ'}
+    else:
+        return {'rCode':0,'rData':{},'rMsg':'chưa chọn typeID (loại phép)'}
+
+
+
+@app.get("/day-off-letters",tags=['OffRegister'],summary='truyền vào số 1: quản lý đơn nghỉ phép, 0:lấy đơn chính mình, khác: lấy đơn nghỉ phép được chỉ định')
+async def getsListoffstatus(needAppr: int = "",astatus:str = "",emplid: int = Depends(validate_token)):
+    list_astatus = []
+    if astatus != "":
+        split_ = astatus.split(",")
+        for i in range(0,len(split_)):
+            if split_[i].isnumeric():
+                list_astatus.append(int(split_[i]))
+    s = f'''
+            SELECT e.DeptID,j.JPLevel FROM dbo.Employee e
+            LEFT JOIN dbo.JobPosition j ON j.JobPosID = e.PosID
+            WHERE e.EmpID = '{emplid}'
+            '''
+    result = fn.get_data(s)
+    for i in result:
+        depid = i[0]
+        jplevel = i[1]
+    jplevel_TP_PP = ((int(jplevel/10)+1)*10)+9
+    if needAppr == 1:
+        if jplevel <= 50:
+            query = fn.depart_manager(emplid,jplevel_TP_PP) + fn.roommates(depid,jplevel)
+        else:
+            return {'rCode':0,'rData':[],'rMsg':''}
+    elif needAppr == 0:
+        query = fn.myself(emplid)
+    else:
+        query = fn.depart_staff_manager(emplid)
     
-    s1 = f"""
-            SELECT EmpID  FROM dbo.OffRegister
-            WHERE regID = '{form.regid}' AND RegDate IS NULL
-        """
+    if len(list_astatus)>0:
+        ketqua = []
+        for i in query:
+            if i['aStatus'] in list_astatus:
+                ketqua.append(i)
+        return {'rCode':1, 'rData': ketqua,'rMsg': 'lấy danh sách nhân viên nghĩ phép thành công'}
+    return {'rCode':1, 'rData': query,'rMsg': 'lấy danh sách nhân viên nghĩ phép thành công'}
+
+
+
+@app.put("/adjust-day-off",tags=['OffRegister'],summary='Điều chỉnh đơn nghỉ phép')   
+async def adjust(form: AdjustDayOff, emplid: int = Depends(validate_token)):
+    offtypeId = []
+    s = f'''SELECT OffTypeID FROM dbo.OffType'''
+    result = fn.get_data(s)
+    for row in result:
+        offtypeId.append(int(row[0]))
+    s1 = f"""SELECT EmpID  FROM dbo.OffRegister WHERE regID = '{form.regid}' AND RegDate IS NULL"""
     result_1 = fn.get_data(s1)
-    
     # if emplid == 
     if len(result_1) > 0:
         if int(emplid) == result_1[0][0]:
             if form.offtype in offtypeId:
                 if form.period > 0:
-                    a = []
-                    b = []
-                    if form.startdate < datetime.date.today() + timedelta(days=2):
-                        a = ['Vui lòng đăng ký ngày nghỉ phép trước 2 ngày cho lần sau']
+                    warning = []
+                    warning_2 = []
+                    if form.period < 3:
+                        if form.startdate < datetime.date.today() + timedelta(days=2):
+                            warning = ['Vui lòng đăng ký ngày nghỉ phép trước 2 ngày cho lần sau']
+                    elif form.period < 7:
+                        if form.startdate < datetime.date.today() + timedelta(days=5):
+                            warning = ['Anh/chị vui lòng đăng ký ngày nghỉ phép trước 5 ngày cho lần sau']
+                    elif form.period >= 7:
+                        if form.startdate < datetime.date.today() + timedelta(days=10):
+                            warning = ['Anh/chị vui lòng đăng ký ngày nghỉ phép trước 10 ngày cho lần sau']
                     if form.startdate.isoweekday() == 7:
-                        b = ['Ngày nghĩ phép là ngày chủ nhật']
-
+                        warning_2 = ['Ngày nghĩ phép là ngày chủ nhật']
                     if form.command == 0:
                         c = 'NULL'
-                        d = 'Chỉnh sửa đơn thành công, đơn đã được lưu'
+                        rMsg = ['Chỉnh sửa đơn thành công, đơn đã được lưu']
+                        email_notifi = ['Đơn chưa được gửi mail']
                     elif form.command == 1:
                         c = 'SYSDATETIME()'
-                        d = 'Chỉnh sửa đơn thành công, đơn đã được gửi'
+                        rMsg = ['Chỉnh sửa đơn thành công, đơn đã được gửi']
+                        email_notifi = []
+                        if form.reason == "":
+                            return {'rCode': 0,'rMsg':'Vui lòng nhập lý do nghĩ phép'}
                     else:
                         return {'rCode': 0,'rMsg':'anh chị vui lòng chọn lưu đơn (nhập số 0) hoặc gửi đơn (nhập số 1)'}
-                    s = f'''
-                            UPDATE dbo.OffRegister 
+                    s = f'''UPDATE dbo.OffRegister 
                             SET Type = '{form.offtype}', Reason = N'{form.reason}',StartDate = '{form.startdate}',Period = '{form.period}',RegDate = {c},Address = N'{form.address}'
-                            WHERE regID = {form.regid}	      
-                        ''' 
+                            WHERE regID = {form.regid}''' 
                     fn.insert_data(s)
-                    if a == [] and b == []:
-                        return {'rCode':1,'rMsg': d}
-                    return {'rCode':1,'rMsg': d,'rError':{'startdate': a + b}}
+                    #gửi mail nếu như đã phê duyệt đồng ý
+                    if form.command == 1:
+                        receiver_mails_manag = fn.get_receiver_email_manag(emplid)
+                    # email_ApprovalOder = fn.get_email_ApprovalOder(emplid)
+                    # receiver_mails_manag.extend(email_ApprovalOder)
+                        print(receiver_mails_manag)
+                        if len(receiver_mails_manag)>0:
+                            fn.sentMail(receiver_mails_manag,0)
+                    if warning == [] and warning_2 == [] and email_notifi == []:
+                        return {'rCode':1,'rMsg': rMsg}
+                    return {'rCode':1,'rMsg': rMsg + email_notifi,'rError':{'startdate': warning + warning_2}}
                 else:
                     return {'rCode':0,'rData':{},'rMsg':'vui lòng nhập số ngày nghĩ'}
             else:
@@ -377,7 +468,7 @@ async def adjust(form: AdjustDayOff, emplid: int = Depends(validate_token)):
 
 
 # tìm đơn nghĩ phép thep regID viết lần 4
-@app.get("/day-off-letter",tags=['OffRegister'])
+@app.get("/day-off-letter",tags=['OffRegister'],summary='lấy đơn nghỉ phép theo regID (mã đơn)')
 async def dayoffregID(regid = None):
     if str(regid).isnumeric():
         
@@ -449,7 +540,7 @@ async def dayoffregID(regid = None):
 
 
 # phê duyệt
-@app.post("/approve",tags=['Approve'])
+# @app.post("/approve",tags=['Approve'])
 async def approve(form: Approve,approver: str = Depends(validate_token)): #form: Approve
     # kiểm tra regID có tồn tại hay ko
     s = f"""
@@ -502,17 +593,80 @@ async def approve(form: Approve,approver: str = Depends(validate_token)): #form:
     else:
         return{'rCode':0,'rdata': {},'rMsg':'Regid không tồn tại'}
    
+@app.post("/approve",tags=['Approve'],summary='Phê duyệt đơn')
+async def approve(form: Approve,approver: str = Depends(validate_token)): #form: Approve
+    # kiểm tra regID có tồn tại hay ko
+    s = f"""
+            SELECT o.RegDate, u.Email FROM dbo.OffRegister o
+            LEFT JOIN dbo.Users u ON u.EmpID = o.EmpID 
+            WHERE regID = '{form.regid}' AND RegDate IS NOT NULL      
+        """
+    result1 = fn.get_data(s)
+    
+    #kiểm nếu có đơn thì kiểm tra duyệt chưa, không có đơn trả về lỗi
+    if len(result1)>0:
+        # kiểm tra regID đã được phê duyệt chưa
+        s = f"""
+                SELECT CASE WHEN max(apprOrder) IS NULL THEN 0   ELSE max(apprOrder)   END as aOrder 
+                FROM dbo.Approval
+                WHERE regID = '{form.regid}'      
+            """
+        result = fn.get_data(s)
+        
+        aOrder = result[0][0]
+        if aOrder == 0: #chưa phê duyệt
+            aOrder += 1
+            #lấy thông tin người approve
+            s = f"""select PosID from Employee where EmpID = '{approver}'"""
+            result = fn.get_data(s)
+            jobposid = ''
+            if len(result) >0:
+                jobposid = result[0][0]
+            if form.state != 1:
+                form.state = 0
+                if form.comment == '':
+                    return {'rCode':0,'rMsg':'vui lòng nhập lý do phê duyệt'}
+            s = f'''
+            INSERT INTO dbo.Approval(regID,ApprOrder,Approver,JobPosID,adjType,adjStartDate,adjPeriod,Comment,ApprovalState,ApprovalDate)
+            VALUES
+            ('{form.regid}','{aOrder}','{approver}','{jobposid}',0,SYSDATETIME(),0,N'{form.comment}','{form.state}',SYSDATETIME())
+            ''' 
+            fn.insert_data(s)
+            receiver_mail = []
+            receiver_mail.append(result1[0][1])
+            fn.sentMail(receiver_mail,1)
+            if form.state == 1:
+                #lấy mail nhân sự
+                mail_HRM = []
+                s1 = f'''  
+                        SELECT e.EmpID,e.FirstName,e.LastName,j.JPLevel,u.Email FROM dbo.Employee e 
+                        LEFT JOIN dbo.JobPosition j ON j.JobPosID = e.PosID
+                        LEFT JOIN dbo.Users u ON u.EmpID = e.EmpID
+                        WHERE e.DeptID = 'NS'AND j.JPLevel <=50
+                        '''
+                query = fn.get_data(s1)
+                for row in query:
+                    mail_HRM.append(row[4])
+                fn.sentMail(mail_HRM,2)
+            return {'rCode':1,'rData':{},'rMsg':'Phê duyệt thành công'}
+        else:
+            return {'rCode':0,'rData':{},'rMsg':'Phê duyệt không thành công, đơn đã được phê duyệt trước đó'}
+    else:
+        return{'rCode':0,'rdata': {},'rMsg':'Regid không tồn tại'}
 
 
-@app.get("/day-off-summary",tags=['Version 2']) #chỉnh sửa lại method
+
+
+
+@app.get("/day-off-summary",tags=['Version 2'],summary='lấy file tổng kết số ngày nghĩ phép trong tháng') #chỉnh sửa lại method
 async def sum(date: datetime.date):
     m = date.month
     y = date.year
     s = f'''
             SELECT o.EmpID,ot.Name AS 'OffTypeName',SUM(o.Period) AS 'Period',
-                        MONTH(o.RegDate) AS month,
-						YEAR(o.RegDate) AS year,
-                        e.FirstName,e.LastName,FORMAT(e.ComeDate,'yyyy-MM-dd') AS ComeDate,
+                        MONTH(o.StartDate) AS month,
+						YEAR(o.StartDate) AS year,
+                        e.FirstName,e.LastName,FORMAT(e.ComeDate,'MM/dd/yyyy') AS ComeDate,
                         j.Name AS 'JobPositionName',
                         d.Name AS 'departmentName',
                         al.AnnualLeave
@@ -524,19 +678,20 @@ async def sum(date: datetime.date):
                 INNER JOIN dbo.Department d ON d.DeptID = e.DeptID
                 LEFT JOIN dbo.AnnualLeave al ON al.EmpID = e.EmpID
                 WHERE a.ApprOrder = 1 AND a.ApprovalState = 1
-                    AND YEAR(o.RegDate) = {y}
-					AND MONTH(o.RegDate) = {m}
+                    AND YEAR(o.StartDate) = {y}
+					AND MONTH(o.StartDate) = {m}
                 GROUP BY o.EmpID,o.Type,
                         ot.Name,
                         e.FirstName,e.LastName,e.DeptID,e.PosID,ComeDate,
                         j.Name,
                         d.Name,
-                        MONTH(o.RegDate),
-						YEAR(o.RegDate),al.AnnualLeave
+                        MONTH(o.StartDate),
+						YEAR(o.StartDate),al.AnnualLeave
                 order by ot.name asc
         '''
     result_query = fn.get_data(s,1)
-    
+
+    print(result_query)
     key = []
     list_key = []
     output_result = []
@@ -551,7 +706,9 @@ async def sum(date: datetime.date):
             number = 0
             for i in output_result:
                 if key == i['EmpID']:
+                    print(output_result[number])
                     output_result[number][row['OffTypeName']] = row['Period']
+                    print(output_result[number])
                 number += 1
 
     #     if NOT output.exists(key):
@@ -600,66 +757,12 @@ async def sum(date: datetime.date):
     # return {'rCode': 1, 'rData': output_result, 'rMsg':'Lấy danh sách loại phép thành công'}
     return FileResponse('file.xlsx',filename='Data.xlsx')
     
-# đăng ký nghỉ phép - gửi mail 
-#@app.post("/day-off-letter-test", tags=['Version 2'],dependencies=[Depends(validate_token)])#,dependencies=[Depends(validate_token)]
-# async def offDayRegister(empID:int,type:int,reason:str,period:int,startDate:datetime.date | None = (datetime.datetime.now() + datetime.timedelta(days=2)).strftime("%Y%m%d")):
-async def offDayRegister(form: Offregister,emplid: str = Depends(validate_token)): #Done
-    note = {'rCode': 0,'rMsg':'anh chị vui lòng chọn lưu đơn (nhập số 0) hoặc gửi đơn (nhập số 1)'}
-    note1 = {'rCode': 0,'rMsg':'EmpID chưa được tạo Users'}
-    offtypeId = []
-    s = f'''
-            SELECT OffTypeID FROM dbo.OffType
-            '''
-    result = fn.get_data(s)
-    for row in result:
-        offtypeId.append(int(row[0]))
 
-    if form.type in offtypeId:
-        if form.period > 0:
-            #if form.startdate >= datetime.date.today() + timedelta(days=2) and form.startdate.isoweekday() != 7: #isoweekday lấy số nguyên theo thứ trong tuần (7 là ngày chủ nhật)
-            #trường hợp lưu lại: regdate = NULL #comment là trạng thái 0: lưu , 1: gửi đơn
-            a = []
-            b = []
-            if form.startdate < datetime.date.today() + timedelta(days=2):
-                a = ['Vui lòng đăng ký ngày nghỉ phép trước 2 ngày cho lần sau']
-            if form.startdate.isoweekday() == 7:
-                b = ['Ngày nghỉ phép là ngày chủ nhật']
 
-            if form.command == 0:
-                c = 'NULL'
-                rMsg = ['Đơn đã lưu']
-            elif form.command == 1:
-                c = 'SYSDATETIME()'
-                rMsg = ['Đơn đã gửi']
-            else:
-                return note
-            #code cải tiến (viết lần 2)
-            if fn.checkEmplIDUser(emplid):
-                s = f'''
-                    INSERT INTO dbo.OffRegister(EmpID,Type,Reason,Startdate,Period,RegDate,AnnualLeave,Address) 
-                    VALUES ('{emplid}','{form.type}',N'{form.reason}','{form.startdate}','{form.period}',{c},0,N'{form.address}')           
-                    ''' 
-                fn.insert_data(s)
-                #gửi mail nếu như đã phê duyệt đồng ý
-                email_notifi = ['Đơn chưa được gửi mail']
-                if form.command == 1:
-                    receiver_mails = fn.get_receiver_email(emplid)
-                    if len(receiver_mails)>0:
-                        fn.sentMail(receiver_mails)
-                        email_notifi = []
-                if a == [] and b == [] and email_notifi == []:
-                    return {'rCode':1,'rMsg': rMsg}
-                return {'rCode':1,'rMsg': rMsg + email_notifi,'rError':{'startdate': a + b}}
-            else:
-                return note1
-        else:
-            return {'rCode':0,'rData':{},'rMsg':'vui lòng nhập số ngày nghĩ'}
-    else:
-        return {'rCode':0,'rData':{},'rMsg':'chưa chọn typeID (loại phép)'}
 
 
 # Nhân sự lấy đơn đã duyệt (tiếp nhận)
-#@app.get("/day-off-letter-HRM",tags=['Version 2'])
+@app.get("/day-off-letter-HRM",tags=['Version 2'],summary='Nhân sự lấy đơn đã duyệt (tiếp nhận)')
 async def dayOffLetterHrm(emplid: int = Depends(validate_token)):
     s = f'''
             SELECT e.DeptID,j.JPLevel FROM dbo.Employee e
@@ -690,11 +793,173 @@ async def dayOffLetterHrm(emplid: int = Depends(validate_token)):
         return {'rCode':1,'rData':query_s1,'rMsg':'lấy danh sách nghĩ phép thành công'}
     return {'rCode':0,'rData':{},'rMsg':'Bạn không phải là nhân viên NS hoặc không đủ quyền'}
 
+#PNG,JPG,GIF,TIFF,PSD,PDF,JPEG,SVG
+#JPEG,JPG -- tốc dộ tải ảnh lên web . PNG kiểm tra thêm
+# @app.post("/add-Department",tags=[''])
+@app.post("/upload/",tags=['Version 2'])
+async def upload_file(file: UploadFile,emplID: str = Depends(validate_token)): #= File(...)
+    # s = f'''SELECT * FROM dbo.Image WHERE EmpID = {emplID}'''
+    # result = fn.get_data(s)
+    # if len(result) < 1:
+    #     s = f'''INSERT INTO dbo.Image(EmpID,ImageData) VALUES({emplID},NULL)'''
+    #     fn.insert_data(s)
+
+    #xóa đường link ảnh củ
+    s = f'''SELECT ImageData FROM dbo.Image WHERE EmpID = {emplID}'''
+    result = fn.get_data(s)
+    if os.path.exists(result[0][0]):
+        if result[0][0] != os.path.join('tempDir','30b39c90-f927-4154-bbe7-acd069988a54.JPG'): 
+            os.remove(result[0][0])
+        else:
+            print(result[0][0]== os.path.join('tempDir','30b39c90-f927-4154-bbe7-acd069988a54.JPG')) #kiểm tra kết quả đường dẫn có bằng nhau không --> trả về True
+    extension = file.filename.split(".")[1].upper()
+    if extension not in ["PNG","JPG","JPEG"]:
+        return {'rCode': 0,'rData': [],'rMsg':"đuôi ảnh không cho phép"}
+    filename = str(uuid.uuid4()) + "." + extension
+    file_path = os.path.join('tempDir',filename)
+    with open(file_path, "wb") as buffer: #buffer là file object mở sẳn để ghi dữ liệu vào đó
+        buffer.write(file.file.read()) #đọc file và viết vào file đệm
+        buffer.close()
+    s = f'''UPDATE image SET imagedata = '{file_path}' WHERE empID =  {emplID}'''
+    fn.insert_data(s)
+    return {'rCode':1,'rMsg': 'Upload ảnh thành công'}
+
+@app.get('/get-image/',tags=['Version 2'])
+async def get_image(emplID: str = Depends(validate_token)):
+    s = f'''SELECT ImageData FROM dbo.Image WHERE EmpID = {emplID}'''
+    result = fn.get_data(s)
+    if os.path.exists(result[0][0]):
+        return FileResponse(result[0][0])
+    return {'rCode':0,'rData':[],'rMsg':'hình ảnh không tồn tại'}
+   
+
+
+    #------------------------------------------------------------
+    # file_image = file.filename
+    # extension = file_image.split(".")[1].upper()
+    # print(extension)
+    # if extension not in ["PNG","JPG","JPEG"]:
+    #     return {"status": "error", "detail": "đuôi ảnh không cho phép"}
+    
+    # filename = str(uuid.uuid4()) + '.' + extension
+    # Link_image = os.path.join("tempDir", filename)
+    # print(filename)
+    
+    
+    # toke_name = secrets.token_hex(10)+"."+extension
+    # print(file.file.read())
+    # a = await file.read()
+    # print(a)
+    #-----------------------------------------------------------------------------------
+   
 
 
 
-#cập nhật hàm đăng ký phép (ràng buộc lý do nghĩ phép)
-#chỉnh sửa hàm lấy đơn nghĩ phép
+    # print(file.filename)
+    # # file.filename = f"{uuid.uuid4()}.jpg"
+    # print(file.filename)
+    # contents = await file.read()
+    
+    # with open(f"{ImageDir}{file.filename}","wb") as f:
+    #     print(f)
+    #     f.write(contents)
+
+    
+    # s = f'''
+    #     INSERT INTO dbo.NHAT
+    #         (
+    #             EmpID,
+    #             ImageName,
+    #             ImageData
+    #         )
+    #         VALUES
+    #         (   622110103,   -- EmpID - bigint
+    #             'aaa',  -- ImageName - varchar(100)
+    #             {contents} -- ImageData - varbinary(max)
+    #             )
+    #     '''
+    # fn.insert_data(s)
+    # return True
+    #-------------------------------------------------------------------------------------------------------------------------------
+    # file_temp = tempfile.NamedTemporaryFile(delete=False)
+    # file_temp.write(await file.read())
+    # file_temp.close()
+
+    # with open(file_temp.name,"rb") as f:
+    #     image_data = f.read()
+    # image_data_binary = binascii.a2b_base64(image_data)
+    # print(f)
+    # s = f'''
+    #     INSERT INTO dbo.NHAT
+    #         (
+    #             EmpID,
+    #             ImageName,
+    #             ImageData
+    #         )
+    #         VALUES
+    #         (   622110103,   -- EmpID - bigint
+    #             '',  -- ImageName - varchar(100)
+    #             {image_data_binary} -- ImageData - varbinary(max)
+    #             )
+    #     '''
+    # fn.insert_data(s)
+
+    # return {'Note': image_data_binary}
+
+
+# @app.post("/Đăng ký ngày nghỉ phép",tags=['test'])
+async def dangkynghiphep(form: Offregister, emplid: str = Depends(validate_token)): #form: Offregister, emplid: str = Depends(validate_token)
+    s = f'''SELECT OffTypeID,Name FROM dbo.OffType'''
+    result = fn.get_data(s)
+    offTypeID = []
+    for row in result:
+        offTypeID.append(int(row[0]))
+    if form.type not in offTypeID:
+        return {'rCode':0,'rData':[],'rMsg':'vui lòng nhập đúng mã loại phép'}
+    if form.startdate.isoweekday() == 7:
+        warning1 = ['Ngày nghỉ phép là ngày chủ nhật']
+    if form.period < 0:
+        return {'rCode':0,'rData':[],'rMsg':'Vui lòng nhập số ngày nghĩ'}
+    
+    
+
+    warning = []
+    if form.command == 1:
+        regdate = 'SYSDATETIME()'
+        email_notifi = ['Đơn đã được gửi mail']
+        rMsg = ['Đơn đã gửi']
+        if form.reason == "":
+            return {'rCode':0,'rData':[],'rMsg':'Vui lòng nhập lý do nghỉ phép'}
+        if form.period < 3:
+            if form.startdate < datetime.date.today() + timedelta(days=2):
+                warning = ['Anh/chị vui lòng đăng ký ngày nghỉ phép trước 2 ngày cho lần sau']
+        if form.period < 7:
+            if form.startdate < datetime.date.today() + timedelta(days=5):
+                warning = ['Anh/chị vui lòng đăng ký ngày nghỉ phép trước 5 ngày cho lần sau']         
+        if form.period >= 7:
+            if form.startdate < datetime.date.today() + timedelta(days=10):
+                warning = ['Anh/chị vui lòng đăng ký ngày nghỉ phép trước 10 ngày cho lần sau']
+    elif form.command == 0:
+        regdate = 'NULL'
+        email_notifi = ['Đơn chưa được gửi mail']
+        rMsg = ['Đơn đã lưu']
+    else:
+        return {'rCode':0,'rData':[],'rMsg':'Vui lòng nhập 0 (lưu đơn), 1 (gửi đơn)'}
+    
+    receiver_mail = []
+
+    s = f'''
+            INSERT INTO dbo.OffRegister(EmpID,Type,Reason,StartDate,Period,RegDate,AnnualLeave,Address)
+            VALUES({emplid},'{form.type}',N'{form.reason}',{form.startdate},{form.period},{regdate},0,N'{form.address}')
+            '''
+    fn.insert_data(s)
+
+
+
+
+
+
+
     
 
 
@@ -971,6 +1236,7 @@ async def getlistOff():
                       'regID', 'EmpID', 'Type', 'Reason','StartDate','Period','RegDate','AnnualLeave'])
     # print(df)
     return (df.to_dict('records'))
+
 
 #------------------------------------------------------------------------------------------------------------------------------
     # if regid == "": #nếu chưa phê duyệt thì....
@@ -1411,3 +1677,57 @@ async def getsListoffstatus(form: Getlist,emplid: int = Depends(validate_token))
                     ketqua.append(i) 
             return {'rCode':1,'rData': ketqua,'rMsg': 'Lấy danh sách myself (filter astutus) thành công'}
         return {'rCode':1,'rData': query,'rMsg': 'lấy danh sách myself (ALL) thành công'}
+
+#hàm lấy đơn viết lần 1
+# @app.get("/day-off-letters",tags=['OffRegister'],summary='truyền vào số 1: lấy đơn quản lý, còn lại: lấy đơn chính mình')
+async def getsListoffstatus(needAppr: int = "",astatus:str = "",emplid: int = Depends(validate_token)): #, astatus: list = None,
+# no parametter: lấy các d-o-letters của người đang đăng nhập(có token)     
+# needAppr = 1:  lấy các d-o-letters cần người đang đăng nhập(có token) phê duyệt
+    list_astatus = []
+    if astatus != "":
+        split_ = astatus.split(",") #tách phần tử --> trả về list
+        for i in range(0, len(split_)):
+            if split_[i].isnumeric(): # kiểm tra phẩn tử phải là số không
+                list_astatus.append(int(split_[i]))
+    if needAppr == 1:
+        s = f"""
+                SELECT e.DeptID,j.JPLevel FROM dbo.Employee e
+                LEFT JOIN dbo.JobPosition j ON j.JobPosID = e.PosID
+                WHERE e.EmpID = '{emplid}'
+                    """
+        result = fn.get_data(s)
+        for i in result:
+            depid = i[0]
+            jplevel = i[1]
+        #lấy mã jplevel của TP,PP của phòng ban, trực thuộc quản lý  
+        jplevel_TP_PP = ((int(jplevel/10)+1)*10)+9
+        if jplevel <= 50:
+            query = fn.depart_manager(emplid,jplevel_TP_PP) + fn.roommates(depid,jplevel)
+            if len(list_astatus)>0:
+                ketqua = [] #kết quả đầu ra
+                for i in query:
+                    if i['aStatus'] in list_astatus:#i['aStatus']: lấy value của key, kiểm tra xem có nằm trong list đầu vào không
+                        ketqua.append(i)
+                return {'rCode':1,'rData': ketqua,'rMsg': 'Lấy danh sách quản lý (filter astutus) thành công'}
+            return {'rCode':1,'rData': query,'rMsg':'lấy danh sách quản lý (ALL) thành công'} 
+        else:
+            return{'rCode':0,'rData':[],'rMsg':''}  
+    elif needAppr == 0:
+        #lấy của chính mình
+        query = fn.myself(emplid)#kết quả truy vấn
+        if len(list_astatus)>0:
+            ketqua= [] #kết quả đầu ra
+            for i in query:
+                if i['aStatus'] in list_astatus: #i['aStatus']: lấy value của key, kiểm tra xem có nằm trong list đầu vào không
+                    ketqua.append(i) 
+            return {'rCode':1,'rData': ketqua,'rMsg': 'Lấy danh sách myself (filter astutus) thành công'}
+        return {'rCode':1,'rData': query,'rMsg': 'lấy danh sách myself (ALL) thành công'}
+    else:
+        query = fn.depart_staff_manager(emplid)
+        if len(list_astatus)>0:
+            ketqua = []
+            for i in query:
+                if i['aStatus'] in list_astatus:
+                    ketqua.append(i)
+            return {'rCode':1, 'rData': ketqua,'rMsg': 'lấy danh sách nhân viên nghĩ phép (được chỉ định) thành công'}
+        return {'rCode':1,'rData': query,'rMsg': 'lấy danh sách tất cả các đơn thành công'}

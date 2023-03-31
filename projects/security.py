@@ -6,6 +6,7 @@ from fastapi.security import HTTPBearer
 from pydantic import ValidationError
 import projects.functions as fn
 
+
 reusable_oauth2 = HTTPBearer(scheme_name='Authorization')
 
 def validate_token(http_authorization_credentials=Depends(reusable_oauth2)) -> str:
@@ -23,3 +24,9 @@ def validate_token(http_authorization_credentials=Depends(reusable_oauth2)) -> s
             status_code=403,
             detail=f"Could not validate credentials",
         )
+
+# def getUserName() -> str:
+#     try:
+#         return jwt.decode(http_authorization_credentials.credentials, fn.SECRET_KEY, algorithms=[fn.SECURITY_ALGORITHM]).get('username')
+#     except(jwt.PyJWTError, ValidationError):
+#         return ''

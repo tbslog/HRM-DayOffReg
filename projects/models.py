@@ -62,8 +62,8 @@ class AdjustDayOff(BaseModel):
     address: str = ""
     command: int
 
-class DayOffSummary(BaseModel):
-    date: datetime.date
+# class DayOffSummary(BaseModel):
+#     date: datetime.date
     # @validator('date')
     # def validate_date(cls, value):
     #     try:
@@ -72,13 +72,4 @@ class DayOffSummary(BaseModel):
     #     except ValueError:
     #         raise ValueError("Bạn đã nhập ngày tháng không hợp lệ!")
 
-
-
-
-
-
-
-
-
-
-
+# class Add_Department(BaseModel):
