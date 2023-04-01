@@ -10,6 +10,7 @@ import { login } from "../../actions/auth";
 import ChangePass from "./ChangePass";
 
 import { Modal } from "bootstrap";
+import Cookies from "js-cookie";
 
 const Login = (props) => {
   const {
@@ -64,6 +65,7 @@ const Login = (props) => {
   };
 
   const Regis = (e) => {
+    Cookies.set("empid", JSON.stringify(username));
     dispatch(login(username, password, 1))
       .then(() => {
         showModalForm();
@@ -103,9 +105,10 @@ const Login = (props) => {
   const onSubmit = (e) => {
     setLoading(true);
     setUsername(username);
+    //console.log(e);
 
     if (!errors.userName?.message && !errors.password?.message) {
-      dispatch(login(username, password, 0))
+      dispatch(login(username, e.password, 0))
         .then(() => {
           navigate("/");
           window.location.reload();
@@ -187,8 +190,6 @@ const Login = (props) => {
                             id="password"
                             {...register("password", validateLogin.Password)}
                             placeholder="Mật khẩu"
-                            value={password}
-                            onChange={onChangePassword}
                           />
                           <button
                             className="border-0"

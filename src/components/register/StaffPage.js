@@ -2,25 +2,28 @@ import React, { useState, useEffect, useRef } from "react";
 import DataTable from "react-data-table-component";
 import { getData } from "../../services/user.service";
 import moment from "moment";
-import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
+
 import { Modal } from "bootstrap";
+import Cookies from "js-cookie";
 
 import Edit from "./Edit";
 import Approve from "./Approve";
 
+let info = Cookies.get("info") && JSON?.parse(Cookies.get("info")); // kiểm tra đk 1 nếu có chạy câu lệnh sau
+let emID = Cookies.get("empid");
 const StaffPage = (props) => {
   const [dbTable, setdbTable] = useState([]);
-  const [dbTableMana, setdbTableMana] = useState([]);
+
   const [listTypeOff, setlistTypeOff] = useState([]);
   const [fullName, setdbFullName] = useState([]);
   const [empid, setdbEmpid] = useState([]);
-  const [regID, setregID] = useState("");
+
   const [dataRegByID, setDataRegByID] = useState({});
 
   const [open, setOpen] = useState(false);
-  const [onPop, setOn] = useState(false);
+
   const [isAppove, setisAppove] = useState(false);
-  const [isInfo, setisInfo] = useState(false);
+
   const [isShow, setisShow] = useState(true);
   const [isme, setisme] = useState(false);
 
@@ -30,20 +33,20 @@ const StaffPage = (props) => {
 
   useEffect(() => {
     (async () => {
-      let data = await getData("day-off-letters");
+      let data = await getData("day-off-letters?needAppr=0");
       setdbTable(data.rData);
 
       let dataMana = await getData(
-        "day-off-letters?needAppr=1&astatus=1%2C2%2C3"
+        "day-off-letters?needAppr=1&astatus=1%2C2%2C3%2C4%2C5"
       );
       //console.log(dataMana);
 
       if (dataMana.rData.length > 0) {
         setOpen(true);
       } else setOpen(false);
-      // console.log(data.rData[0].EmpID);
-      setdbEmpid(data.rData[0].EmpID);
-      setdbFullName(data.rData[0].LastName + "" + data.rData[0].FirstName);
+
+      setdbEmpid(emID);
+      setdbFullName(info.LastName + "" + info.FirstName);
 
       let dataTypeOff = await getData("dayOffType");
       setlistTypeOff(dataTypeOff.rData);
@@ -181,7 +184,7 @@ const StaffPage = (props) => {
   };
 
   const fetchData = async () => {
-    let data = await getData("day-off-letters");
+    let data = await getData("day-off-letters?needAppr=0");
     setdbTable(data.rData);
   };
   const checkRegDate = (regDate) => {

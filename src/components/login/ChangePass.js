@@ -6,6 +6,7 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { Modal } from "bootstrap";
 import { getData, postData } from "../../services/user.service";
 import { toast } from "react-toastify";
+import Cookies from "js-cookie";
 
 const ChangePass = (props) => {
   let navigate = useNavigate();
@@ -105,11 +106,12 @@ const ChangePass = (props) => {
           theme: "colored",
         });
         setValue("Password", data.passwordNew);
-
+        console.log(data.MSNV);
+        Cookies.set("empid", data.MSNV);
         window.location.reload();
         hideModal();
       } else {
-        toast.success("Đổi mật khẩu thất bại Lỗi: \n" + create.note, {
+        toast.error("Đổi mật khẩu thất bại Lỗi: \n" + create.note, {
           autoClose: 2000,
           className: "",
           position: "top-center",
@@ -275,7 +277,7 @@ const ChangePass = (props) => {
                                           autoComplete="off"
                                         >
                                           <div className="form-group">
-                                            <label>MẬT KHẨU Cũ</label>
+                                            <label>MẬT KHẨU CŨ </label>
                                             <input
                                               id="Password"
                                               {...register(

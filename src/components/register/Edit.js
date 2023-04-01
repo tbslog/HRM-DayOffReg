@@ -1,6 +1,6 @@
 import Popup from "../common/Popup";
 import React, { useState, useEffect, useCallback } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, set } from "react-hook-form";
 import Cookies from "js-cookie";
 import { getData, postData, putData } from "../../services/user.service";
 import moment from "moment";
@@ -8,6 +8,8 @@ import DatePicker from "react-datepicker";
 import { Navigate, useNavigate } from "react-router-dom";
 import Loading from "../common/loading/Loading";
 import { toast } from "react-toastify";
+
+import Pupup from "../common/Pupup";
 let emID = Cookies.get("empid");
 
 const Edit = (props) => {
@@ -29,11 +31,13 @@ const Edit = (props) => {
   const [comeDate, setcomeDate] = useState("");
   const [jPLevelName, setJPLevelName] = useState("");
   const [listTypeOff, setlistTypeOff] = useState([]);
-  const [reason, setReason] = useState("");
-  const [songaynghi, setsongaynghi] = useState("");
-  const [address, setAddress] = useState("");
+  const [showmess, setShowmess] = useState("");
+  const [showmessHandel, setShowmessHandel] = useState("");
+
   const [type, setType] = useState("");
   const [regID, setregID] = useState("");
+  const [pupupcus, setpupupcus] = useState(false);
+  const [savesendbutton, setsavesendbutton] = useState(0);
 
   useEffect(() => {
     //console.log(props.dataRegByID);
@@ -43,7 +47,7 @@ const Edit = (props) => {
       Object.keys(props.dataRegByID).length > 0 &&
       Object.keys(props).length > 0
     ) {
-      //console.log(props.dataRegByID.rData);
+      //console.log(props.dataRegByID.rData.EmpID);
       setregID(props.dataRegByID.rData?.regID);
       setValue("MSNV", props.dataRegByID.rData.EmpID);
       setType(props.dataRegByID.rData.Type);
@@ -56,14 +60,15 @@ const Edit = (props) => {
     setValue("fullName", props.fullName);
     (async () => {
       let data = await getData("getEmpInfo", emID);
+      setValue("MSNV", emID);
+
       //console.log(data.rData);
-      setname(data.rData.FirstName + " " + data.rData.LastName);
+      setname(data.rData.LastName + " " + data.rData.FirstName);
       setDepartmentName(data.rData.DepartmentName);
       setJobpositionName(data.rData.JobpositionName);
       setAnnualLeave(data.rData.AnnualLeave);
       setcomeDate(moment(data.rData.ComeDate).format("DD-MM-YYYY"));
       setJPLevelName(data.rData.JPLevelName);
-
       let dataTypeOff = await getData("dayOffType");
       setlistTypeOff(dataTypeOff.rData);
       //console.log(dataTypeOff);
@@ -99,10 +104,9 @@ const Edit = (props) => {
       required: " Không được để trống",
     },
   };
-
-  const onSubmitSave = async (data) => {
+  const save = async (data) => {
     setIsLoading(true);
-    console.log(data);
+
     var create = await putData("adjust-day-off", {
       regid: regID,
       offtype: data.offType,
@@ -122,10 +126,15 @@ const Edit = (props) => {
         position: "top-center",
         theme: "colored",
       });
-      navigate("/indexListRegister");
-      window.location.reload();
+      setpupupcus(false);
+      setsavesendbutton(0);
+      props.fetchData();
+      props.hideModal();
       reset();
       setIsLoading(false);
+      navigate("/indexListRegister");
+
+      // window.location.reload();
     } else {
       toast.success("lưu  thất bại Lỗi \n" + create.note, {
         autoClose: 2000,
@@ -134,9 +143,28 @@ const Edit = (props) => {
         theme: "colored",
       });
       setIsLoading(false);
+      setsavesendbutton(0);
     }
   };
-  const onSubmitSend = async (data) => {
+  const onSubmitSave = (data) => {
+    setsavesendbutton(1);
+    var e = new Date();
+
+    e.setDate(e.getDate() + 1);
+
+    if (
+      moment(new Date(e).toISOString()).format("YYYY-MM-DD") >=
+      moment(new Date(data?.NgayBatDau).toISOString()).format("YYYY-MM-DD")
+    ) {
+      setpupupcus(true);
+      setShowmess("Ngày Nghỉ phép không đúng quy trình ");
+      setShowmessHandel(" Bạn có muốn tiếp tục không ?");
+    } else {
+      save(data);
+      setsavesendbutton(0);
+    }
+  };
+  const send = async (data) => {
     setIsLoading(true);
     var create = await putData("adjust-day-off", {
       regid: regID,
@@ -157,11 +185,14 @@ const Edit = (props) => {
         position: "top-center",
         theme: "colored",
       });
-      navigate("/indexListRegister");
+      setpupupcus(false);
+      setsavesendbutton(0);
+
       reset();
       props.fetchData();
       props.hideModal();
       setIsLoading(false);
+      navigate("/indexListRegister");
     } else {
       toast.danger("Gửi đơn thất bại Lỗi: \n" + create.note, {
         autoClose: 2000,
@@ -172,7 +203,32 @@ const Edit = (props) => {
       setIsLoading(false);
     }
   };
+  const onSubmitSend = async (data) => {
+    setsavesendbutton(2);
+    var e = new Date();
 
+    e.setDate(e.getDate() + 1);
+
+    if (
+      moment(new Date(e).toISOString()).format("YYYY-MM-DD") >=
+      moment(new Date(data.NgayBatDau).toISOString()).format("YYYY-MM-DD")
+    ) {
+      setpupupcus(true);
+      setShowmess("Ngày Nghỉ phép không đúng quy trình ");
+      setShowmessHandel(" Bạn có muốn tiếp tục không ?");
+    } else {
+      send(data);
+      setsavesendbutton(0);
+    }
+  };
+
+  const savesend = (data) => {
+    if (savesendbutton === 1) {
+      save(data);
+    } else if (savesendbutton === 2) {
+      send(data);
+    }
+  };
   return (
     <form>
       <section className="content" style={{ minHeight: "620px" }}>
@@ -400,6 +456,29 @@ const Edit = (props) => {
           )}
         </div>
       </section>
+      {pupupcus && (
+        <Pupup
+          onClose={() => setpupupcus(false)}
+          title={" Cảnh báo "}
+          color="#FFFFFF"
+        >
+          <div className="row m-3">
+            <p>
+              {showmess} <br /> {showmessHandel}
+            </p>
+          </div>
+          <div className="row d-flex justify-content-center p-3 ">
+            <button
+              className="btn btn-primary  "
+              type="button"
+              onClick={handleSubmit(savesend)}
+            >
+              {" "}
+              Đồng ý
+            </button>
+          </div>
+        </Pupup>
+      )}
     </form>
   );
 };

@@ -3,23 +3,43 @@ import React, { useState, useEffect } from "react";
 import { getData, getfile, getDataCustom } from "../../services/user.service";
 import StaffPage from "./StaffPage";
 import ManagerPage from "./ManagerPage";
+import OtherDepartments from "./OtherDepartments";
 import Usermanual from "../usermanual/Usermanual";
 import Cookies from "js-cookie";
 import DatePicker from "react-datepicker";
 import moment from "moment";
+
 const IndexListRegister = () => {
   const [tabIndex, setTabIndex] = useState(0);
   const HandleOnChangeTabs = (tabIndex) => {
     setTabIndex(tabIndex);
   };
-  let info = JSON.parse(Cookies.get("info"));
+
+  let info = Cookies.get("info") && JSON?.parse(Cookies.get("info")); // kiểm tra đk 1 nếu có chạy câu lệnh sau
   const [startDate, setStartDate] = useState(new Date());
   const [open, setOpen] = useState(false);
+  const [pbkhac, setpbkhac] = useState([]);
+  const [showMess, setShowMess] = useState(false);
+  const [showMesspb, setShowMesspb] = useState(false);
+
   useEffect(() => {
     (async () => {
-      let dataMana = await getData(
-        "day-off-letters?needAppr=1&astatus=1%2C2%2C3"
+      let dataMana = await getData("day-off-letters?needAppr=1");
+      let datapb = await getData(
+        "day-off-letters?needAppr=3 &astatus=1%2C2%2C3%4%5"
       );
+      if (dataMana.rData[0]?.aStatus === 1) {
+        setShowMess(true);
+      } else {
+        setShowMess(false);
+      }
+      if (datapb.rData[0]?.aStatus === 1) {
+        setShowMesspb(true);
+      } else {
+        setShowMesspb(false);
+      }
+
+      setpbkhac(datapb);
       //console.log(dataMana);
       if (dataMana.rData.length > 0) {
         setOpen(true);
@@ -40,8 +60,9 @@ const IndexListRegister = () => {
   };
   const handelDownd = async (data) => {
     let day = moment(new Date(data).toISOString()).format("YYYY-MM-DD");
+
     let res = await getfile(`day-off-summary?date=${day}`);
-    console.log(res);
+    //console.log(res);
     //const url = window.URL.createObjectURL(new Blob([res]));//list file
     const url = window.URL.createObjectURL(res); // một file
     const link = document.createElement("a"); // tao the a gan link
@@ -68,7 +89,26 @@ const IndexListRegister = () => {
                   onSelect={(index) => HandleOnChangeTabs(index)}
                 >
                   <TabList>
-                    <Tab>Đơn Cần Phê Duyệt</Tab>
+                    <Tab>
+                      Đơn Cần Phê Duyệt {""}
+                      {showMess && (
+                        <i
+                          className="fas fa-info-circle "
+                          style={{ color: "#ff0000" }}
+                        />
+                      )}
+                    </Tab>
+                    {pbkhac.rData.length > 0 && (
+                      <Tab>
+                        Đơn Cần Phê Duyệt Phòng Ban Khác {""}
+                        {showMesspb && (
+                          <i
+                            className="fas fa-info-circle "
+                            style={{ color: "#ff0000" }}
+                          />
+                        )}
+                      </Tab>
+                    )}
                     <Tab>Đơn Của Tôi</Tab>
                     <Tab>Hướng Dẫn Quy Trình</Tab>
                     {info?.DeptID === "NS" && (
@@ -80,14 +120,14 @@ const IndexListRegister = () => {
                             File tổng hợp &nbsp;
                           </span>
                           <DatePicker
-                            className="form-control"
+                            className=" border border-primary rounded "
                             showicon
                             selected={startDate}
                             onChange={(date) =>
                               handelDownd(date, setStartDate(date))
                             }
-                            dateFormat="dd/MM/yyyy"
-                            placeholderText="Chọn ngày bắt đầu"
+                            dateFormat="MM/yyyy"
+                            showMonthYearPicker
                           />
                         </div>
                       </Tab>
@@ -98,6 +138,17 @@ const IndexListRegister = () => {
                       <ManagerPage sizeConten={"85vh"} sizeContenTB={"68%"} />
                     </div>
                   </TabPanel>
+                  {pbkhac.rData.length > 0 && (
+                    <TabPanel>
+                      <div style={{ height: "100vh" }}>
+                        <OtherDepartments
+                          sizeConten={"85vh"}
+                          sizeContenTB={"68%"}
+                        />
+                      </div>
+                    </TabPanel>
+                  )}
+
                   <TabPanel>
                     <div style={{ height: "100vh" }}>
                       <StaffPage sizeConten={"85vh"} sizeContenTB={"68%"} />
@@ -123,12 +174,21 @@ const IndexListRegister = () => {
               <Tab>Đơn Của Tôi</Tab>
               <Tab>Hướng Dẫn Quy Trình</Tab>
               {info?.DeptID === "NS" && (
-                <button
-                  className="btn btn-sm btn-success mr-3 mb-2"
-                  onClick={onSubmitDownload}
-                >
-                  File tổng hợp
-                </button>
+                <Tab>
+                  <div className="d-flex align-items-center ">
+                    <span style={{ fontSize: "12px", whiteSpace: "nowrap" }}>
+                      File tổng hợp &nbsp;
+                    </span>
+                    <DatePicker
+                      className=" border border-primary rounded "
+                      showicon
+                      selected={startDate}
+                      onChange={(date) => handelDownd(date, setStartDate(date))}
+                      dateFormat="MM/yyyy"
+                      showMonthYearPicker
+                    />
+                  </div>
+                </Tab>
               )}
             </TabList>
 
@@ -143,7 +203,6 @@ const IndexListRegister = () => {
               </div>
             </TabPanel>
           </Tabs>
-          <StaffPage sizeConten={"90vh"} sizeContenTB={"73%"} />
         </div>
       )}
     </>

@@ -8,6 +8,7 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import Loading from "../common/loading/Loading";
 import { toast } from "react-toastify";
+import Pupup from "../common/Pupup";
 
 let emID = Cookies.get("empid");
 
@@ -29,13 +30,15 @@ const Register = () => {
   const [jPLevelName, setJPLevelName] = useState("");
   const [listTypeOff, setlistTypeOff] = useState([]);
 
-  const [fromDate, setFromDate] = useState("");
-  const [toDate, setToDate] = useState("");
+  const [showmess, setShowmess] = useState("");
+  const [showmessHandel, setShowmessHandel] = useState("");
+  const [savesendbutton, setsavesendbutton] = useState(0);
+  const [pupupcus, setpupupcus] = useState(false);
 
   useEffect(() => {
     (async () => {
       let data = await getData("getEmpInfo", emID);
-      setname(data.rData.FirstName + " " + data.rData.LastName);
+      setname(data.rData.LastName + " " + data.rData.FirstName);
       setDepartmentName(data.rData.DepartmentName);
       setJobpositionName(data.rData.JobpositionName);
       setAnnualLeave(data.rData.AnnualLeave);
@@ -75,6 +78,24 @@ const Register = () => {
   };
 
   const onSubmitSave = async (data) => {
+    setsavesendbutton(1);
+    var e = new Date();
+
+    e.setDate(e.getDate() + 1);
+    if (
+      moment(new Date(e).toISOString()).format("YYYY-MM-DD") >=
+      moment(new Date(data?.NgayBatDau).toISOString()).format("YYYY-MM-DD")
+    ) {
+      setpupupcus(true);
+      setShowmess("Ngày Nghỉ phép không đúng quy trình ");
+      setShowmessHandel(" Bạn có muốn tiếp tục không ?");
+    } else {
+      save(data);
+      setsavesendbutton(0);
+    }
+  };
+  const save = async (data) => {
+    console.log(data);
     setIsLoading(true);
     var create = await postData("day-off-letter", {
       type: data.offType,
@@ -86,7 +107,7 @@ const Register = () => {
       address: data.address,
       command: 0,
     });
-    console.log(create);
+    // console.log(create);
     if (create.isSuccess === 1) {
       toast.success("lưu đơn thành công \n" + create.note, {
         autoClose: 2000,
@@ -95,9 +116,11 @@ const Register = () => {
         theme: "colored",
       });
 
-      navigate("/indexListRegister");
       reset();
       setIsLoading(false);
+      setpupupcus(false);
+      setsavesendbutton(0);
+      navigate("/indexListRegister");
     } else {
       toast.success("lưu  thất bại Lỗi \n" + create.note, {
         autoClose: 2000,
@@ -110,6 +133,24 @@ const Register = () => {
     }
   };
   const onSubmitSend = async (data) => {
+    setsavesendbutton(2);
+    var e = new Date();
+
+    e.setDate(e.getDate() + 1);
+
+    if (
+      moment(new Date(e).toISOString()).format("YYYY-MM-DD") >=
+      moment(new Date(data.NgayBatDau).toISOString()).format("YYYY-MM-DD")
+    ) {
+      setpupupcus(true);
+      setShowmess("Ngày Nghỉ phép không đúng quy trình ");
+      setShowmessHandel(" Bạn có muốn tiếp tục không ?");
+    } else {
+      send(data);
+      setsavesendbutton(0);
+    }
+  };
+  const send = async (data) => {
     setIsLoading(true);
     var create = await postData("day-off-letter", {
       type: data.offType,
@@ -129,10 +170,11 @@ const Register = () => {
         position: "top-center",
         theme: "colored",
       });
-
-      navigate("/indexListRegister");
-      reset();
+      setpupupcus(false);
+      setsavesendbutton(0);
       setIsLoading(false);
+      reset();
+      navigate("/indexListRegister");
     } else {
       toast.danger("Gửi đơn thất bại Lỗi: \n" + create.note, {
         autoClose: 2000,
@@ -141,6 +183,14 @@ const Register = () => {
         theme: "colored",
       });
       setIsLoading(false);
+    }
+  };
+
+  const savesend = (data) => {
+    if (savesendbutton === 1) {
+      save(data);
+    } else if (savesendbutton === 2) {
+      send(data);
     }
   };
   return (
@@ -376,6 +426,29 @@ const Register = () => {
           </div>
         </section>
       </div>
+      {pupupcus && (
+        <Pupup
+          onClose={() => setpupupcus(false)}
+          title={" Cảnh báo "}
+          color="#FFFFFF"
+        >
+          <div className="row m-3">
+            <p>
+              {showmess} <br /> {showmessHandel}
+            </p>
+          </div>
+          <div className="row d-flex justify-content-center p-3 ">
+            <button
+              className="btn btn-primary  "
+              type="button"
+              onClick={handleSubmit(savesend)}
+            >
+              {" "}
+              Đồng ý
+            </button>
+          </div>
+        </Pupup>
+      )}
     </form>
   );
 };

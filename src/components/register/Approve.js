@@ -58,12 +58,12 @@ const Approve = (props) => {
     (async () => {
       //console.log(props.dataRegByID.rData);
 
-      setregID(props.dataRegByID.rData.regID);
+      setregID(props.dataRegByID?.rData.regID);
       setMSNV(props.dataRegByID.rData.EmpID);
       setname(
-        props.dataRegByID.rData.LastName +
+        props.dataRegByID.rData?.LastName +
           " " +
-          props.dataRegByID.rData.FirstName
+          props.dataRegByID.rData?.FirstName
       );
       setDepartmentName(props.dataRegByID.rData.departmentName);
       setJobpositionName(props.dataRegByID.rData.JobPositionName);
@@ -91,14 +91,15 @@ const Approve = (props) => {
 
       if (props.dataRegByID.rData?.aStatus === 1 && props.isAppove === true) {
         setApprovalDate(moment(new Date()).format("DD-MM-YYYY"));
-        setApproName(info.FirstName + " " + info.LastName);
+        setApproName(info?.FirstName + " " + info?.LastName);
         setApproJobName(info.JobpositionName);
         setComment("");
         setshow(false);
         setShowstreamx(false);
         setShowstream(false);
         setbg("white");
-        console.log("first1");
+        //console.log("first1");
+        reset();
       } else {
         setbg("#e9ecef");
         if (props.isme === true) {
@@ -111,7 +112,7 @@ const Approve = (props) => {
             setShowstream(false);
             setShowstreamx(true);
             Trangtt(props);
-            console.log(props.dataRegByID.rData);
+            // console.log(props.dataRegByID.rData);
           } else {
             console.log(props.dataRegByID.rData?.apprInf[0]);
             setShowstream(true);
@@ -123,9 +124,9 @@ const Approve = (props) => {
               )
             );
             setApproName(
-              props.dataRegByID.rData?.apprInf[0].ApproFirstName +
+              props.dataRegByID.rData?.apprInf[0]?.ApproFirstName +
                 " " +
-                props.dataRegByID.rData?.apprInf[0].ApproLastName
+                props.dataRegByID.rData?.apprInf[0]?.ApproLastName
             );
             setApproJobName(props.dataRegByID.rData?.apprInf[0].ApproJobName);
             setComment(props.dataRegByID.rData?.apprInf[0].Comment);
@@ -209,7 +210,7 @@ const Approve = (props) => {
                 <input
                   readOnly
                   className="form-control ml-3 "
-                  value={item.ApproLastName + " " + item.ApproFirstName}
+                  value={item?.ApproLastName + " " + item?.ApproFirstName}
                 />
               </div>
               <div className="col-md-6 d-flex">

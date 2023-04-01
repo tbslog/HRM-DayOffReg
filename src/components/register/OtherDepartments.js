@@ -6,7 +6,7 @@ import Approve from "./Approve";
 import { toast } from "react-toastify";
 import { Modal } from "bootstrap";
 
-const ManagerPage = (props) => {
+const OtherDepartments = (props) => {
   const [dbTableMana, setdbTableMana] = useState([]);
   const [ftTableMana, setftTableMana] = useState([]);
   const [listTypeOff, setlistTypeOff] = useState([]);
@@ -67,7 +67,7 @@ const ManagerPage = (props) => {
 
   const fetchData = async () => {
     let dataMana = await getData(
-      "day-off-letters?needAppr=1&astatus=1%2C2%2C3%2C4%2C5"
+      "day-off-letters?needAppr=3 &astatus=1%2C2%2C3%2C4%2C5"
     );
     setdbTableMana(dataMana.rData);
     setftTableMana(dataMana.rData);
@@ -76,7 +76,7 @@ const ManagerPage = (props) => {
   useEffect(() => {
     (async () => {
       let dataMana = await getData(
-        "day-off-letters?needAppr=1&astatus=1%2C2%2C3%2C4%2C5"
+        "day-off-letters?needAppr=3 &astatus=1%2C2%2C3%2C4%2C5"
       );
       // console.log(dataMana);
 
@@ -107,7 +107,7 @@ const ManagerPage = (props) => {
           {row.LastName} {row.FirstName}
         </div>
       ),
-      width: "200px",
+      width: "150px",
       sortable: true,
     },
     {
@@ -378,4 +378,4 @@ const ManagerPage = (props) => {
   );
 };
 
-export default ManagerPage;
+export default OtherDepartments;

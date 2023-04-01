@@ -3,9 +3,12 @@ import logo from "../assets/imgs/LOGO 2013_1.png";
 import { Link } from "react-router-dom";
 import { logout } from "../actions/auth";
 import { useDispatch, useSelector } from "react-redux";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import Cookies from "js-cookie";
 import { getData } from "../services/user.service";
+import { Modal } from "bootstrap";
+
+import ChangepassHome from "./Changepass/ChangepassHome";
 let emID = Cookies.get("empid");
 
 const Header = ({ children }) => {
@@ -15,11 +18,62 @@ const Header = ({ children }) => {
   }, [dispatch]);
 
   const [name, setname] = useState("");
+  const [showNotiMana, setShowNotiMana] = useState();
+  const [showNotiManapbk, setShowNotiManapbk] = useState();
+  const [showNotitotal, setShowNotitotal] = useState();
+  const [showNoti, setShowNoti] = useState(false);
+  const [clear, setClear] = useState(false);
+
+  const [ShowModal, SetShowModal] = useState("");
+  const [modal, setModal] = useState(null);
+  const parseExceptionModal = useRef();
+
+  const showModalForm = () => {
+    const modal = new Modal(parseExceptionModal.current, {
+      keyboard: false,
+      backdrop: "static",
+    });
+    setModal(modal);
+    modal.show();
+  };
+  const hideModal = () => {
+    setClear(false);
+    modal.hide();
+  };
 
   useEffect(() => {
     (async () => {
       let data = await getData("getEmpInfo");
       //console.log(data);
+      let dataMana = await getData("day-off-letters?needAppr=1");
+      let datapb = await getData(
+        "day-off-letters?needAppr=3 &astatus=1%2C2%2C3%4%5"
+      );
+
+      let notiMana = dataMana.rData.reduce((count, i) => {
+        if (i.aStatus === 1) {
+          count += 1;
+        }
+        return count;
+      }, 0);
+      let notiManaPbk = datapb.rData.reduce((count, i) => {
+        if (i.aStatus === 1) {
+          count += 1;
+        }
+        return count;
+      }, 0);
+
+      if (notiMana > 0 || notiManaPbk > 0) {
+        setShowNoti(true);
+        setShowNotiMana(notiMana);
+        setShowNotiManapbk(notiManaPbk);
+        setShowNotitotal(notiMana + notiManaPbk);
+      } else {
+        setShowNoti(false);
+        setShowNotiMana();
+        setShowNotiManapbk();
+        setShowNotitotal(0);
+      }
 
       Cookies.set(
         "info",
@@ -33,6 +87,10 @@ const Header = ({ children }) => {
       setname(data.rData.LastName + " " + data.rData.FirstName);
     })();
   }, []);
+  const handelchangepass = () => {
+    console.log("a");
+    showModalForm();
+  };
 
   return (
     <>
@@ -59,18 +117,106 @@ const Header = ({ children }) => {
               </li>
             </ul>
             {/* Right navbar links */}
-            <ul className="navbar-nav ml-auto">
-              {/* Navbar Search */}
-              <li className="nav-item">
-                <a
-                  href="/"
-                  className="nav-link"
-                  style={{ color: "rgba(0,0,0,.5)" }}
-                  onClick={logOut}
-                >
-                  Đăng xuất
+            <ul className="navbar-nav ml-auto mr-3">
+              {showNoti === true && (
+                <li className="nav-item dropdown">
+                  {" "}
+                  <a className="nav-link" data-toggle="dropdown">
+                    <i className="far fa-bell fa-lg" />
+                    <span className="badge badge-danger navbar-badge">
+                      {showNotitotal}
+                    </span>
+                  </a>
+                  <div
+                    className="dropdown-menu dropdown-menu-lg dropdown-menu-right"
+                    style={{ borderRadius: "8px", overflow: "hidden" }}
+                  >
+                    <span className="dropdown-item dropdown-header">
+                      thông báo
+                    </span>
+                    {showNotiMana > 0 && (
+                      <>
+                        <div className="dropdown-divider" />
+
+                        <Link
+                          to={`/indexListRegister`}
+                          style={{ fontSize: "13px" }}
+                        >
+                          <a className="dropdown-item">
+                            {showNotiMana} đơn cần phê duyệt
+                          </a>
+                        </Link>
+                      </>
+                    )}
+
+                    <div className="dropdown-divider" />
+                    {showNotiManapbk > 0 && (
+                      <>
+                        {" "}
+                        <div className="dropdown-divider" />
+                        <Link
+                          to={`/indexListRegister`}
+                          style={{ fontSize: "13px" }}
+                        >
+                          <a className="dropdown-item">
+                            {showNotiManapbk} đơn phòng ban khác cần phê duyệt
+                          </a>
+                        </Link>
+                      </>
+                    )}
+                  </div>
+                </li>
+              )}
+
+              <li className="nav-item dropdown">
+                <a className="nav-link" data-toggle="dropdown">
+                  <i className="far fa-user-circle fa-lg" />
                 </a>
+
+                <div
+                  className="dropdown-menu dropdown-menu-sm dropdown-menu-right"
+                  style={{ borderRadius: "8px", overflow: "hidden" }}
+                >
+                  <div className="d-flex flex-column flex-nowrap align-items-start">
+                    {" "}
+                    <span className="dropdown-header d-flex justify-content-center p-0 ">
+                      <Link to={`/info`} className="nav-link ">
+                        <i
+                          className="far fa-id-card  fa-lg mr-2  "
+                          style={{ color: "#79859a" }}
+                        />
+                        Profile
+                      </Link>
+                    </span>
+                    <div className="dropdown-divider w-100 p-0 m-0" />{" "}
+                    <span
+                      className=" dropdown-header d-flex justify-content-center "
+                      onClick={() =>
+                        handelchangepass(
+                          SetShowModal("Changepass"),
+                          setClear(true)
+                        )
+                      }
+                    >
+                      <i className="fas fa-exchange-alt fa-lg  mr-2" />
+                      Đổi mật khẩu
+                    </span>
+                    <div className="dropdown-divider w-100 p-0 m-0" />
+                    <a
+                      href="/"
+                      className="nav-link d-flex justify-content-center  "
+                      style={{ color: "rgba(0,0,0,.5)" }}
+                      onClick={logOut}
+                    >
+                      <i className="fas fa-sign-out-alt fa-lg d-flex align-items-center mr-1" />
+                      Đăng xuất
+                    </a>
+                  </div>
+                </div>
               </li>
+
+              <li className="nav-item dropdown"> </li>
+              {/* Navbar Search */}
             </ul>
           </nav>
 
@@ -133,19 +279,29 @@ const Header = ({ children }) => {
                         <i className="right fas fa-angle-left" />
                       </p>
                     </a>
-                    <ul className="nav nav-treeview">
+                    {/* <ul className="nav nav-treeview">
                       <li className="nav-item">
-                        <Link to="/indexListRegister" className="nav-link ">
+                        <Link to={`/info`} className="nav-link ">
                           <i className="far fa-circle nav-icon" />
-                          <p>Quản lý ngày nghỉ</p>
+                          <p>Profile </p>{" "}
                         </Link>
                       </li>
-                      {/* <li className="nav-item">
-                        <Link to="/Approve" className="nav-link ">
+                    </ul> */}
+                    <ul className="nav nav-treeview">
+                      <li className="nav-item">
+                        <Link to={`/indexListRegister`} className="nav-link ">
                           <i className="far fa-circle nav-icon" />
-                          <p>Phê Duyệt</p>
+                          <p>
+                            Quản lý ngày nghỉ
+                            {showNoti === true && (
+                              <i
+                                className="fas fa-info fa-xs ml-2"
+                                style={{ color: "#f50000" }}
+                              />
+                            )}
+                          </p>
                         </Link>
-                      </li> */}
+                      </li>
                     </ul>
                   </li>
                 </ul>
@@ -175,6 +331,44 @@ const Header = ({ children }) => {
           {/* /.control-sidebar */}
         </div>
       </div>
+      <>
+        <div
+          className="modal fade"
+          id="modal-xl"
+          data-backdrop="static"
+          ref={parseExceptionModal}
+          aria-labelledby="parseExceptionModal"
+          backdrop="static"
+        >
+          <div
+            className="modal-dialog modal-dialog-scrollable"
+            style={{ width: "40%" }}
+          >
+            <div className="modal-content">
+              <div className="modal-header border-0 p-0">
+                <button
+                  type="button"
+                  className="close ml"
+                  data-dismiss="modal"
+                  onClick={() => hideModal()}
+                  aria-label="Close"
+                >
+                  <span aria-hidden="true" style={{ fontSize: "30px" }}>
+                    ×
+                  </span>
+                </button>
+              </div>
+              <div className="modal-body pt-0">
+                <>
+                  {ShowModal === "Changepass" && (
+                    <ChangepassHome clear={clear} />
+                  )}
+                </>
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
     </>
   );
 };
