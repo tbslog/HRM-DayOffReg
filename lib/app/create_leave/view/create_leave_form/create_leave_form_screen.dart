@@ -1,4 +1,3 @@
-import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -504,48 +503,48 @@ class CreateLeaveFormScreen extends GetView<CreateLeaveFormController> {
                   ),
                   child: const Text("Loại phép")),
             ),
-            Expanded(
-              flex: 6,
-              child: Theme(
-                data: ThemeData(
-                  inputDecorationTheme:
-                      const InputDecorationTheme(border: InputBorder.none),
-                ),
-                child: DropdownSearch<ListOffTypeModel>(
-                  validator: (value) {
-                    // ignore: unrelated_type_equality_checks
-                    if (value == null || value == "") {
-                      return 'Chọn loại phép';
-                    }
-                    return null;
-                  },
-                  asyncItems: (String? query) {
-                    return controller.getTypeOff(query);
-                  },
-                  popupProps: PopupPropsMultiSelection.dialog(
-                    showSelectedItems: true,
-                    itemBuilder: _customPopupItemBuilderExample2,
-                    showSearchBox: true,
-                  ),
-                  compareFn: (item, sItem) {
-                    return item.note == sItem.note && item.name == sItem.name;
-                  },
-                  onChanged: (ListOffTypeModel? newValue) {
-                    controller.selectedLoaiphep =
-                        newValue!.offTypeID.toString();
-                  },
-                  dropdownDecoratorProps: const DropDownDecoratorProps(
-                    dropdownSearchDecoration: InputDecoration(
-                      hintText: "Chọn loại phép",
-                      filled: true,
-                      iconColor: Color(0xFFF3BD60),
-                      focusColor: Color(0xFFF3BD60),
-                      fillColor: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ),
+            // Expanded(
+            //   flex: 6,
+            //   child: Theme(
+            //     data: ThemeData(
+            //       inputDecorationTheme:
+            //           const InputDecorationTheme(border: InputBorder.none),
+            //     ),
+            //     child: DropdownSearch<ListOffTypeModel>(
+            //       validator: (value) {
+            //         // ignore: unrelated_type_equality_checks
+            //         if (value == null || value == "") {
+            //           return 'Chọn loại phép';
+            //         }
+            //         return null;
+            //       },
+            //       asyncItems: (String? query) {
+            //         return controller.getTypeOff(query);
+            //       },
+            //       popupProps: PopupPropsMultiSelection.dialog(
+            //         showSelectedItems: true,
+            //         itemBuilder: _customPopupItemBuilderExample2,
+            //         showSearchBox: true,
+            //       ),
+            //       compareFn: (item, sItem) {
+            //         return item.note == sItem.note && item.name == sItem.name;
+            //       },
+            //       onChanged: (ListOffTypeModel? newValue) {
+            //         controller.selectedLoaiphep =
+            //             newValue!.offTypeID.toString();
+            //       },
+            //       dropdownDecoratorProps: const DropDownDecoratorProps(
+            //         dropdownSearchDecoration: InputDecoration(
+            //           hintText: "Chọn loại phép",
+            //           filled: true,
+            //           iconColor: Color(0xFFF3BD60),
+            //           focusColor: Color(0xFFF3BD60),
+            //           fillColor: Colors.white,
+            //         ),
+            //       ),
+            //     ),
+            //   ),
+            // ),
           ],
         ),
       ),

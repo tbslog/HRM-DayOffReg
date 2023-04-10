@@ -31,9 +31,10 @@ class SingleViewController extends GetxController {
   RxBool isLoadUser = true.obs;
 
   @override
-  void onInit() async {
-    getInfo();
+  void onInit() {
     getDayOffLetterSingler(astatus: "", needAppr: 0);
+    getInfo();
+
     super.onInit();
   }
 
@@ -113,7 +114,8 @@ class SingleViewController extends GetxController {
     };
     isLoadDayOff(false);
 
-    var url = "${AppConstants.urlBase}/day-off-letters?astatus=$astatus";
+    var url =
+        "${AppConstants.urlBase}/day-off-letters?needAppr=$needAppr&astatus=$astatus";
 
     try {
       response = await dio.get(

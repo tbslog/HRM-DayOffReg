@@ -7,7 +7,7 @@ class UserModel {
   String? firstName;
   String? lastName;
   String? comeDate;
-  int? zoneID;
+  String? zoneID;
   String? zoneName;
   int? jobPosID;
   int? jPLevelID;

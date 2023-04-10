@@ -26,6 +26,9 @@ class DetailSingleController extends GetxController {
   var selectedLoaiPhep = "";
   var dio = Dio();
 
+  var selectedValue = 0.obs;
+  var nameType = "".obs;
+
   final GlobalKey formDetail = GlobalKey<FormState>();
 
   TextEditingController timeController = TextEditingController();
@@ -192,7 +195,6 @@ class DetailSingleController extends GetxController {
             ),
           );
         } else if (data["rCode"] == 1) {
-          await Get.toNamed(Routes.MANAGER_LEAVE_FORM_SCREEN);
           Get.back();
           Get.snackbar(
             "Thông báo",

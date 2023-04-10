@@ -8,7 +8,6 @@ import 'package:tbs_logistics_phieunghi/config/routes/pages.dart';
 
 class SingleViewManagerScreen extends GetView<SingleViewController> {
   const SingleViewManagerScreen({super.key});
-  final String routes = "/SINGLE_VIEW_MANAGER_SCREEN";
 
   @override
   Widget build(BuildContext context) {

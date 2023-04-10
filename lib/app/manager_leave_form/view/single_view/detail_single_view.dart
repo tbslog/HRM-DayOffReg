@@ -1,4 +1,4 @@
-import 'package:dropdown_search/dropdown_search.dart';
+import 'package:find_dropdown/find_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -400,7 +400,7 @@ class DetailSingleView extends GetView<DetailSingleController> {
     var detail = items.rData;
     return Card(
       child: SizedBox(
-        height: 80,
+        height: 85,
         child: Row(
           children: [
             Expanded(
@@ -411,43 +411,127 @@ class DetailSingleView extends GetView<DetailSingleController> {
                   ),
                   child: const Text("Loại phép")),
             ),
+            // Expanded(
+            //   flex: 5,
+            //   child: Theme(
+            //     data: ThemeData(
+            //       inputDecorationTheme:
+            //           const InputDecorationTheme(border: InputBorder.none),
+            //     ),
+            //     child: DropdownSearch<ListOffTypeModel>(
+            //       asyncItems: (String? query) {
+            //         return controller.getTypeOff(query);
+            //       },
+            //       popupProps: PopupProps.dialog(
+            //         showSelectedItems: true,
+            //         itemBuilder: _customPopupItemBuilderExample2,
+            //         showSearchBox: true,
+            //       ),
+            //       compareFn: (item, sItem) {
+            //         return item.note == sItem.note;
+            //       },
+            //       onChanged: (ListOffTypeModel? newValue) {
+            //         controller.selectedLoaiPhep =
+            //             newValue!.offTypeID.toString();
+            //       },
+            //       dropdownDecoratorProps: DropDownDecoratorProps(
+            //         dropdownSearchDecoration: InputDecoration(
+            //           hintText: hintText,
+            //           hintStyle: const TextStyle(
+            //             fontSize: 15,
+            //             color: Colors.black,
+            //           ),
+            //           filled: true,
+            //           iconColor: const Color(0xFFF3BD60),
+            //           focusColor: const Color(0xFFF3BD60),
+            //           fillColor: Colors.white,
+            //         ),
+            //       ),
+            //     ),
+            //   ),
+            // ),
             Expanded(
               flex: 5,
-              child: Theme(
-                data: ThemeData(
-                  inputDecorationTheme:
-                      const InputDecorationTheme(border: InputBorder.none),
-                ),
-                child: DropdownSearch<ListOffTypeModel>(
-                  asyncItems: (String? query) {
-                    return controller.getTypeOff(query);
-                  },
-                  popupProps: PopupProps.dialog(
-                    showSelectedItems: true,
-                    itemBuilder: _customPopupItemBuilderExample2,
-                    showSearchBox: true,
-                  ),
-                  compareFn: (item, sItem) {
-                    return item.note == sItem.note;
-                  },
-                  onChanged: (ListOffTypeModel? newValue) {
-                    controller.selectedLoaiPhep =
-                        newValue!.offTypeID.toString();
-                  },
-                  dropdownDecoratorProps: DropDownDecoratorProps(
-                    dropdownSearchDecoration: InputDecoration(
-                      hintText: hintText,
-                      hintStyle: const TextStyle(
-                        fontSize: 15,
-                        color: Colors.black,
-                      ),
-                      filled: true,
-                      iconColor: const Color(0xFFF3BD60),
-                      focusColor: const Color(0xFFF3BD60),
-                      fillColor: Colors.white,
+              child: FindDropdown<ListOffTypeModel>(
+                onFind: (String filter) => controller.getTypeOff(filter),
+                onChanged: (ListOffTypeModel? data) {
+                  controller.selectedValue.value = int.parse(data!.offTypeID!);
+                  controller.nameType.value = data.note!;
+                },
+                dropdownBuilder:
+                    (BuildContext context, ListOffTypeModel? item) {
+                  return Container(
+                    height: 40,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Theme.of(context).dividerColor),
+                      borderRadius: BorderRadius.circular(5),
+                      color: Colors.white,
                     ),
-                  ),
-                ),
+                    child: (item?.note == null)
+                        ? Row(
+                            children: const [
+                              Padding(
+                                padding: EdgeInsets.only(left: 10),
+                                child: Text(
+                                  "Chọn loại phép",
+                                  style: TextStyle(fontSize: 15),
+                                ),
+                              ),
+                              Icon(
+                                Icons.arrow_drop_down_outlined,
+                                color: Colors.black,
+                              )
+                            ],
+                          )
+                        : Row(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(left: 10),
+                                child: Text(
+                                  item!.note!,
+                                  style: const TextStyle(fontSize: 15),
+                                ),
+                              ),
+                              const Icon(
+                                Icons.arrow_drop_down_outlined,
+                                color: Colors.black,
+                              )
+                            ],
+                          ),
+                  );
+                },
+                dropdownItemBuilder: (BuildContext context,
+                    ListOffTypeModel item, bool isSelected) {
+                  return Container(
+                    decoration: !isSelected
+                        ? null
+                        : BoxDecoration(
+                            border: Border.all(
+                                color: Theme.of(context).primaryColor),
+                            borderRadius: BorderRadius.circular(5),
+                            color: Colors.white,
+                          ),
+                    child: Card(
+                      shape: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                          color: Colors.orangeAccent,
+                        ),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: ListTile(
+                        selected: isSelected,
+                        title: Text(
+                          item.note!,
+                          style: const TextStyle(fontSize: 15),
+                        ),
+                        subtitle: Text(
+                          item.name!,
+                          style: const TextStyle(fontSize: 15),
+                        ),
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
           ],

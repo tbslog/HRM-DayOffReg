@@ -160,8 +160,24 @@ class LoginController extends GetxController {
         Get.defaultDialog(
           barrierDismissible: false,
           title: "Thông báo",
-          middleText:
-              "Tạo thành công :  ${response.data["rData"]["password"]} ${response.data["rMsg"]}",
+          middleText: "",
+          content: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text("Tạo thành công :"),
+              const SizedBox(
+                height: 5,
+              ),
+              Text(
+                "Mật khẩu : ${response.data["rData"]["password"]}",
+                style: const TextStyle(color: Colors.red),
+              ),
+              const SizedBox(
+                height: 5,
+              ),
+              Text("${response.data["rMsg"]}"),
+            ],
+          ),
           confirmTextColor: Colors.orangeAccent,
           backgroundColor: Colors.white,
           confirm: Container(
@@ -196,6 +212,7 @@ class LoginController extends GetxController {
                     ),
                     child: TextButton(
                       onPressed: () {
+                        print(response.data["rData"]["token"]);
                         Get.toNamed(Routes.MANAGER_LEAVE_FORM_SCREEN);
                       },
                       child: const Text(
