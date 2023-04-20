@@ -19,3 +19,7 @@ code {
     margin: 1.75rem auto !important;
   }
 }
+
+.ant-select-selector{
+  height: 100% !important;
+}

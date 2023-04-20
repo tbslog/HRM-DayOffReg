@@ -3,7 +3,10 @@ import Home from "../components/Home";
 import Login from "../components/login/Login";
 import IndexListRegister from "../components/register/IndexListRegister";
 import Register from "../components/register/Register";
-import Info from "../components/profile/Info";
+import Info from "../components/profile/info";
+import Department from "../components/Department/Department";
+import JobTitle from "../components/JobTitle/JobTitle";
+import JobPosition from "../components/JobPosition/JobPosition";
 
 const privateRouters = [
   { path: "/", component: Home },
@@ -11,6 +14,9 @@ const privateRouters = [
   { path: "/indexListRegister", component: IndexListRegister },
   { path: "/Register", component: Register },
   { path: "/info", component: Info },
+  { path: "/department", component: Department },
+  { path: "/jobTitle", component: JobTitle },
+  { path: "/jobPosition", component: JobPosition },
 ];
 
 // đăng nhập mới vào được còn không chuyến hướng

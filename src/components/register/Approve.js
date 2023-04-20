@@ -59,7 +59,7 @@ const Approve = (props) => {
       //console.log(props.dataRegByID.rData);
 
       setregID(props.dataRegByID?.rData.regID);
-      setMSNV(props.dataRegByID.rData.EmpID);
+      setMSNV(props.dataRegByID?.rData.EmpID);
       setname(
         props.dataRegByID.rData?.LastName +
           " " +

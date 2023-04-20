@@ -1,9 +1,6 @@
 import { useForm, Controller } from "react-hook-form";
 import React, { useState, useEffect, useRef } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { login } from "../../actions/auth";
-import { Navigate, useNavigate } from "react-router-dom";
-import { Modal } from "bootstrap";
+
 import { getData, postData } from "../../services/user.service";
 import { toast } from "react-toastify";
 import Cookies from "js-cookie";

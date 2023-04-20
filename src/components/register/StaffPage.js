@@ -46,7 +46,7 @@ const StaffPage = (props) => {
       } else setOpen(false);
 
       setdbEmpid(emID);
-      setdbFullName(info.LastName + "" + info.FirstName);
+      setdbFullName(info?.LastName + "" + info?.FirstName);
 
       let dataTypeOff = await getData("dayOffType");
       setlistTypeOff(dataTypeOff.rData);
@@ -204,7 +204,7 @@ const StaffPage = (props) => {
             className="row pt-1 "
             style={{
               justifyContent: "space-between ",
-              background: "rgb(224 224 224)",
+              // background: "rgb(224 224 224)",
             }}
           >
             <div className="pt-2 ml-2">
