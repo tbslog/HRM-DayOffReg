@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tbs_logistics_phieunghi/app/auth/view/login_page.dart';
 
 import 'package:tbs_logistics_phieunghi/config/core/constants.dart';
 import 'package:tbs_logistics_phieunghi/config/routes/pages.dart';
@@ -13,8 +14,9 @@ class SharePerApi {
 
   Future<void> postLogout() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
+    print([AppConstants.KEY_ACCESS_TOKEN, pref]);
     pref.remove(AppConstants.KEY_ACCESS_TOKEN);
 
-    Get.toNamed(Routes.LOGIN_PAGE);
+    Get.offAllNamed(Routes.LOGIN_PAGE);
   }
 }

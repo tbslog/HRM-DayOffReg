@@ -17,14 +17,6 @@ class LoginController extends GetxController {
   TextEditingController passwordController = TextEditingController(text: "");
   RxBool obcureText = true.obs;
 
-  final formKeyLogin = GlobalKey<FormState>();
-
-  @override
-  void onInit() {
-    formKeyLogin;
-    super.onInit();
-  }
-
   void updateObcureText() {
     obcureText.value = !obcureText.value;
     update();
@@ -127,11 +119,13 @@ class LoginController extends GetxController {
           var accessToken = await prefs.setString(AppConstants.KEY_ACCESS_TOKEN,
               "${response.data["rData"]["token"]}");
           Get.toNamed(Routes.MANAGER_LEAVE_FORM_SCREEN);
+          accountController.text = "";
+          passwordController.text = "";
         }
       }
-    } catch (e) {
-      if (kDebugMode) {
-        print(e);
+    } on DioError catch (e) {
+      if (e.response!.statusCode == 400) {
+        getSnack(messageText: e.response!.statusMessage.toString());
       }
     }
   }
@@ -235,7 +229,7 @@ class LoginController extends GetxController {
                     child: TextButton(
                       onPressed: () {
                         Get.toNamed(
-                          Routes.CHANGE_PASSWORD_SCREEN,
+                          Routes.CHANGE_PASSWORD_PAGE,
                           arguments: [
                             username,
                             response.data["rData"]["password"]
@@ -268,6 +262,30 @@ class LoginController extends GetxController {
     } catch (e) {
       rethrow;
     }
+  }
+
+  void getSnack({required String messageText}) {
+    Get.snackbar("", "",
+        backgroundColor: Colors.white,
+        titleText: const Text(
+          "Thông báo",
+          style: TextStyle(
+            color: Colors.red,
+            fontSize: 18,
+          ),
+        ),
+        messageText: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              messageText,
+              style: const TextStyle(
+                color: Colors.black,
+                fontSize: 16,
+              ),
+            )
+          ],
+        ));
   }
 
   void getDialog() {

@@ -1,21 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:tbs_logistics_phieunghi/app/auth/controller/change_password_controller.dart';
+import 'package:tbs_logistics_phieunghi/app/changes_password/controller/change_password_controller.dart';
 import 'package:tbs_logistics_phieunghi/config/core/data/color.dart';
 import 'package:tbs_logistics_phieunghi/config/core/data/validate.dart';
 import 'package:tbs_logistics_phieunghi/config/routes/pages.dart';
 
 // ignore: must_be_immutable
-class ChangePasswordScreen extends GetView<ChangePaswordController> {
-  ChangePasswordScreen(
-      {super.key, required this.username, required this.oldPass});
+class ChangePasswordPage extends GetView<ChangePaswordController> {
+  ChangePasswordPage({
+    super.key,
+  });
 
-  final String routes = "/CHANGE_PASSWORD_SCREEN";
+  final String routes = "/CHANGE_PASSWORD_PAGE";
   @override
   var controller = Get.put(ChangePaswordController());
-  final _formKeyChangeNewPass = GlobalKey<FormState>();
-  final String username;
-  final String oldPass;
+  GlobalKey<FormState> formKeyChangeNewPass = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +44,7 @@ class ChangePasswordScreen extends GetView<ChangePaswordController> {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
           child: Form(
-            key: _formKeyChangeNewPass,
+            key: formKeyChangeNewPass,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -78,7 +77,8 @@ class ChangePasswordScreen extends GetView<ChangePaswordController> {
                   height: 20,
                 ),
                 TextFormField(
-                  validator: (value) => Validate().rePassword(value),
+                  validator: (value) =>
+                      Validate().rePassword(value, controller.passwordNew.text),
                   controller: controller.rePasswordNew,
                   decoration: InputDecoration(
                       focusedBorder: const OutlineInputBorder(

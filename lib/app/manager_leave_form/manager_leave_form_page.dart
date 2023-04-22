@@ -19,73 +19,78 @@ class ManagerLeaveFormScreen extends GetView<ManagerLeaveFormController> {
     return GetBuilder<ManagerLeaveFormController>(
         init: ManagerLeaveFormController(),
         builder: (controller) {
-          return DefaultTabController(
-            length: 2,
-            child: Scaffold(
-              appBar: AppBar(
-                title: const Text(
-                  "Quản lý đơn nghỉ phép",
-                  style: CustomTextStyle.tilteAppbar,
-                ),
-                backgroundColor: CustomColor.backgroundAppbar,
-                centerTitle: true,
-                // automaticallyImplyLeading: false,
-              ),
-              drawer: const Drawer(
-                child: MenuDrawer(),
-              ),
-              body: SingleChildScrollView(
-                child: Container(
-                  height: size.height,
-                  width: size.width,
-                  padding: const EdgeInsets.symmetric(vertical: 15),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Container(
-                        height: 50,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[300],
-                          borderRadius: BorderRadius.circular(
-                            25.0,
-                          ),
-                        ),
-                        child: TabBar(
-                          controller: controller.controller,
-                          indicator: BoxDecoration(
-                            borderRadius: BorderRadius.circular(
-                              25.0,
-                            ),
-                            color: Colors.orangeAccent.shade200,
-                          ),
-                          labelColor: Colors.white,
-                          unselectedLabelColor: Colors.black,
-                          tabs: controller.myTabs,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Obx(() {
-                        return Expanded(
-                          child: TabBarView(
-                            controller: controller.controller,
-                            children: [
-                              const SingleViewManagerScreen(),
-                              controller.userName.value.jPLevelID == 70 ||
-                                      controller.userName.value.jPLevelID ==
-                                          71 ||
-                                      controller.userName.value.jPLevelID ==
-                                          72 ||
-                                      controller.userName.value.jPLevelID == 73
-                                  ? const AccessLeaveScreen()
-                                  : const AccessSingleScreen()
-                            ],
-                          ),
-                        );
-                      })
-                    ],
+          return WillPopScope(
+            onWillPop: () async {
+              return false;
+            },
+            child: DefaultTabController(
+              length: 2,
+              child: Scaffold(
+                  appBar: AppBar(
+                    title: const Text(
+                      "Quản lý đơn nghỉ phép",
+                      style: CustomTextStyle.tilteAppbar,
+                    ),
+                    backgroundColor: CustomColor.backgroundAppbar,
+                    centerTitle: true,
+                    // automaticallyImplyLeading: false,
                   ),
-                ),
-              ),
+                  drawer: const Drawer(
+                    child: MenuDrawer(),
+                  ),
+                  body: SingleChildScrollView(
+                    child: Container(
+                      height: size.height,
+                      width: size.width,
+                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Container(
+                            height: 50,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[300],
+                              borderRadius: BorderRadius.circular(
+                                25.0,
+                              ),
+                            ),
+                            child: TabBar(
+                              controller: controller.controller,
+                              indicator: BoxDecoration(
+                                borderRadius: BorderRadius.circular(
+                                  25.0,
+                                ),
+                                color: Colors.orangeAccent.shade200,
+                              ),
+                              labelColor: Colors.white,
+                              unselectedLabelColor: Colors.black,
+                              tabs: controller.myTabs,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Obx(() {
+                            return Expanded(
+                              child: TabBarView(
+                                controller: controller.controller,
+                                children: [
+                                  const SingleViewManagerScreen(),
+                                  controller.userName.value.jPLevelID == 70 ||
+                                          controller.userName.value.jPLevelID ==
+                                              71 ||
+                                          controller.userName.value.jPLevelID ==
+                                              72 ||
+                                          controller.userName.value.jPLevelID ==
+                                              73
+                                      ? const AccessLeaveScreen()
+                                      : const AccessSingleScreen()
+                                ],
+                              ),
+                            );
+                          })
+                        ],
+                      ),
+                    ),
+                  )),
             ),
           );
         });

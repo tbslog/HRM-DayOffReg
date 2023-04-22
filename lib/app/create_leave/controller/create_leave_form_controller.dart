@@ -136,7 +136,7 @@ class CreateLeaveFormController extends GetxController
             ),
           );
         } else if (data["rCode"] == 1) {
-          Get.back();
+          Get.back(result: true);
           Get.snackbar(
             "Thông báo",
             "${data["rMsg"]} !",

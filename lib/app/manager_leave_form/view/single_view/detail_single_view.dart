@@ -30,7 +30,7 @@ class DetailSingleView extends GetView<DetailSingleController> {
           centerTitle: true,
           leading: IconButton(
             onPressed: () {
-              Get.back();
+              Get.back(result: true);
             },
             icon: Icon(
               Icons.arrow_back_ios_new_outlined,
@@ -411,45 +411,6 @@ class DetailSingleView extends GetView<DetailSingleController> {
                   ),
                   child: const Text("Loại phép")),
             ),
-            // Expanded(
-            //   flex: 5,
-            //   child: Theme(
-            //     data: ThemeData(
-            //       inputDecorationTheme:
-            //           const InputDecorationTheme(border: InputBorder.none),
-            //     ),
-            //     child: DropdownSearch<ListOffTypeModel>(
-            //       asyncItems: (String? query) {
-            //         return controller.getTypeOff(query);
-            //       },
-            //       popupProps: PopupProps.dialog(
-            //         showSelectedItems: true,
-            //         itemBuilder: _customPopupItemBuilderExample2,
-            //         showSearchBox: true,
-            //       ),
-            //       compareFn: (item, sItem) {
-            //         return item.note == sItem.note;
-            //       },
-            //       onChanged: (ListOffTypeModel? newValue) {
-            //         controller.selectedLoaiPhep =
-            //             newValue!.offTypeID.toString();
-            //       },
-            //       dropdownDecoratorProps: DropDownDecoratorProps(
-            //         dropdownSearchDecoration: InputDecoration(
-            //           hintText: hintText,
-            //           hintStyle: const TextStyle(
-            //             fontSize: 15,
-            //             color: Colors.black,
-            //           ),
-            //           filled: true,
-            //           iconColor: const Color(0xFFF3BD60),
-            //           focusColor: const Color(0xFFF3BD60),
-            //           fillColor: Colors.white,
-            //         ),
-            //       ),
-            //     ),
-            //   ),
-            // ),
             Expanded(
               flex: 5,
               child: FindDropdown<ListOffTypeModel>(
@@ -469,11 +430,11 @@ class DetailSingleView extends GetView<DetailSingleController> {
                     ),
                     child: (item?.note == null)
                         ? Row(
-                            children: const [
+                            children: [
                               Padding(
                                 padding: EdgeInsets.only(left: 10),
                                 child: Text(
-                                  "Chọn loại phép",
+                                  "${controller.typeOff[int.parse(controller.detailsSingle.value.rData!.type!)]}",
                                   style: TextStyle(fontSize: 15),
                                 ),
                               ),
@@ -927,6 +888,16 @@ class DetailSingleView extends GetView<DetailSingleController> {
                                       "6"
                                   ? "Chờ Việc (CV)"
                                   : "Hiếu Hỉ, Tang lễ (HH-TL)",
+          size: size,
+        ),
+        _buildFormText(
+          color: Colors.black,
+          title: "Ngày đăng ký ",
+          content: day.format(
+            DateTime.parse(
+              controller.detailsSingle.value.rData!.regDate.toString(),
+            ),
+          ),
           size: size,
         ),
         _buildFormText(

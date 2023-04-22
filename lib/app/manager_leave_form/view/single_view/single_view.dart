@@ -23,8 +23,14 @@ class SingleViewManagerScreen extends GetView<SingleViewController> {
             Obx(() {
               return controller.isLoadUser.value
                   ? _buildAdd(
-                      onPressed: () {
-                        Get.toNamed(Routes.CREATE_LEAVE_FORM_PAGE);
+                      onPressed: () async {
+                        var result =
+                            await Get.toNamed(Routes.CREATE_LEAVE_FORM_PAGE);
+                        if (result is bool && result == true) {
+                          controller.getInfo();
+                          controller.getDayOffLetterSingler(
+                              needAppr: 0, astatus: "");
+                        }
                       },
                       idNV: '${controller.userInfo.value.empID}',
                       userName:
@@ -110,7 +116,6 @@ class SingleViewManagerScreen extends GetView<SingleViewController> {
             ),
             Obx(() {
               var number = controller.selectedDepartmentsId.value;
-
               return Expanded(
                   child: controller.isLoadDayOff.value
                       ? ListView.builder(
@@ -119,14 +124,17 @@ class SingleViewManagerScreen extends GetView<SingleViewController> {
                             var item = controller.listDayOff[index];
                             return _buildCustomListtile(
                               stt: "${index + 1}",
-                              dayNow: day.format(
-                                DateTime.parse(
-                                  item.startDate.toString(),
-                                ),
-                              ),
+                              dayNow: item.regDate != null
+                                  ? day.format(
+                                      DateTime.parse(
+                                        item.regDate.toString(),
+                                      ),
+                                    )
+                                  : "",
+                              // dayNow: "Test day",
                               estimatedDate: day.format(
                                 DateTime.parse(
-                                  item.comeDate.toString(),
+                                  item.startDate.toString(),
                                 ),
                               ),
                               type: '${item.reason}',
@@ -145,11 +153,16 @@ class SingleViewManagerScreen extends GetView<SingleViewController> {
                                       : item.aStatus == 2
                                           ? Colors.greenAccent
                                           : Colors.red,
-                              onTap: () {
-                                Get.toNamed(
+                              onTap: () async {
+                                var result = await Get.toNamed(
                                   Routes.DETAIL_SINGLE_VIEW,
                                   arguments: item.regID,
                                 );
+                                if (result is bool && result == true) {
+                                  controller.getInfo();
+                                  controller.getDayOffLetterSingler(
+                                      needAppr: 0, astatus: "");
+                                }
                               },
                             );
                           })
@@ -269,7 +282,7 @@ Widget _buildCustomListtile({
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Text(
-            "$dayNow - $estimatedDate",
+            "Ngày bắt đầu nghỉ : $estimatedDate",
             style: const TextStyle(
               fontSize: 14,
             ),
@@ -305,7 +318,8 @@ Widget _buildAdd(
         child: Text(
           "$idNV  /  $userName",
           style: const TextStyle(
-            fontSize: 18,
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
           ),
         ),
       ),

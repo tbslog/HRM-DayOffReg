@@ -12,15 +12,16 @@ class MenuDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     return GetBuilder<ManagerLeaveFormController>(
-        builder: (controller) => Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                    colors: [Colors.black, Colors.white],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    stops: [1, 0.4]),
-              ),
-              child: Column(
+      builder: (controller) => Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+              colors: [Colors.black, Colors.white],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              stops: [1, 0.4]),
+        ),
+        child: controller.isUserInfo.value
+            ? Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Stack(
@@ -83,7 +84,7 @@ class MenuDrawer extends StatelessWidget {
                                           height: 10,
                                         ),
                                         Text(
-                                          "Bộ phận : ${controller.userName.value.jobpositionName}",
+                                          "Vị trí : ${controller.userName.value.jobpositionName}",
                                           style: const TextStyle(
                                               color: Colors.orangeAccent),
                                         ),
@@ -126,7 +127,10 @@ class MenuDrawer extends StatelessWidget {
                         color: Colors.black,
                         child: ListTile(
                           onTap: () {
-                            Get.toNamed(Routes.CHANGE_PASSWORD_PAGE);
+                            Get.toNamed(
+                              Routes.CHANGE_PASSWORD_FULL_SCREEN,
+                              arguments: controller.userName.value.empID,
+                            );
                           },
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
@@ -174,7 +178,13 @@ class MenuDrawer extends StatelessWidget {
                     ],
                   )
                 ],
+              )
+            : const Center(
+                child: CircularProgressIndicator(
+                  color: Colors.orangeAccent,
+                ),
               ),
-            ));
+      ),
+    );
   }
 }

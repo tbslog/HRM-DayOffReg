@@ -1,9 +1,8 @@
 import 'package:get/get.dart';
-import 'package:tbs_logistics_phieunghi/app/auth/moduels/change_pass_full_screen.dart';
-import 'package:tbs_logistics_phieunghi/app/auth/moduels/change_password_screen.dart';
-import 'package:tbs_logistics_phieunghi/app/auth/view/change_passwod_page.dart';
 
 import 'package:tbs_logistics_phieunghi/app/auth/view/login_page.dart';
+import 'package:tbs_logistics_phieunghi/app/changes_password/view/change_pass_full_page.dart';
+import 'package:tbs_logistics_phieunghi/app/changes_password/view/change_password_page.dart';
 import 'package:tbs_logistics_phieunghi/app/create_leave/view/create_leave_form_page.dart';
 import 'package:tbs_logistics_phieunghi/app/create_leave/view/create_leave_form/create_leave_form_screen.dart';
 import 'package:tbs_logistics_phieunghi/app/manager_leave_form/manager_leave_form_page.dart';
@@ -22,7 +21,7 @@ abstract class AppPages {
     //Login
     GetPage(
       name: Routes.LOGIN_PAGE,
-      page: () => const LoginPage(),
+      page: () => LoginPage(),
     ),
     GetPage(
       name: Routes.SPLASH,
@@ -33,16 +32,10 @@ abstract class AppPages {
       name: Routes.CHANGE_PASSWORD_PAGE,
       page: () => ChangePasswordPage(),
     ),
+
     GetPage(
-      name: Routes.CHANGE_PASSWORD_SCREEN,
-      page: () => ChangePasswordScreen(
-        oldPass: '',
-        username: '',
-      ),
-    ),
-    GetPage(
-      name: Routes.CHANGE_PASSWORD__FULL_SCREEN,
-      page: () => ChangePasswordFullScreen(),
+      name: Routes.CHANGE_PASSWORD_FULL_SCREEN,
+      page: () => ChangePasswordFullPage(),
     ),
     //MANAGER_LEAVE
     GetPage(

@@ -14,7 +14,7 @@ class ManagerLeaveFormController extends GetxController
   var dio = Dio();
 
   RxBool isChangePage = false.obs;
-  RxBool isUserInfo = true.obs;
+  RxBool isUserInfo = false.obs;
 
   final userName = UserModel().obs;
 
@@ -30,11 +30,11 @@ class ManagerLeaveFormController extends GetxController
 
   @override
   void onInit() {
-    super.onInit();
-    getDayOffLetterSingler(astatus: "", needAppr: 0);
-    getInfo();
-
     controller = TabController(vsync: this, length: myTabs.length);
+    getInfo();
+    getDayOffLetterSingler(astatus: "", needAppr: 0);
+
+    super.onInit();
   }
 
   void getDayOffLetterSingler(
@@ -47,6 +47,7 @@ class ManagerLeaveFormController extends GetxController
       HttpHeaders.authorizationHeader: "Bearer $tokens",
     };
     isLoadDayOff(false);
+    isUserInfo(false);
 
     var url =
         "${AppConstants.urlBase}/day-off-letters?needAppr=$needAppr&astatus=$astatus";
@@ -67,7 +68,7 @@ class ManagerLeaveFormController extends GetxController
     } finally {
       Future.delayed(const Duration(seconds: 1), () {
         isLoadDayOff(true);
-        update();
+        isUserInfo(true);
       });
     }
   }

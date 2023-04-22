@@ -439,36 +439,6 @@ class AccessSingleScreen extends GetView<AccessSingleController> {
           ),
         ),
       ),
-      // child: ListTile(
-      //   onTap: onTap,
-      //   leading: Container(
-      //     height: 40,
-      //     width: 40,
-      //     decoration: BoxDecoration(
-      //       border: Border.all(color: Colors.orangeAccent, width: 1),
-      //       borderRadius: BorderRadius.circular(100),
-      //     ),
-      //     child: Center(child: Text(stt)),
-      //   ),
-      //   title: Row(
-      //     mainAxisAlignment: MainAxisAlignment.start,
-      //     children: [
-      //       Text(
-      //         "$dayNow - $estimatedDate",
-      //         style: const TextStyle(
-      //           fontSize: 14,
-      //         ),
-      //       ),
-      //     ],
-      //   ),
-      //   subtitle: Text("$type - $totalDay"),
-      //   trailing: Column(
-      //     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      //     children: [
-      //       child,
-      //     ],
-      //   ),
-      // ),
     );
   }
 }

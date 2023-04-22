@@ -11,7 +11,6 @@ import 'package:tbs_logistics_phieunghi/app/manager_leave_form/model/day_of_lett
 import 'package:tbs_logistics_phieunghi/app/manager_leave_form/model/detail_single_model.dart';
 import 'package:tbs_logistics_phieunghi/app/manager_leave_form/model/register_detail_model.dart';
 import 'package:tbs_logistics_phieunghi/config/core/constants.dart';
-import 'package:tbs_logistics_phieunghi/config/routes/pages.dart';
 
 import 'package:tbs_logistics_phieunghi/config/share_prefs.dart';
 
@@ -22,6 +21,7 @@ class DetailSingleController extends GetxController {
   var initialValueReson = "".obs;
 
   RxList listOffType = [].obs;
+  RxList typeOff = [].obs;
 
   var selectedLoaiPhep = "";
   var dio = Dio();
@@ -29,7 +29,7 @@ class DetailSingleController extends GetxController {
   var selectedValue = 0.obs;
   var nameType = "".obs;
 
-  final GlobalKey formDetail = GlobalKey<FormState>();
+  GlobalKey<FormState> formDetail = GlobalKey<FormState>();
 
   TextEditingController timeController = TextEditingController();
 
@@ -47,6 +47,7 @@ class DetailSingleController extends GetxController {
   void onInit() async {
     formDetail;
     detailSingle(regID: regID);
+    typeOffList();
     super.onInit();
   }
 
@@ -112,6 +113,28 @@ class DetailSingleController extends GetxController {
         return data.map((e) => ListOffTypeModel.fromJson(e)).toList();
       } else {
         return [];
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  void typeOffList() async {
+    var tokens = await SharePerApi().getToken();
+    Response response;
+    Map<String, dynamic> headers = {
+      HttpHeaders.authorizationHeader: "Bearer $tokens"
+    };
+    const url = "${AppConstants.urlBase}/${AppConstants.urlListOffType}";
+    try {
+      response = await dio.get(
+        url,
+        options: Options(headers: headers),
+      );
+      if (response.statusCode == 200) {
+        List<dynamic> data = response.data["rData"];
+
+        typeOff.value = data.map((e) => ListOffTypeModel.fromJson(e)).toList();
       }
     } catch (e) {
       rethrow;
@@ -195,7 +218,7 @@ class DetailSingleController extends GetxController {
             ),
           );
         } else if (data["rCode"] == 1) {
-          Get.back();
+          Get.back(result: true);
           Get.snackbar(
             "Thông báo",
             "${data["rMsg"]} !",

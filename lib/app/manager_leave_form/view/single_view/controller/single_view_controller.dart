@@ -27,8 +27,8 @@ class SingleViewController extends GetxController {
       <DayOffLettersSingleModel>[].obs;
   Rx<UserModel> userInfo = UserModel().obs;
 
-  RxBool isLoadDayOff = true.obs;
-  RxBool isLoadUser = true.obs;
+  RxBool isLoadDayOff = false.obs;
+  RxBool isLoadUser = false.obs;
 
   @override
   void onInit() {
@@ -133,8 +133,6 @@ class SingleViewController extends GetxController {
     } finally {
       Future.delayed(const Duration(seconds: 1), () {
         isLoadDayOff(true);
-
-        update();
       });
     }
   }

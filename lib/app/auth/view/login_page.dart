@@ -6,8 +6,9 @@ import 'package:tbs_logistics_phieunghi/config/core/data/color.dart';
 import 'package:tbs_logistics_phieunghi/config/core/data/validate.dart';
 
 class LoginPage extends GetView<LoginController> {
-  const LoginPage({super.key});
+  LoginPage({super.key});
   final String routes = "/LOGIN_PAGE";
+  final GlobalKey<FormState> formKeyLogin = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +23,7 @@ class LoginPage extends GetView<LoginController> {
               gradient: CustomColor.gradient,
             ),
             child: Form(
-              key: controller.formKeyLogin,
+              key: formKeyLogin,
               autovalidateMode: AutovalidateMode.always,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -158,6 +159,7 @@ class LoginPage extends GetView<LoginController> {
                       onPressed: () {
                         _signUpProcess(
                           context,
+                          controller,
                         );
                       },
                       child: const Text(
@@ -182,9 +184,9 @@ class LoginPage extends GetView<LoginController> {
 
   void _signUpProcess(
     BuildContext context,
-    // LoginController controller,
+    LoginController controller,
   ) {
-    var validate = controller.formKeyLogin.currentState!.validate();
+    var validate = formKeyLogin.currentState!.validate();
 
     if (!validate) {
       controller.getLogin(
