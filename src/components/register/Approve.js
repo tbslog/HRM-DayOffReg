@@ -59,7 +59,7 @@ const Approve = (props) => {
       //console.log(props.dataRegByID.rData);
 
       setregID(props.dataRegByID?.rData.regID);
-      setMSNV(props.dataRegByID?.rData.EmpID);
+      setMSNV(props.dataRegByID.rData.EmpID);
       setname(
         props.dataRegByID.rData?.LastName +
           " " +
@@ -91,7 +91,7 @@ const Approve = (props) => {
 
       if (props.dataRegByID.rData?.aStatus === 1 && props.isAppove === true) {
         setApprovalDate(moment(new Date()).format("DD-MM-YYYY"));
-        setApproName(info?.FirstName + " " + info?.LastName);
+        setApproName(info?.LastName + " " + info?.FirstName);
         setApproJobName(info.JobpositionName);
         setComment("");
         setshow(false);

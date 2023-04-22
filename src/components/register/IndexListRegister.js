@@ -36,14 +36,14 @@ const IndexListRegister = () => {
       if (datapb.rData[0]?.aStatus === 1) {
         setShowMesspb(true);
       } else {
-        setShowMesspb(false);
+        setShowMesspb(true);
       }
 
       setpbkhac(datapb);
       //console.log(dataMana);
       if (dataMana.rData.length > 0) {
         setOpen(true);
-      } else setOpen(false);
+      } else setOpen(true);
     })();
   }, []);
   const onSubmitDownload = async () => {
@@ -89,6 +89,7 @@ const IndexListRegister = () => {
                   onSelect={(index) => HandleOnChangeTabs(index)}
                 >
                   <TabList>
+                    <Tab>Đơn Của Tôi</Tab>
                     <Tab>
                       Đơn Cần Phê Duyệt {""}
                       {showMess && (
@@ -109,7 +110,7 @@ const IndexListRegister = () => {
                         )}
                       </Tab>
                     )}
-                    <Tab>Đơn Của Tôi</Tab>
+
                     <Tab>Hướng Dẫn Quy Trình</Tab>
                     {info?.DeptID === "NS" && (
                       <Tab>
@@ -135,6 +136,11 @@ const IndexListRegister = () => {
                   </TabList>
                   <TabPanel>
                     <div style={{ height: "100vh" }}>
+                      <StaffPage sizeConten={"85vh"} sizeContenTB={"68%"} />
+                    </div>
+                  </TabPanel>
+                  <TabPanel>
+                    <div style={{ height: "100vh" }}>
                       <ManagerPage sizeConten={"85vh"} sizeContenTB={"68%"} />
                     </div>
                   </TabPanel>
@@ -149,11 +155,6 @@ const IndexListRegister = () => {
                     </TabPanel>
                   )}
 
-                  <TabPanel>
-                    <div style={{ height: "100vh" }}>
-                      <StaffPage sizeConten={"85vh"} sizeContenTB={"68%"} />
-                    </div>
-                  </TabPanel>
                   <TabPanel>
                     <div style={{ height: "100vh" }}>
                       <Usermanual />

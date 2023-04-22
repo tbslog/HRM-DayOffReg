@@ -20,15 +20,15 @@ const Info = () => {
 
   useEffect(() => {
     async function fetchData() {
-      let data1 = await getData("profile_img/", emID);
+      let data1 = await getData("getEmpInfo", emID);
       setData(data1);
       console.log(data1);
     }
     fetchData();
     async function fetchData() {
       const response = await getIMG("get-image/");
-      //const imageUrl = URL.createObjectURL(response);
-      setImageUrl(response);
+      const imageUrl = URL.createObjectURL(response);
+      setImageUrl(imageUrl);
     }
   }, [emID, isShow]);
 
@@ -47,9 +47,8 @@ const Info = () => {
     if (data?.rCode === 1) {
       async function fetchData() {
         const response = await getIMG("get-image/");
-        console.log(response);
-        //const imageUrl = URL.createObjectURL(response);
-        setImageUrl(response);
+        const imageUrl = URL.createObjectURL(response);
+        setImageUrl(imageUrl);
         window.location.reload();
       }
       setisShow(false);

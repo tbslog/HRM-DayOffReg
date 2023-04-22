@@ -94,7 +94,6 @@ const Login = (props) => {
       },
     },
     Password: {
-      required: " Không được để trống",
       maxLength: {
         value: 10,
         message: " không được hơn 10 kí tự",

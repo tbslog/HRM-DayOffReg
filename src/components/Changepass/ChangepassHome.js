@@ -1,6 +1,9 @@
 import { useForm, Controller } from "react-hook-form";
 import React, { useState, useEffect, useRef } from "react";
-
+import { useDispatch, useSelector } from "react-redux";
+import { login } from "../../actions/auth";
+import { Navigate, useNavigate } from "react-router-dom";
+import { Modal } from "bootstrap";
 import { getData, postData } from "../../services/user.service";
 import { toast } from "react-toastify";
 import Cookies from "js-cookie";
@@ -125,6 +128,7 @@ const ChangepassHome = (props) => {
                 </label>
                 <div className="d-flex">
                   <input
+                    type="password"
                     className="form-control"
                     id="passwordNew"
                     {...register("passwordNew", validateForm.passwordNew)}
@@ -145,6 +149,7 @@ const ChangepassHome = (props) => {
                 </label>
                 <div className="d-flex">
                   <input
+                    type="password"
                     className="form-control"
                     id="passwordNewVerify"
                     {...register(

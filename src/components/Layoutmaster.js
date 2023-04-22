@@ -271,19 +271,22 @@ const Header = ({ children }) => {
                 >
                   {/* Add icons to the links using the .nav-icon class
          with font-awesome or any other icon font library */}
-                  {/* <li className="nav-item menu-open">
+                  <li className="nav-item menu-open">
                     <a className="nav-link active">
-                      <i className="nav-icon fas fa-tachometer-alt" /> */}
-                  <li className="nav-item">
-                    <a className="nav-link">
                       <i className="nav-icon fas fa-tachometer-alt" />
-
                       <p>
                         Danh Mục
                         <i className="right fas fa-angle-left" />
                       </p>
                     </a>
-
+                    {/* <ul className="nav nav-treeview">
+                      <li className="nav-item">
+                        <Link to={`/info`} className="nav-link ">
+                          <i className="far fa-circle nav-icon" />
+                          <p>Profile </p>{" "}
+                        </Link>
+                      </li>
+                    </ul> */}
                     <ul className="nav nav-treeview">
                       <li className="nav-item">
                         <Link to={`/indexListRegister`} className="nav-link ">
@@ -297,35 +300,6 @@ const Header = ({ children }) => {
                               />
                             )}
                           </p>
-                        </Link>
-                      </li>
-                    </ul>
-                  </li>
-                  <li className="nav-item">
-                    <a className="nav-link">
-                      <i className="nav-icon far fa-plus-square" />
-                      <p>
-                        Khác
-                        <i className="fas fa-angle-left right" />
-                      </p>
-                    </a>
-                    <ul className="nav nav-treeview">
-                      <li className="nav-item">
-                        <Link to={`/department`} className="nav-link ">
-                          <i className="far fa-circle nav-icon" />
-                          <p> Quản Lý Phòng Ban</p>
-                        </Link>
-                      </li>
-                      <li className="nav-item">
-                        <Link to={`/jobTitle`} className="nav-link ">
-                          <i className="far fa-circle nav-icon" />
-                          <p> Quản Lý Chức Vụ</p>
-                        </Link>
-                      </li>
-                      <li className="nav-item">
-                        <Link to={`/jobPosition`} className="nav-link ">
-                          <i className="far fa-circle nav-icon" />
-                          <p> Quản Lý Vị Trí Công Việc</p>
                         </Link>
                       </li>
                     </ul>
@@ -344,7 +318,8 @@ const Header = ({ children }) => {
           </div>
           <footer className="main-footer">
             <strong>
-              Copyright © 2022<a href="https://adminlte.io"> TBSL</a>.
+              Copyright © 2022
+              <a href="http://hrm-dor.tbslogistics.com.vn/"> TBSL</a>.
             </strong>
             <div className="float-right d-none d-sm-inline-block">
               <b>Version</b> 1.0.0

@@ -270,7 +270,6 @@ const Edit = (props) => {
                     id="fullName"
                     readOnly
                     className="form-control ml-3 "
-                    value={name}
                   />
                 </div>
                 <div className="col-md-6 d-flex">

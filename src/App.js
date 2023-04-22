@@ -1,56 +1,35 @@
-import { Fragment } from "react"; // thẻ ảo k chứa j
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { publicRouters, privateRouters } from "./router";
-import Layoutmaster from "./components/Layoutmaster";
-import Login from "./components/login/Login";
-import Demo2 from "./components/demo2";
-import Cookies from "js-cookie";
+import { Routes, Route } from "react-router-dom";
+import PrivateRoutes from "./router/PrivateRoutes";
+
 import "react-tabs/style/react-tabs.css";
 import "react-datepicker/dist/react-datepicker.css";
-import { ToastContainer, Bounce } from "react-toastify";
+
 import "react-toastify/dist/ReactToastify.css";
-let token = Cookies.get("user");
+import Home from "./components/Home";
+import Login from "./components/login/Login";
+import IndexListRegister from "./components/register/IndexListRegister";
+import Register from "./components/register/Register";
+import Info from "./components/profile/Info";
 
 function App() {
+  const accountType = "all";
   return (
-    <Router>
-      <div>
-        <Routes>
-          <Route path="/demo2" element={<Demo2 />}></Route>
-          {token
-            ? privateRouters.map((route, index) => {
-                const Page = route.component;
-                let Layout = Layoutmaster;
-
-                if (route.layout) {
-                  Layout = route.layout;
-                } else if (route.layout === null) {
-                  Layout = Fragment;
-                }
-
-                return (
-                  <Route
-                    key={index}
-                    path={route.path}
-                    element={
-                      <Layout>
-                        <Page />
-                      </Layout>
-                    }
-                  />
-                );
-              })
-            : publicRouters.map((route, index) => {
-                const Page = route.component;
-
-                return (
-                  <Route key={index} path={route.path} element={<Page />} />
-                );
-              })}
-        </Routes>
-      </div>
-      <ToastContainer transition={Bounce} />
-    </Router>
+    <Routes>
+      <Route element={<PrivateRoutes />}>
+        {accountType && accountType === "all" && (
+          <>
+            <Route path="/home" element={<Home />} />
+            <Route path="/indexListRegister" element={<IndexListRegister />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/info" element={<Info />} />
+          </>
+        )}
+        <Route path="/" element={<Home />} exact />
+        <Route path="*" element={<Home />} />
+      </Route>
+      <Route element={<Login />} path="/login"></Route>
+      <Route element={<Login />} path="/"></Route>
+    </Routes>
   );
 }
 
