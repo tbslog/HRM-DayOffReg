@@ -57,7 +57,6 @@ const ChangepassHome = (props) => {
   };
 
   const onChagepassOK = async (data) => {
-    console.log(data);
     if (data.passwordNew !== data.passwordNewVerify) {
       setmessage(" Mật khẩu xác nhận không khớp");
     } else {
@@ -69,7 +68,7 @@ const ChangepassHome = (props) => {
         newPassword: data.passwordNew,
         confirmPass: data.passwordNewVerify,
       });
-      console.log(create);
+
       if (create.isSuccess === 1) {
         toast.success("Đổi mật khẩu thành công \n" + create.note, {
           autoClose: 2000,
@@ -78,7 +77,7 @@ const ChangepassHome = (props) => {
           theme: "colored",
         });
         setValue("Password", data.passwordNew);
-        console.log(data.MSNV);
+
         Cookies.set("empid", data.MSNV);
         reset();
         hideModal();

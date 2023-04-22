@@ -46,7 +46,7 @@ const Register = () => {
       setJPLevelName(data.rData.JPLevelName);
 
       let dataTypeOff = await getData("dayOffType");
-      console.log(dataTypeOff.rData);
+      //console.log(dataTypeOff.rData);
       setlistTypeOff(dataTypeOff.rData);
     })();
   }, []);
@@ -95,7 +95,6 @@ const Register = () => {
     }
   };
   const save = async (data) => {
-    console.log(data);
     setIsLoading(true);
     var create = await postData("day-off-letter", {
       type: data.offType,
@@ -162,7 +161,7 @@ const Register = () => {
       address: data.address,
       command: 1,
     });
-    console.log(create);
+    //console.log(create);
     if (create.isSuccess === 1) {
       toast.success("Gửi đơn thành công \n" + create.note, {
         autoClose: 2000,

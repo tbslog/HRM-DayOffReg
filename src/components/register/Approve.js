@@ -108,13 +108,13 @@ const Approve = (props) => {
             setApproName("");
             setApproJobName("");
             setComment("");
-            console.log("2");
+
             setShowstream(false);
             setShowstreamx(true);
             Trangtt(props);
             // console.log(props.dataRegByID.rData);
           } else {
-            console.log(props.dataRegByID.rData?.apprInf[0]);
+            // console.log(props.dataRegByID.rData?.apprInf[0]);
             setShowstream(true);
             setShowstreamx(true);
             Trangtt(props);
@@ -181,7 +181,7 @@ const Approve = (props) => {
 
   function ListItem(props) {
     const listItems = props.dataRegByID.rData?.apprInf;
-    console.log(listItems);
+    //console.log(listItems);
     return (
       <>
         {listItems?.map((item) => (

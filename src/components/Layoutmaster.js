@@ -88,7 +88,6 @@ const Header = ({ children }) => {
     })();
   }, []);
   const handelchangepass = () => {
-    console.log("a");
     showModalForm();
   };
 

@@ -58,7 +58,6 @@ const postData = async (url, data, header = null) => {
       headers: authHeader().headers,
     })
     .then((response) => {
-      console.log(response.data);
       if (response.data.rCode === 1) {
         if (response.data.rError) {
           Object.keys(response.data.rError).forEach((key) => {
@@ -93,7 +92,6 @@ const putData = async (url, data, header = null) => {
       headers: authHeader().headers,
     })
     .then((response) => {
-      console.log(response.data);
       if (response.data.rCode === 1) {
         if (response.data.rError) {
           Object.keys(response.data.rError).forEach((key) => {

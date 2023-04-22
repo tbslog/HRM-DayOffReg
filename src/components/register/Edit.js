@@ -118,7 +118,7 @@ const Edit = (props) => {
       address: data.address,
       command: 0,
     });
-    console.log(create);
+
     if (create.isSuccess === 1) {
       toast.success("lưu đơn thành công \n" + create.note, {
         autoClose: 2000,
@@ -177,7 +177,7 @@ const Edit = (props) => {
       address: data.address,
       command: 1,
     });
-    console.log(create);
+    //console.log(create);
     if (create.isSuccess === 1) {
       toast.success("Gửi đơn thành công \n" + create.note, {
         autoClose: 2000,
