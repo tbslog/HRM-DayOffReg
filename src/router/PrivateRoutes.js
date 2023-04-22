@@ -5,7 +5,7 @@ import Layoutmaster from "../components/Layoutmaster";
 
 const PrivateRoutes = () => {
   let token = Cookies.get("user");
-  console.log(token);
+
   return token ? (
     <>
       <ToastContainer transition={Bounce} />

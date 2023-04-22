@@ -179,7 +179,7 @@ const Header = ({ children }) => {
                 >
                   <div className="d-flex flex-column flex-nowrap align-items-start">
                     {" "}
-                    <span className="dropdown-header d-flex justify-content-center p-0 ">
+                    {/* <span className="dropdown-header d-flex justify-content-center p-0 ">
                       <Link to={`/info`} className="nav-link ">
                         <i
                           className="far fa-id-card  fa-lg mr-2  "
@@ -187,7 +187,7 @@ const Header = ({ children }) => {
                         />
                         Profile
                       </Link>
-                    </span>
+                    </span> */}
                     <div className="dropdown-divider w-100 p-0 m-0" />{" "}
                     <span
                       className=" dropdown-header d-flex justify-content-center "
@@ -291,15 +291,7 @@ const Header = ({ children }) => {
                       <li className="nav-item">
                         <Link to={`/indexListRegister`} className="nav-link ">
                           <i className="far fa-circle nav-icon" />
-                          <p>
-                            Quản lý ngày nghỉ
-                            {showNoti === true && (
-                              <i
-                                className="fas fa-info fa-xs ml-2"
-                                style={{ color: "#f50000" }}
-                              />
-                            )}
-                          </p>
+                          <p>Quản lý ngày nghỉ</p>
                         </Link>
                       </li>
                     </ul>
