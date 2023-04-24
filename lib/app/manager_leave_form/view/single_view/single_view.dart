@@ -117,130 +117,131 @@ class SingleViewManagerScreen extends GetView<SingleViewController> {
             Obx(() {
               var number = controller.selectedDepartmentsId.value;
               return Expanded(
-                  child: controller.isLoadDayOff.value
-                      ? ListView.builder(
-                          itemCount: controller.listDayOff.length,
-                          itemBuilder: (context, index) {
-                            var item = controller.listDayOff[index];
-                            return _buildCustomListtile(
-                              stt: "${index + 1}",
-                              dayNow: item.regDate != null
-                                  ? day.format(
-                                      DateTime.parse(
-                                        item.regDate.toString(),
-                                      ),
-                                    )
-                                  : "",
-                              // dayNow: "Test day",
-                              estimatedDate: day.format(
-                                DateTime.parse(
-                                  item.startDate.toString(),
-                                ),
+                child: controller.isLoadDayOff.value
+                    ? ListView.builder(
+                        itemCount: controller.listDayOff.length,
+                        itemBuilder: (context, index) {
+                          var item = controller.listDayOff[index];
+                          return _buildCustomListtile(
+                            stt: "${index + 1}",
+                            dayNow: item.regDate != null
+                                ? day.format(
+                                    DateTime.parse(
+                                      item.regDate.toString(),
+                                    ),
+                                  )
+                                : "",
+                            // dayNow: "Test day",
+                            estimatedDate: day.format(
+                              DateTime.parse(
+                                item.startDate.toString(),
                               ),
-                              type: '${item.reason}',
-                              totalDay: '${item.period} Ngày',
-                              status: item.aStatus == 0
-                                  ? "Đơn mới"
-                                  : item.aStatus == 1
-                                      ? "Chờ duyệt"
-                                      : item.aStatus == 2
-                                          ? "Đã duyệt"
-                                          : "Từ chối",
-                              color: item.aStatus == 0
-                                  ? Colors.green
-                                  : item.aStatus == 1
-                                      ? Colors.orangeAccent
-                                      : item.aStatus == 2
-                                          ? Colors.greenAccent
-                                          : Colors.red,
-                              onTap: () async {
-                                var result = await Get.toNamed(
-                                  Routes.DETAIL_SINGLE_VIEW,
-                                  arguments: item.regID,
-                                );
-                                if (result is bool && result == true) {
-                                  controller.getInfo();
-                                  controller.getDayOffLetterSingler(
-                                      needAppr: 0, astatus: "");
-                                }
-                              },
-                            );
-                          })
-                      : ListView.builder(
-                          itemCount: controller.listDayOff.length,
-                          itemBuilder: (context, index) {
-                            return Card(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                side: BorderSide(
+                            ),
+                            type: '${item.reason}',
+                            totalDay: '${item.period} Ngày',
+                            status: item.aStatus == 0
+                                ? "Đơn mới"
+                                : item.aStatus == 1
+                                    ? "Chờ duyệt"
+                                    : item.aStatus == 2
+                                        ? "Đã duyệt"
+                                        : "Từ chối",
+                            color: item.aStatus == 0
+                                ? Colors.green
+                                : item.aStatus == 1
+                                    ? Colors.orangeAccent
+                                    : item.aStatus == 2
+                                        ? Colors.greenAccent
+                                        : Colors.red,
+                            onTap: () async {
+                              var result = await Get.toNamed(
+                                Routes.DETAIL_SINGLE_VIEW,
+                                arguments: item.regID,
+                              );
+                              if (result is bool && result == true) {
+                                controller.getInfo();
+                                controller.getDayOffLetterSingler(
+                                    needAppr: 0, astatus: "");
+                              }
+                            },
+                          );
+                        })
+                    : ListView.builder(
+                        itemCount: controller.listDayOff.length,
+                        itemBuilder: (context, index) {
+                          return Card(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              side: BorderSide(
+                                color: Colors.black.withOpacity(0.4),
+                                width: 1,
+                              ),
+                            ),
+                            child: ListTile(
+                              leading: Container(
+                                height: 40,
+                                width: 40,
+                                decoration: BoxDecoration(
                                   color: Colors.black.withOpacity(0.4),
-                                  width: 1,
+                                  borderRadius: BorderRadius.circular(100),
                                 ),
                               ),
-                              child: ListTile(
-                                leading: Container(
-                                  height: 40,
-                                  width: 40,
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withOpacity(0.4),
-                                    borderRadius: BorderRadius.circular(100),
+                              title: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    height: 15,
+                                    width: size.width * 0.2,
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withOpacity(0.3),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
                                   ),
-                                ),
-                                title: Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Container(
-                                      height: 15,
-                                      width: size.width * 0.2,
-                                      decoration: BoxDecoration(
-                                        color: Colors.black.withOpacity(0.3),
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
+                                  const SizedBox(width: 15),
+                                  Container(
+                                    height: 15,
+                                    width: size.width * 0.2,
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withOpacity(0.3),
+                                      borderRadius: BorderRadius.circular(10),
                                     ),
-                                    const SizedBox(width: 15),
-                                    Container(
-                                      height: 15,
-                                      width: size.width * 0.2,
-                                      decoration: BoxDecoration(
-                                        color: Colors.black.withOpacity(0.3),
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                subtitle: Container(
-                                  height: 15,
-                                  width: size.width * 0.1,
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withOpacity(0.3),
-                                    borderRadius: BorderRadius.circular(10),
                                   ),
-                                ),
-                                trailing: Column(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    Container(
-                                      height: 15,
-                                      width: size.width * 0.15,
-                                      decoration: BoxDecoration(
-                                        color: Colors.black.withOpacity(0.3),
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                    ),
-                                    Container(
-                                      height: 15,
-                                      width: size.width * 0.15,
-                                      decoration: BoxDecoration(
-                                        color: Colors.black.withOpacity(0.3),
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                    ),
-                                  ],
+                                ],
+                              ),
+                              subtitle: Container(
+                                height: 15,
+                                width: size.width * 0.1,
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withOpacity(0.3),
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
                               ),
-                            );
-                          }));
+                              trailing: Column(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  Container(
+                                    height: 15,
+                                    width: size.width * 0.15,
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withOpacity(0.3),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                  Container(
+                                    height: 15,
+                                    width: size.width * 0.15,
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withOpacity(0.3),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }),
+              );
             }),
           ],
         ),
