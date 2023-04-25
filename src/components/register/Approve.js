@@ -30,7 +30,7 @@ const Approve = (props) => {
   const [name, setname] = useState("");
   const [listTypeOff, setlistTypeOff] = useState([]);
   const [type, setType] = useState("");
-  const [RegDate, setRegDate] = useState("");
+  const [startDate, setStartDate] = useState("");
   const [Period, setPeriod] = useState("");
   const [Reason, setReason] = useState("");
   const [Address, setAddress] = useState("");
@@ -56,8 +56,7 @@ const Approve = (props) => {
       setshow(true);
     }
     (async () => {
-      //console.log(props.dataRegByID.rData);
-
+      // console.log(props.dataRegByID.rData);
       setregID(props.dataRegByID?.rData.regID);
       setMSNV(props.dataRegByID.rData.EmpID);
       setname(
@@ -73,7 +72,9 @@ const Approve = (props) => {
       );
       setJPLevelName(props.dataRegByID.rData.Position);
       setType(props.dataRegByID.rData.Type);
-      setRegDate(moment(props.dataRegByID.rData.RegDate).format("DD-MM-YYYY"));
+      setStartDate(
+        moment(props.dataRegByID.rData.StartDate).format("DD-MM-YYYY")
+      );
       setPeriod(props.dataRegByID.rData.Period);
       setReason(props.dataRegByID.rData.Reason);
       setAddress(props.dataRegByID.rData.Address);
@@ -427,7 +428,7 @@ const Approve = (props) => {
                   </span>
                   <input
                     className="form-controlCustomer ml-3"
-                    value={RegDate}
+                    value={startDate}
                     readOnly
                   />
                 </div>
