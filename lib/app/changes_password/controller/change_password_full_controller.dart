@@ -53,6 +53,9 @@ class ChangePasswordFullController extends GetxController {
           Get.back();
           getSnack(data["rMsg"]);
         }
+        {
+          getSnack(data["rMsg"]);
+        }
       }
     } catch (e) {
       rethrow;

@@ -283,7 +283,7 @@ Widget _buildCustomListtile({
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Text(
-            "Ngày bắt đầu nghỉ : $estimatedDate",
+            "Bắt đầu nghỉ : $estimatedDate",
             style: const TextStyle(
               fontSize: 14,
             ),

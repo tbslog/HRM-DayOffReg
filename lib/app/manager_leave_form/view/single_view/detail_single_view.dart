@@ -416,7 +416,9 @@ class DetailSingleView extends GetView<DetailSingleController> {
               child: FindDropdown<ListOffTypeModel>(
                 onFind: (String filter) => controller.getTypeOff(filter),
                 onChanged: (ListOffTypeModel? data) {
-                  controller.selectedValue.value = int.parse(data!.offTypeID!);
+                  // controller.selectedValue.value = int.parse(data!.offTypeID!);
+                  controller.selectedLoaiPhep.value =
+                      int.parse(data!.offTypeID!);
                   controller.nameType.value = data.note!;
                 },
                 dropdownBuilder:
@@ -432,13 +434,13 @@ class DetailSingleView extends GetView<DetailSingleController> {
                         ? Row(
                             children: [
                               Padding(
-                                padding: EdgeInsets.only(left: 10),
+                                padding: const EdgeInsets.only(left: 10),
                                 child: Text(
-                                  "${controller.typeOff[int.parse(controller.detailsSingle.value.rData!.type!)]}",
-                                  style: TextStyle(fontSize: 15),
+                                  "${controller.typeOff[int.parse(controller.detailsSingle.value.rData!.type!) - 1]}",
+                                  style: const TextStyle(fontSize: 15),
                                 ),
                               ),
-                              Icon(
+                              const Icon(
                                 Icons.arrow_drop_down_outlined,
                                 color: Colors.black,
                               )
@@ -678,11 +680,12 @@ class DetailSingleView extends GetView<DetailSingleController> {
                     ),
                   ),
                   onPressed: () {
+                    // print(controller.selectedLoaiPhep.value);
                     controller.postDetailRegister(
-                      type: controller.selectedLoaiPhep == ""
+                      type: controller.selectedLoaiPhep.value == 0
                           ? int.parse(controller.detailsSingle.value.rData!.type
                               .toString())
-                          : int.parse(controller.selectedLoaiPhep),
+                          : controller.selectedLoaiPhep.value,
                       reason: controller.reasonController.text == ""
                           ? controller.detailsSingle.value.rData!.reason
                               .toString()
@@ -694,7 +697,7 @@ class DetailSingleView extends GetView<DetailSingleController> {
                                     .toString(),
                               ),
                             )
-                          : controller.dayController.text,
+                          : controller.timeController.text,
                       period: controller.dayController.text == ""
                           ? int.parse(controller
                               .detailsSingle.value.rData!.period
@@ -729,10 +732,10 @@ class DetailSingleView extends GetView<DetailSingleController> {
                   ),
                   onPressed: () {
                     controller.postDetailRegister(
-                      type: controller.selectedLoaiPhep == ""
+                      type: controller.selectedLoaiPhep.value == 0
                           ? int.parse(controller.detailsSingle.value.rData!.type
                               .toString())
-                          : int.parse(controller.selectedLoaiPhep),
+                          : controller.selectedLoaiPhep.value,
                       reason: controller.reasonController.text == ""
                           ? controller.detailsSingle.value.rData!.reason
                               .toString()
@@ -744,7 +747,7 @@ class DetailSingleView extends GetView<DetailSingleController> {
                                     .toString(),
                               ),
                             )
-                          : controller.dayController.text,
+                          : controller.timeController.text,
                       period: controller.dayController.text == ""
                           ? int.parse(controller
                               .detailsSingle.value.rData!.period
@@ -823,7 +826,7 @@ class DetailSingleView extends GetView<DetailSingleController> {
         ),
         _buildFormText(
           color: Colors.black,
-          title: "Nghỉ bắt đầu từ ngày ",
+          title: "Bắt đầu nghỉ : ",
           content: day.format(
             DateTime.parse(
               controller.detailsSingle.value.rData!.startDate.toString(),
@@ -902,7 +905,7 @@ class DetailSingleView extends GetView<DetailSingleController> {
         ),
         _buildFormText(
           color: Colors.black,
-          title: "Nghỉ bắt đầu từ ngày ",
+          title: "Bắt đầu nghỉ ",
           content: day.format(
             DateTime.parse(
               controller.detailsSingle.value.rData!.startDate.toString(),

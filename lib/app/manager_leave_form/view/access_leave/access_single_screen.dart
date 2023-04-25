@@ -71,13 +71,13 @@ class AccessSingleScreen extends GetView<AccessSingleController> {
                                 stt: "${index + 1}",
                                 fromDay: day.format(
                                   DateTime.parse(
-                                    item.startDate.toString(),
+                                    item.regDate.toString(),
                                   ),
                                 ),
                                 endDay: item.comeDate != null
                                     ? day.format(
                                         DateTime.parse(
-                                          item.comeDate.toString(),
+                                          item.startDate.toString(),
                                         ),
                                       )
                                     : "",

@@ -23,7 +23,7 @@ class DetailSingleController extends GetxController {
   RxList listOffType = [].obs;
   RxList typeOff = [].obs;
 
-  var selectedLoaiPhep = "";
+  var selectedLoaiPhep = 0.obs;
   var dio = Dio();
 
   var selectedValue = 0.obs;
@@ -203,7 +203,7 @@ class DetailSingleController extends GetxController {
 
       if (response.statusCode == 200) {
         var data = response.data;
-        getDayOffLetterSingler(astatus: "", needAppr: 0);
+
         if (data["rCode"] == 0) {
           Get.snackbar(
             "Thông báo",
@@ -219,6 +219,7 @@ class DetailSingleController extends GetxController {
           );
         } else if (data["rCode"] == 1) {
           Get.back(result: true);
+          print(data["rMsg"]);
           Get.snackbar(
             "Thông báo",
             "${data["rMsg"]} !",
