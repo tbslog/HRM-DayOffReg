@@ -394,7 +394,7 @@ const Register = () => {
                     />
                   </div>
                 </div>
-                <div className="mt-3 d-flex justify-content-between">
+                <div className="mt-3 d-flex justify-content-between mb-1">
                   <Link
                     to="/indexListRegister"
                     className="btn btn  btn-success "

@@ -301,12 +301,7 @@ const Header = ({ children }) => {
             </div>
             {/* /.sidebar */}
           </aside>
-          <div
-            className="w-100"
-            style={{ overflow: "hidden", maxHeight: "100%", height: "85vh" }}
-          >
-            {children}
-          </div>
+          <div>{children}</div>
           <footer className="main-footer">
             <strong>
               Copyright © 2022
