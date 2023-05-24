@@ -63,6 +63,7 @@ const Login = (props) => {
   const offRegis = () => {
     window.location.reload();
   };
+  console.log(rcode);
 
   const Regis = (e) => {
     Cookies.set("empid", JSON.stringify(username));
@@ -162,21 +163,22 @@ const Login = (props) => {
                       </div>
 
                       <div className="form-outline mb-4">
+                        {message && rcode === 0 && (
+                          <p style={{ color: "red" }}>{message}</p>
+                        )}
                         <label className="form-label" htmlFor="username">
                           Tài khoản
                         </label>
+
                         <input
                           type="text"
                           className="form-control"
                           placeholder="tài khoản"
-                          {...register("userName", validateLogin.userName)}
+                          {...register("userName")}
                           value={username}
                           onChange={onChangeUsername}
                         />
                       </div>
-                      <p style={{ fontSize: "10px", color: "red" }}>
-                        {errors.userName?.message}
-                      </p>
 
                       <div className="form-outline mb-4">
                         <label className="form-label" htmlFor="password">
@@ -214,12 +216,9 @@ const Login = (props) => {
                           )}
                           <span>Login</span>
                         </button>
-                        {message && (
+                        {message && rcode === 1 && (
                           <div className="form-group">
-                            <div
-                              className="alert alert-danger text-center"
-                              role="alert"
-                            >
+                            <div className="alert text-center" role="alert">
                               {message}
                             </div>
                           </div>

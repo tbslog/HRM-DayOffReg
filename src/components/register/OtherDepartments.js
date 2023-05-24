@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import DataTable from "react-data-table-component";
-import { getData, postData, getDataCustom } from "../../services/user.service";
+import { getData, postData, putDataCus } from "../../services/user.service";
 import moment from "moment";
 import Approve from "./Approve";
 import { toast } from "react-toastify";
@@ -19,6 +19,7 @@ const OtherDepartments = (props) => {
   const [ShowModal, SetShowModal] = useState("");
   const [modal, setModal] = useState(null);
   const parseExceptionModal = useRef();
+  const [callback, setcallback] = useState(false);
 
   const [filterText, setFilterText] = useState("");
   const [resetPaginationToggle, setResetPaginationToggle] = useState(false);
@@ -86,7 +87,7 @@ const OtherDepartments = (props) => {
       // console.log(dataTypeOff);
       setlistTypeOff(dataTypeOff.rData);
     })();
-  }, []);
+  }, [callback]);
   const col = [
     {
       selector: (row) => row.DeptID,
@@ -149,6 +150,28 @@ const OtherDepartments = (props) => {
     let a = listTypeOff?.find((data) => data.OffTypeID === id);
     return a?.Name + "(" + a?.Note + ")";
   };
+  const handleReturn = async (id) => {
+    console.log(id);
+    let res = await putDataCus(`recall-approved-leave?regid=${id}`);
+    console.log(res);
+    if (res.isSuccess === 1) {
+      console.log("first");
+      toast.success("Thu hồi đơn thành công \n", {
+        autoClose: 2000,
+        className: "",
+        position: "top-center",
+        theme: "colored",
+      });
+      setcallback(!callback);
+    } else if (res.isSuccess === 0) {
+      toast.error(res.note, {
+        autoClose: 2000,
+        className: "",
+        position: "top-center",
+        theme: "colored",
+      });
+    }
+  };
   const aStatusShow = (aStatus, regid) => {
     if (aStatus === 1) {
       return (
@@ -199,7 +222,7 @@ const OtherDepartments = (props) => {
         </div>
       );
     }
-    if (aStatus === 2 || aStatus === 4 || aStatus == 5) {
+    if (aStatus === 2) {
       return (
         <>
           <div
@@ -215,6 +238,33 @@ const OtherDepartments = (props) => {
             }
           >
             <i className="  fas fa-check-circle" title="Đã Duyệt" />
+          </div>
+          <div
+            className="border border-light btn btn-warning"
+            style={{ width: "40px", height: "40px" }}
+            onClick={() => handleReturn(regid)}
+          >
+            <i className="fas fa-undo" title="Thu hồi" />
+          </div>
+        </>
+      );
+    }
+    if (aStatus === 4) {
+      return (
+        <>
+          <div
+            className="border border-light btn btn-danger"
+            style={{ width: "40px", height: "40px" }}
+            onClick={() =>
+              handleInfoApprove(
+                regid,
+                SetShowModal("Info"),
+                setisAppove(false),
+                setisShow(true)
+              )
+            }
+          >
+            <i className="fas fa-undo" title="Đã Thu hồi" />
           </div>
         </>
       );
@@ -303,6 +353,7 @@ const OtherDepartments = (props) => {
                     <option value="1">Chờ Duyệt</option>
                     <option value="2">Đã Duyệt</option>
                     <option value="3">Từ Chối</option>
+                    <option value="4">Đã Hủy</option>
                   </select>
                 </div>
                 <div className="input-group mb-2" style={{ width: "30%" }}>

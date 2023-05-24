@@ -62,7 +62,6 @@ const IndexListRegister = () => {
     let day = moment(new Date(data).toISOString()).format("YYYY-MM-DD");
 
     let res = await getfile(`day-off-summary?date=${day}`);
-    //console.log(res);
     //const url = window.URL.createObjectURL(new Blob([res]));//list file
     const url = window.URL.createObjectURL(res); // một file
     const link = document.createElement("a"); // tao the a gan link
@@ -89,7 +88,7 @@ const IndexListRegister = () => {
                   onSelect={(index) => HandleOnChangeTabs(index)}
                 >
                   <TabList>
-                    <Tab>Đơn Của Tôi</Tab>
+                    <Tab>QL Đơn Nghỉ Phép</Tab>
                     <Tab>
                       Đơn Cần Phê Duyệt {""}
                       {showMess && (
@@ -112,7 +111,7 @@ const IndexListRegister = () => {
                     )}
 
                     <Tab>Hướng Dẫn Quy Trình</Tab>
-                    {info?.DeptID === "NS" && (
+                    {(info?.DeptID === "NS" || info?.JPLevelID <= 50) && (
                       <Tab>
                         <div className="d-flex align-items-center ">
                           <span
@@ -136,7 +135,7 @@ const IndexListRegister = () => {
                   </TabList>
                   <TabPanel>
                     <div style={{ height: "100vh" }}>
-                      <StaffPage sizeConten={"85vh"} sizeContenTB={"68%"} />
+                      <StaffPage sizeConten={"85vh"} sizeContenTB={"83%"} />
                     </div>
                   </TabPanel>
                   <TabPanel>
@@ -172,9 +171,9 @@ const IndexListRegister = () => {
             onSelect={(index) => HandleOnChangeTabs(index)}
           >
             <TabList>
-              <Tab>Đơn Của Tôi</Tab>
+              <Tab>QL Đơn Nghỉ Phép</Tab>
               <Tab>Hướng Dẫn Quy Trình</Tab>
-              {info?.DeptID === "NS" && (
+              {(info?.DeptID === "NS" || info?.JPLevelID <= 50) && (
                 <Tab>
                   <div className="d-flex align-items-center ">
                     <span style={{ fontSize: "12px", whiteSpace: "nowrap" }}>
@@ -195,7 +194,7 @@ const IndexListRegister = () => {
 
             <TabPanel>
               <div style={{ height: "100vh" }}>
-                <StaffPage sizeConten={"85vh"} sizeContenTB={"68%"} />
+                <StaffPage sizeConten={"85vh"} sizeContenTB={"83%"} />
               </div>
             </TabPanel>
             <TabPanel>

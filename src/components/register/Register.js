@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, set } from "react-hook-form";
 import Cookies from "js-cookie";
 import { getData, postData } from "../../services/user.service";
 import moment from "moment";
@@ -29,27 +29,60 @@ const Register = () => {
   const [comeDate, setcomeDate] = useState("");
   const [jPLevelName, setJPLevelName] = useState("");
   const [listTypeOff, setlistTypeOff] = useState([]);
+  const [listNV, setlistNV] = useState([]);
+
+  const [emIDnv, setEmIDnv] = useState("");
+  const [namenv, setnamenv] = useState("");
+  const [MSNV, setMSNV] = useState("");
 
   const [showmess, setShowmess] = useState("");
   const [showmessHandel, setShowmessHandel] = useState("");
   const [savesendbutton, setsavesendbutton] = useState(0);
   const [pupupcus, setpupupcus] = useState(false);
+  const [startdateV, setstartdateV] = useState("");
+  const [enddateV, setenddateV] = useState("");
+  const [period, setperiod] = useState("");
 
   useEffect(() => {
     (async () => {
-      let data = await getData("getEmpInfo", emID);
+      let data = await getData(`getEmpInfo?empId=${emID}`);
+      // console.log(data);
+      setEmIDnv(emID);
       setname(data.rData.LastName + " " + data.rData.FirstName);
       setDepartmentName(data.rData.DepartmentName);
       setJobpositionName(data.rData.JobpositionName);
       setAnnualLeave(data.rData.AnnualLeave);
       setcomeDate(moment(data.rData.ComeDate).format("DD-MM-YYYY"));
       setJPLevelName(data.rData.JPLevelName);
+      let name = data.rData.LastName + " " + data.rData.FirstName;
 
       let dataTypeOff = await getData("dayOffType");
       //console.log(dataTypeOff.rData);
       setlistTypeOff(dataTypeOff.rData);
+      let listlowergradedata = await getData("list-of-subordinates");
+      let lista = listlowergradedata.rData.map(
+        ({ EmpID, FirstName, LastName }) => ({
+          EmpID,
+          Name: `${LastName} ${FirstName}`,
+        })
+      );
+      lista.unshift({ EmpID: emID, Name: name });
+
+      setlistNV(lista);
     })();
   }, []);
+
+  useEffect(() => {
+    (async () => {
+      let data = await getData(`getEmpInfo?empId=${emIDnv}`);
+      setnamenv(data.rData?.LastName + " " + data.rData?.FirstName);
+      setDepartmentName(data.rData?.DepartmentName);
+      setJobpositionName(data.rData?.JobpositionName);
+      setAnnualLeave(data.rData?.AnnualLeave);
+      setcomeDate(moment(data.rData?.ComeDate).format("DD-MM-YYYY"));
+      setJPLevelName(data.rData?.JPLevelName);
+    })();
+  }, [emIDnv]);
 
   const validateForm = {
     MSNV: {
@@ -72,6 +105,9 @@ const Register = () => {
     NgayBatDau: {
       required: " Không được để trống",
     },
+    NgayKetThuc: {
+      required: " Không được để trống",
+    },
     offType: {
       required: " Không được để trống",
     },
@@ -87,7 +123,7 @@ const Register = () => {
       moment(new Date(data?.NgayBatDau).toISOString()).format("YYYY-MM-DD")
     ) {
       setpupupcus(true);
-      setShowmess("Ngày Nghỉ phép không đúng quy trình ");
+      setShowmess("Ngày Nghỉ phép không đúng quy định ");
       setShowmessHandel(" Bạn có muốn tiếp tục không ?");
     } else {
       save(data);
@@ -95,16 +131,29 @@ const Register = () => {
     }
   };
   const save = async (data) => {
+    let isotherRegis = "";
+    if (emID != emIDnv) {
+      isotherRegis = 1;
+    } else {
+      isotherRegis = 0;
+    }
+
     setIsLoading(true);
+
     var create = await postData("day-off-letter", {
+      emplid: emIDnv,
       type: data.offType,
       reason: data.reason,
       startdate: moment(new Date(data.NgayBatDau).toISOString()).format(
         "YYYY-MM-DD"
       ),
-      period: data.songaynghi,
+      endDate: moment(new Date(data.NgayKetThuc).toISOString()).format(
+        "YYYY-MM-DD"
+      ),
+
       address: data.address,
       command: 0,
+      otherRegis: isotherRegis,
     });
     // console.log(create);
     if (create.isSuccess === 1) {
@@ -121,7 +170,7 @@ const Register = () => {
       setsavesendbutton(0);
       navigate("/indexListRegister");
     } else {
-      toast.success("lưu  thất bại Lỗi \n" + create.note, {
+      toast.error("lưu  thất bại Lỗi \n" + create.note, {
         autoClose: 2000,
         className: "",
         position: "top-center",
@@ -142,7 +191,7 @@ const Register = () => {
       moment(new Date(data.NgayBatDau).toISOString()).format("YYYY-MM-DD")
     ) {
       setpupupcus(true);
-      setShowmess("Ngày Nghỉ phép không đúng quy trình ");
+      setShowmess("Ngày Nghỉ phép không đúng quy định ");
       setShowmessHandel(" Bạn có muốn tiếp tục không ?");
     } else {
       send(data);
@@ -150,18 +199,31 @@ const Register = () => {
     }
   };
   const send = async (data) => {
+    let isotherRegis = "";
+    if (emID != emIDnv) {
+      isotherRegis = 1;
+    } else {
+      isotherRegis = 0;
+    }
+
     setIsLoading(true);
+
     var create = await postData("day-off-letter", {
+      emplid: emIDnv,
       type: data.offType,
       reason: data.reason,
       startdate: moment(new Date(data.NgayBatDau).toISOString()).format(
         "YYYY-MM-DD"
       ),
-      period: data.songaynghi,
+      endDate: moment(new Date(data.NgayKetThuc).toISOString()).format(
+        "YYYY-MM-DD"
+      ),
+
       address: data.address,
       command: 1,
+      otherRegis: isotherRegis,
     });
-    //console.log(create);
+    // console.log(create);
     if (create.isSuccess === 1) {
       toast.success("Gửi đơn thành công \n" + create.note, {
         autoClose: 2000,
@@ -169,18 +231,20 @@ const Register = () => {
         position: "top-center",
         theme: "colored",
       });
+
+      reset();
+      setIsLoading(false);
       setpupupcus(false);
       setsavesendbutton(0);
-      setIsLoading(false);
-      reset();
       navigate("/indexListRegister");
     } else {
-      toast.danger("Gửi đơn thất bại Lỗi: \n" + create.note, {
+      toast.error("Gửi thất bại Lỗi \n" + create.note, {
         autoClose: 2000,
         className: "",
         position: "top-center",
         theme: "colored",
       });
+
       setIsLoading(false);
     }
   };
@@ -192,6 +256,44 @@ const Register = () => {
       send(data);
     }
   };
+  const handeleder = (e) => {
+    console.log("first2");
+    setEmIDnv(e.target.value);
+  };
+
+  const onchangeday = async (e, id) => {
+    if (id === 1) {
+      setstartdateV(e);
+      console.log(enddateV);
+      if (enddateV === "" || enddateV === undefined) {
+        setperiod(" Chọn ngày kết thúc");
+      } else {
+        let st = moment(new Date(e).toISOString()).format("YYYY-MM-DD");
+        let ed = moment(new Date(enddateV).toISOString()).format("YYYY-MM-DD");
+        var getDay = await getData(
+          `workingDays?emplID=${emIDnv}&startDate=${st}&endDate=${ed}`
+        );
+        setperiod(getDay.rData.period);
+      }
+    }
+    if (id === 2) {
+      setenddateV(e);
+      console.log(startdateV);
+      if (startdateV === "" || startdateV === undefined) {
+        setperiod(" Chọn ngày bắt đầu");
+      } else {
+        let st = moment(new Date(startdateV).toISOString()).format(
+          "YYYY-MM-DD"
+        );
+        let ed = moment(new Date(e).toISOString()).format("YYYY-MM-DD");
+        var getDay = await getData(
+          `workingDays?emplID=${emIDnv}&startDate=${st}&endDate=${ed}`
+        );
+        setperiod(getDay.rData.period);
+      }
+    }
+  };
+
   return (
     <form>
       <div className="content-wrapper pb-0 ">
@@ -207,15 +309,26 @@ const Register = () => {
                 </h2>
                 <div className="row">
                   <div className="col-md-6 d-flex">
-                    MSNV
-                    <p style={{ color: "red", minWidth: "74px" }}>(*)</p>
-                    <input
-                      {...register("MSNV")}
-                      value={emID}
-                      readOnly
-                      className="form-control ml-3 "
-                      style={{ maxWidth: "200px" }}
-                    />
+                    <span style={{ minWidth: "120px" }}>
+                      Họ Và Tên <span style={{ color: "red" }}>*</span>
+                    </span>
+                    <select
+                      className="form-control ml-3"
+                      style={{ borderRadius: "5px" }}
+                      {...register("selectEmpIDNV", validateForm.selectEmpIDNV)}
+                      onChange={handeleder}
+                      selectEmpIDNV
+                    >
+                      <option value={emID}> {name}</option>
+                      {listNV &&
+                        listNV.map((val) => {
+                          return (
+                            <option value={val.EmpID} key={val.EmpID}>
+                              {val.Name}
+                            </option>
+                          );
+                        })}
+                    </select>
                   </div>
                   <div className="col-md-6 d-flex">
                     <span style={{ minWidth: "120px" }}> Đ.Vị/B.Phận</span>
@@ -228,9 +341,9 @@ const Register = () => {
                 </div>
                 <div className="row mt-2">
                   <div className="col-md-6 d-flex">
-                    <span style={{ minWidth: "120px" }}>Họ và tên</span>
+                    <span style={{ minWidth: "120px" }}>MSNV</span>
                     <input
-                      value={name}
+                      value={emIDnv}
                       readOnly
                       className="form-control ml-3 "
                     />
@@ -307,9 +420,9 @@ const Register = () => {
                   </div>
                 </div>
                 <div className="row mt-2">
-                  <div className="col-md-6 d-flex pr-4 ">
+                  <div className="col-md-4 mt-1 d-flex ">
                     <span style={{ minWidth: "120px" }}>
-                      Bắt đầu nghỉ từ <span style={{ color: "red" }}>*</span>
+                      Ngày Bắt Đầu <span style={{ color: "red" }}>*</span>
                     </span>
                     <div className="input-group ml-3 ">
                       <Controller
@@ -319,8 +432,12 @@ const Register = () => {
                           <DatePicker
                             className="form-control "
                             dateFormat="dd/MM/yyyy"
-                            placeholderText="Chọn ngày bắt đầu"
-                            onChange={(date) => field.onChange(date)}
+                            placeholderText="Ngày bắt đầu"
+                            onChange={(date) => {
+                              field.onChange(date);
+                              // setstartdateV(date);
+                              onchangeday(date, 1);
+                            }}
                             selected={field.value}
                           />
                         )}
@@ -339,16 +456,51 @@ const Register = () => {
                       )}
                     </div>
                   </div>
-                  <div className="col-md-6 d-flex justify-content-between">
+                  <div className="col-md-4 d-flex mt-1">
                     <span style={{ minWidth: "120px" }}>
-                      Số Ngày Nghỉ <span style={{ color: "red" }}>*</span>
+                      Ngày Kết thúc <span style={{ color: "red" }}>*</span>
                     </span>
-
-                    <div className="w-100 ml-3" style={{ maxWidth: "120px" }}>
+                    <div className="input-group ml-3 ">
+                      <Controller
+                        control={control}
+                        name="NgayKetThuc"
+                        render={({ field }) => (
+                          <DatePicker
+                            className="form-control "
+                            dateFormat="dd/MM/yyyy"
+                            placeholderText="Ngày Kết Thúc"
+                            onChange={(date) => {
+                              field.onChange(date);
+                              onchangeday(date, 2);
+                              // setenddateV(date);
+                            }}
+                            selected={field.value}
+                          />
+                        )}
+                        rules={validateForm.NgayKetThuc}
+                      />
+                      {errors.NgayKetThuc && (
+                        <span
+                          className=""
+                          style={{
+                            color: "red",
+                            fontSize: "10px",
+                          }}
+                        >
+                          {errors.NgayKetThuc.message}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="col-md-4 d-flex justify-content-end mt-1">
+                    <span> số ngày nghĩ</span>
+                    <div className="w-100 ml-3" style={{ maxWidth: "140px" }}>
                       <input
                         type="text"
                         className="form-control "
-                        {...register("songaynghi", validateForm.songaynghi)}
+                        readOnly
+                        value={period}
+                        style={{ fontSize: "12px" }}
                       />
                       <span
                         className=""

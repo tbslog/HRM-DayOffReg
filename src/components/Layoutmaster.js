@@ -10,7 +10,7 @@ import { Modal } from "bootstrap";
 
 import ChangepassHome from "./Changepass/ChangepassHome";
 let emID = Cookies.get("empid");
-
+//console.log(emID);
 const Header = ({ children }) => {
   const dispatch = useDispatch();
   const logOut = useCallback(() => {
@@ -44,7 +44,7 @@ const Header = ({ children }) => {
   useEffect(() => {
     (async () => {
       let data = await getData("getEmpInfo");
-      //console.log(data);
+      // console.log(data);
       let dataMana = await getData("day-off-letters?needAppr=1");
       let datapb = await getData(
         "day-off-letters?needAppr=3 &astatus=1%2C2%2C3%4%5"
@@ -82,6 +82,7 @@ const Header = ({ children }) => {
           LastName: data.rData.LastName,
           JobpositionName: data.rData.JobpositionName,
           DeptID: data.rData.DeptID,
+          JPLevelID: data.rData.JPLevelID,
         })
       );
       setname(data.rData.LastName + " " + data.rData.FirstName);
@@ -169,7 +170,8 @@ const Header = ({ children }) => {
 
               <li className="nav-item dropdown">
                 <a className="nav-link" data-toggle="dropdown">
-                  <i className="far fa-user-circle fa-lg" />
+                  <i className="far fa-user-circle fa-lg mr-1" />
+                  {name}
                 </a>
 
                 <div
@@ -268,9 +270,15 @@ const Header = ({ children }) => {
                   role="menu"
                   data-accordion="false"
                 >
+                  <li className="nav-item">
+                    <Link to={`/indexListRegister`} className="nav-link ">
+                      <i className="far fa-circle nav-icon" />
+                      <p>Quản lý ngày nghỉ</p>
+                    </Link>
+                  </li>
                   {/* Add icons to the links using the .nav-icon class
          with font-awesome or any other icon font library */}
-                  <li className="nav-item menu-open">
+                  {/* <li className="nav-item menu-open">
                     <a className="nav-link active">
                       <i className="nav-icon fas fa-tachometer-alt" />
                       <p>
@@ -278,14 +286,7 @@ const Header = ({ children }) => {
                         <i className="right fas fa-angle-left" />
                       </p>
                     </a>
-                    {/* <ul className="nav nav-treeview">
-                      <li className="nav-item">
-                        <Link to={`/info`} className="nav-link ">
-                          <i className="far fa-circle nav-icon" />
-                          <p>Profile </p>{" "}
-                        </Link>
-                      </li>
-                    </ul> */}
+
                     <ul className="nav nav-treeview">
                       <li className="nav-item">
                         <Link to={`/indexListRegister`} className="nav-link ">
@@ -294,7 +295,7 @@ const Header = ({ children }) => {
                         </Link>
                       </li>
                     </ul>
-                  </li>
+                  </li> */}
                 </ul>
               </nav>
               {/* /.sidebar-menu */}

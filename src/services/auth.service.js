@@ -1,7 +1,7 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 
-const API_URL = "http://tlogapi.tbslogistics.com.vn:202/";
+const API_URL = "http://192.168.0.42:300/";
 // "http://tlogapi.tbslogistics.com.vn:202/";
 //"http://192.168.0.45:300/"; cty
 //http://192.168.0.114:300/
@@ -16,6 +16,7 @@ const login = (username, password, autogen) => {
       autogen,
     })
     .then((response) => {
+      console.log(response);
       if (response.data.rData?.token) {
         Cookies.set("user", JSON.stringify(response.data.rData.token));
         Cookies.set("empid", JSON.stringify(response.data.rData.empid));
@@ -27,6 +28,7 @@ const login = (username, password, autogen) => {
 const logout = () => {
   Cookies.remove("user");
   Cookies.remove("empid");
+  Cookies.remove("info");
 };
 
 export default { login, logout };

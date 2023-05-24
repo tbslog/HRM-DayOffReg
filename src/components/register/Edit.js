@@ -11,7 +11,6 @@ import { toast } from "react-toastify";
 
 import Pupup from "../common/Pupup";
 let emID = Cookies.get("empid");
-
 const Edit = (props) => {
   const {
     register,
@@ -38,42 +37,52 @@ const Edit = (props) => {
   const [regID, setregID] = useState("");
   const [pupupcus, setpupupcus] = useState(false);
   const [savesendbutton, setsavesendbutton] = useState(0);
+  const [startdateV, setstartdateV] = useState("");
+  const [enddateV, setenddateV] = useState("");
+  const [period, setperiod] = useState("");
+  const [emIDnv, setemIDnv] = useState("");
 
+  useEffect(
+    () => {
+      //console.log(props.dataRegByID);
+      if (
+        props &&
+        props.dataRegByID &&
+        Object.keys(props.dataRegByID).length > 0 &&
+        Object.keys(props).length > 0
+      ) {
+        //console.log(props.dataRegByID.rData.EmpID);
+        setregID(props.dataRegByID.rData?.regID);
+        setType(props.dataRegByID.rData.Type);
+        setValue("NgayBatDau", new Date(props.dataRegByID.rData.StartDate));
+        setstartdateV(new Date(props.dataRegByID.rData.StartDate));
+        setValue("songaynghi", props.dataRegByID.rData.Period);
+        setValue("address", props.dataRegByID.rData.Address);
+        setValue("reason", props.dataRegByID.rData.Reason);
+        setValue("offType", props.dataRegByID.rData.Type);
+      }
+    },
+    [props, props.dataRegByID, props.fullName],
+    regID
+  );
   useEffect(() => {
-    //console.log(props.dataRegByID);
-    if (
-      props &&
-      props.dataRegByID &&
-      Object.keys(props.dataRegByID).length > 0 &&
-      Object.keys(props).length > 0
-    ) {
-      //console.log(props.dataRegByID.rData.EmpID);
-      setregID(props.dataRegByID.rData?.regID);
-      setValue("MSNV", props.dataRegByID.rData.EmpID);
-      setType(props.dataRegByID.rData.Type);
-      setValue("NgayBatDau", new Date(props.dataRegByID.rData.StartDate));
-      setValue("songaynghi", props.dataRegByID.rData.Period);
-      setValue("address", props.dataRegByID.rData.Address);
-      setValue("reason", props.dataRegByID.rData.Reason);
-      setValue("offType", props.dataRegByID.rData.Type);
-    }
-    setValue("fullName", props.fullName);
     (async () => {
-      let data = await getData("getEmpInfo", emID);
-      setValue("MSNV", emID);
-
+      let data = await getData(`day-off-letter?regid=${regID}`);
+      console.log(data.rData);
+      setValue("MSNV", data.rData?.EmpID);
+      setemIDnv(data.rData?.EmpID);
       //console.log(data.rData);
       setname(data.rData.LastName + " " + data.rData.FirstName);
-      setDepartmentName(data.rData.DepartmentName);
-      setJobpositionName(data.rData.JobpositionName);
+      setDepartmentName(data.rData.departmentName);
+      setJobpositionName(data.rData?.JobPositionName);
       setAnnualLeave(data.rData.AnnualLeave);
       setcomeDate(moment(data.rData.ComeDate).format("DD-MM-YYYY"));
-      setJPLevelName(data.rData.JPLevelName);
+      setJPLevelName(data.rData.Position);
       let dataTypeOff = await getData("dayOffType");
       setlistTypeOff(dataTypeOff.rData);
       //console.log(dataTypeOff);
     })();
-  }, [props, props.dataRegByID, props.fullName]);
+  }, [props, regID]);
   const checkType = (id) => {
     const result = listTypeOff.find(({ OffTypeID }) => OffTypeID === id);
     let a = result?.Name + "(" + result?.Note + ")";
@@ -100,13 +109,34 @@ const Edit = (props) => {
     NgayBatDau: {
       required: " Không được để trống",
     },
+    NgayKetThuc: {
+      required: " Không được để trống",
+    },
     offType: {
       required: " Không được để trống",
     },
   };
+  const onSubmitSave = (data) => {
+    setsavesendbutton(1);
+    var e = new Date();
+
+    e.setDate(e.getDate() + 1);
+
+    if (
+      moment(new Date(e).toISOString()).format("YYYY-MM-DD") >=
+      moment(new Date(data?.NgayBatDau).toISOString()).format("YYYY-MM-DD")
+    ) {
+      setpupupcus(true);
+      setShowmess("Ngày Nghỉ phép không đúng quy định ");
+      setShowmessHandel(" Bạn có muốn tiếp tục không ?");
+    } else {
+      save(data);
+      setsavesendbutton(0);
+    }
+  };
+
   const save = async (data) => {
     setIsLoading(true);
-
     var create = await putData("adjust-day-off", {
       regid: regID,
       offtype: data.offType,
@@ -114,11 +144,14 @@ const Edit = (props) => {
       startdate: moment(new Date(data.NgayBatDau).toISOString()).format(
         "YYYY-MM-DD"
       ),
-      period: data.songaynghi,
+      endDate: moment(new Date(data.NgayKetThuc).toISOString()).format(
+        "YYYY-MM-DD"
+      ),
+
       address: data.address,
       command: 0,
     });
-
+    // console.log(create);
     if (create.isSuccess === 1) {
       toast.success("lưu đơn thành công \n" + create.note, {
         autoClose: 2000,
@@ -133,38 +166,27 @@ const Edit = (props) => {
       reset();
       setIsLoading(false);
       navigate("/indexListRegister");
-
-      // window.location.reload();
     } else {
-      toast.success("lưu  thất bại Lỗi \n" + create.note, {
+      toast.error("lưu  thất bại Lỗi \n" + create.note, {
         autoClose: 2000,
         className: "",
         position: "top-center",
         theme: "colored",
       });
+
       setIsLoading(false);
-      setsavesendbutton(0);
     }
   };
-  const onSubmitSave = (data) => {
-    setsavesendbutton(1);
-    var e = new Date();
 
-    e.setDate(e.getDate() + 1);
-
-    if (
-      moment(new Date(e).toISOString()).format("YYYY-MM-DD") >=
-      moment(new Date(data?.NgayBatDau).toISOString()).format("YYYY-MM-DD")
-    ) {
-      setpupupcus(true);
-      setShowmess("Ngày Nghỉ phép không đúng quy trình ");
-      setShowmessHandel(" Bạn có muốn tiếp tục không ?");
-    } else {
-      save(data);
-      setsavesendbutton(0);
-    }
-  };
   const send = async (data) => {
+    let isotherRegis = "";
+
+    if (emID != emIDnv) {
+      isotherRegis = 1;
+    } else {
+      isotherRegis = 0;
+    }
+    console.log(isotherRegis);
     setIsLoading(true);
     var create = await putData("adjust-day-off", {
       regid: regID,
@@ -173,11 +195,13 @@ const Edit = (props) => {
       startdate: moment(new Date(data.NgayBatDau).toISOString()).format(
         "YYYY-MM-DD"
       ),
-      period: data.songaynghi,
+      endDate: moment(new Date(data.NgayKetThuc).toISOString()).format(
+        "YYYY-MM-DD"
+      ),
+
       address: data.address,
       command: 1,
     });
-    //console.log(create);
     if (create.isSuccess === 1) {
       toast.success("Gửi đơn thành công \n" + create.note, {
         autoClose: 2000,
@@ -185,21 +209,22 @@ const Edit = (props) => {
         position: "top-center",
         theme: "colored",
       });
+
       setpupupcus(false);
       setsavesendbutton(0);
-
       reset();
       props.fetchData();
       props.hideModal();
       setIsLoading(false);
       navigate("/indexListRegister");
     } else {
-      toast.danger("Gửi đơn thất bại Lỗi: \n" + create.note, {
+      toast.error("Gửi thất bại Lỗi \n" + create.note, {
         autoClose: 2000,
         className: "",
         position: "top-center",
         theme: "colored",
       });
+
       setIsLoading(false);
     }
   };
@@ -214,7 +239,7 @@ const Edit = (props) => {
       moment(new Date(data.NgayBatDau).toISOString()).format("YYYY-MM-DD")
     ) {
       setpupupcus(true);
-      setShowmess("Ngày Nghỉ phép không đúng quy trình ");
+      setShowmess("Ngày Nghỉ phép không đúng quy định ");
       setShowmessHandel(" Bạn có muốn tiếp tục không ?");
     } else {
       send(data);
@@ -229,6 +254,63 @@ const Edit = (props) => {
       send(data);
     }
   };
+  const handelClickViewWorkingDays = async (e) => {
+    e.preventDefault(); // loại bỏ ngăn chặn reload
+    if (
+      startdateV === "" ||
+      startdateV === undefined ||
+      startdateV === "" ||
+      startdateV === undefined
+    ) {
+      console.log("lỗi");
+    } else {
+      let st = moment(new Date(startdateV).toISOString()).format("YYYY-MM-DD");
+      let ed = moment(new Date(enddateV).toISOString()).format("YYYY-MM-DD");
+
+      var getDay = await getData(
+        `workingDays?emplID=${emIDnv}&startDate=${st}&endDate=${ed}`
+      );
+      setperiod(getDay.rData.period);
+      console.log(getDay.rData.period);
+    }
+  };
+  const onchangeday = async (e, id) => {
+    if (id === 1) {
+      setstartdateV(e);
+      console.log(enddateV);
+      if (enddateV === "" || enddateV === undefined) {
+        setperiod(" Chọn ngày kết thúc");
+      } else {
+        let st = moment(new Date(e).toISOString()).format("YYYY-MM-DD");
+        let ed = moment(new Date(enddateV).toISOString()).format("YYYY-MM-DD");
+        if (st < ed) {
+          var getDay = await getData(
+            `workingDays?emplID=${emIDnv}&startDate=${st}&endDate=${ed}`
+          );
+          setperiod(getDay.rData.period);
+        } else setperiod("Chọn lại ngày");
+      }
+    }
+    if (id === 2) {
+      setenddateV(e);
+
+      if (startdateV === "" || startdateV === undefined) {
+        setperiod(" Chọn ngày bắt đầu");
+      } else {
+        let st = moment(new Date(startdateV).toISOString()).format(
+          "YYYY-MM-DD"
+        );
+        let ed = moment(new Date(e).toISOString()).format("YYYY-MM-DD");
+        if (st < ed) {
+          var getDay = await getData(
+            `workingDays?emplID=${emIDnv}&startDate=${st}&endDate=${ed}`
+          );
+          setperiod(getDay.rData.period);
+        } else setperiod("Chọn lại ngày");
+      }
+    }
+  };
+
   return (
     <form>
       <section className="content" style={{ minHeight: "620px" }}>
@@ -270,6 +352,7 @@ const Edit = (props) => {
                     id="fullName"
                     readOnly
                     className="form-control ml-3 "
+                    value={name}
                   />
                 </div>
                 <div className="col-md-6 d-flex">
@@ -343,21 +426,24 @@ const Edit = (props) => {
                 </div>
               </div>
               <div className="row mt-2">
-                <div className="col-md-6 d-flex pr-4 ">
+                <div className="col-md-4 mt-1 d-flex ">
                   <span style={{ minWidth: "120px" }}>
-                    Bắt đầu nghỉ từ <span style={{ color: "red" }}>*</span>
+                    Ngày Bắt Đầu <span style={{ color: "red" }}>*</span>
                   </span>
                   <div className="input-group ml-3 ">
                     <Controller
                       control={control}
                       name="NgayBatDau"
-                      id="NgayBatDau"
                       render={({ field }) => (
                         <DatePicker
                           className="form-control "
                           dateFormat="dd/MM/yyyy"
-                          placeholderText="Chọn ngày bắt đầu"
-                          onChange={(date) => field.onChange(date)}
+                          placeholderText="Ngày bắt đầu"
+                          onChange={(date) => {
+                            field.onChange(date);
+                            // setstartdateV(date);
+                            onchangeday(date, 1);
+                          }}
                           selected={field.value}
                         />
                       )}
@@ -376,17 +462,51 @@ const Edit = (props) => {
                     )}
                   </div>
                 </div>
-                <div className="col-md-6 d-flex justify-content-between">
+                <div className="col-md-4 d-flex mt-1">
                   <span style={{ minWidth: "120px" }}>
-                    Số Ngày Nghỉ <span style={{ color: "red" }}>*</span>
+                    Ngày Kết thúc <span style={{ color: "red" }}>*</span>
                   </span>
-
-                  <div className="w-100 ml-3" style={{ maxWidth: "120px" }}>
+                  <div className="input-group ml-3 ">
+                    <Controller
+                      control={control}
+                      name="NgayKetThuc"
+                      render={({ field }) => (
+                        <DatePicker
+                          className="form-control "
+                          dateFormat="dd/MM/yyyy"
+                          placeholderText="Ngày Kết Thúc"
+                          onChange={(date) => {
+                            field.onChange(date);
+                            onchangeday(date, 2);
+                            // setenddateV(date);
+                          }}
+                          selected={field.value}
+                        />
+                      )}
+                      rules={validateForm.NgayKetThuc}
+                    />
+                    {errors.NgayKetThuc && (
+                      <span
+                        className=""
+                        style={{
+                          color: "red",
+                          fontSize: "10px",
+                        }}
+                      >
+                        {errors.NgayKetThuc.message}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="col-md-4 d-flex justify-content-end mt-1">
+                  <span> số ngày nghĩ</span>
+                  <div className="w-100 ml-3" style={{ maxWidth: "140px" }}>
                     <input
                       type="text"
                       className="form-control "
-                      {...register("songaynghi", validateForm.songaynghi)}
-                      id="songaynghi"
+                      readOnly
+                      value={period}
+                      style={{ fontSize: "12px" }}
                     />
                     <span
                       className=""

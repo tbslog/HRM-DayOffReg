@@ -21,6 +21,10 @@ export const login = (username, password, autogen) => (dispatch) => {
           type: SET_MESSAGE,
           payload: message,
         });
+        dispatch({
+          type: RCODE,
+          payload: 0,
+        });
 
         return Promise.reject();
       }

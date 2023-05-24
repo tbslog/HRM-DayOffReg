@@ -1,7 +1,8 @@
 import axios from "axios";
 import authHeader from "./auth-header";
+import { computeHeadingLevel } from "@testing-library/react";
 
-const API_URL = "http://tlogapi.tbslogistics.com.vn:202/";
+const API_URL = "http://192.168.0.42:300/";
 //103.149.28.137:300/ // anh kiểu
 
 const getDataCustom = async (url, data, header = null) => {
@@ -50,14 +51,16 @@ const getData = async (url) => {
 
   return data;
 };
-const postData = async (url, data, header = null) => {
+const postData = async (url, data) => {
   var isSuccess = 0;
   var note = "";
+  console.log(authHeader().headers);
   await axios
     .post(API_URL + url, data, {
       headers: authHeader().headers,
     })
     .then((response) => {
+      console.log(response);
       if (response.data.rCode === 1) {
         if (response.data.rError) {
           Object.keys(response.data.rError).forEach((key) => {
@@ -67,7 +70,8 @@ const postData = async (url, data, header = null) => {
           return { isSuccess, note };
         }
         isSuccess = 1;
-        return { isSuccess };
+        note = response.data?.rMsg;
+        return { isSuccess, note };
       } else if (response.data.rCode === 0) {
         var n = Object.keys(response.data.rError).forEach((key) => {
           note += response.data.rError[key];
@@ -101,12 +105,14 @@ const putData = async (url, data, header = null) => {
           return { isSuccess, note };
         }
         isSuccess = 1;
+        note = response.data?.rMsg;
         return { isSuccess };
       } else if (response.data.rCode === 0) {
         var n = Object.keys(response.data.rError).forEach((key) => {
-          note += response.data.rError[key];
+          note += response.data.rError[key] + response.data?.rMsg;
         });
         isSuccess = 0;
+
         return { isSuccess, note };
       }
     })
@@ -117,4 +123,36 @@ const putData = async (url, data, header = null) => {
 
   return { isSuccess, note };
 };
-export { getDataCustom, getData, postData, putData, getfile };
+const putDataCus = async (url, data, header = null) => {
+  var isSuccess = 0;
+  var note = "";
+  await axios
+    .put(API_URL + url, data, {
+      headers: authHeader().headers,
+    })
+    .then((response) => {
+      if (response.data.rCode === 1) {
+        if (response.data.rError) {
+          Object.keys(response.data.rError).forEach((key) => {
+            note += response.data.rError[key];
+          });
+          isSuccess = 1;
+          return { isSuccess, note };
+        }
+        isSuccess = 1;
+        note = response.data?.rMsg;
+        return { isSuccess };
+      } else if (response.data.rCode === 0) {
+        note = response.data?.rMsg;
+        return { isSuccess, note };
+      }
+    })
+    .catch((error) => {
+      isSuccess = 0;
+      return { isSuccess, note: error };
+    });
+
+  return { isSuccess, note };
+};
+
+export { getDataCustom, getData, postData, putData, getfile, putDataCus };
