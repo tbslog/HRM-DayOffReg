@@ -1,7 +1,7 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 
-const API_URL = "http://192.168.0.42:300/";
+const API_URL = "http://tlogapi.tbslogistics.com.vn:202/";
 // "http://tlogapi.tbslogistics.com.vn:202/";
 //"http://192.168.0.45:300/"; cty
 //http://192.168.0.114:300/
