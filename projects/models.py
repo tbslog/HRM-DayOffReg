@@ -31,17 +31,25 @@ class CheckUsername(BaseModel):
 
 #class đăng ký nghĩ phép
 class Offregister(BaseModel):
+    emplid: int = None
     type: int
     reason: str = ""
     startdate: datetime.date #| None = (datetime.datetime.now() + datetime.timedelta(days=2)).strftime("%Y%m%d")
-    period: int
+    endDate: datetime.date
+    # period: int
     address: str = ""
     command: int
+    otherRegis:int
 # class phê duyệt
 class Approve(BaseModel):
     regid: int
     comment: str = ''
     state: int
+
+
+# class RecallApprovalLeave(BaseModel):
+#     regid: int = None
+
 
 class ChangePass(BaseModel):
     username: str = ""
@@ -54,13 +62,80 @@ class Getlist(BaseModel):
     astatus: list[int] = []
 
 class AdjustDayOff(BaseModel):
+    # emplid: int = None
     regid: int
     offtype: int
     reason: str = ""
     startdate: datetime.date
-    period: int
+    endDate: datetime.date
+    # period: int
     address: str = ""
     command: int
+
+class Im_department(BaseModel):
+    name_deptID: str = ''
+    deptlevel: int = None
+    pDeptID: str = ''
+    note: str = ''
+
+class Update_department(BaseModel):
+    deptID: str = ''
+    nameDeptID: str = ''
+    deptLevel: int = None
+    pDeptID: str = ''
+    deptMng: int = None
+    status: int = 1
+    note: str = ''
+
+
+class Import_position(BaseModel):
+    jplevelID: int = None
+    Name: str = ''
+    # status: int = 1
+    # pJPlevel: int = None
+    note: str = ''
+    # state: int = None
+    
+class Update_position(BaseModel):
+    jplevelID: int = None
+    name: str = ''
+    status: int = None
+    # pJPlevel: int = None
+    note: str = ''
+
+class Import_JobPosition(BaseModel):
+    jplevel: int = None
+    jpname: int = None
+    deptID: str = ''
+    #status: int = 0
+    note: str = ''
+
+
+class Update_JobPosition(BaseModel):
+    jobPosID: int = None
+    name: str = ''
+    jplevel: int = None
+    jpname: int = None
+    deptID: str = ''
+    status: int = None
+    note: str = ''
+    
+
+
+
+
+
+# class HRM(BaseModel):
+#     class Tinhluong(BaseModel):
+#         a: int
+#         b: int
+#     class Thongtinnhanvien(BaseModel):
+#         c: str
+#         d: datetime.date
+
+
+    
+
 
 # class DayOffSummary(BaseModel):
 #     date: datetime.date

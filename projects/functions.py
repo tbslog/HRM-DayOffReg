@@ -11,7 +11,7 @@ import smtplib, ssl
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from socket import gaierror
-
+from typing import  Union
 
 # with open('projects/config.json') as f:
 with open('projects/config.json') as f:
@@ -69,9 +69,10 @@ def get_data(query,option = None):
             cursor = cn.cursor()
             rows = cursor.execute(query).fetchall() #fetches all the rows of a query result
             cn.close()
+            # print(cursor.description)
             if len(rows) > 0:
                 results = []
-                columns = [column[0] for column in cursor.description]
+                columns = [column[0] for column in cursor.description]#cursor.description lấy miêu tả cột dữ liệu (loại dữ liệu, độ dài,...)
                 for row in rows:
                     results.append(dict(zip(columns, row)))
                 return results
@@ -89,12 +90,14 @@ def get_data(query,option = None):
         except:
             return []
 
-#hàm kết nối - truy vấn - đóng kết nối - insert data - update
-def insert_data(query):
+#hàm kết nối - truy vấn - đóng kết nối - insert data - update - delete
+def commit_data(query):
     try:
         cn = connect_db1()
         cursor = cn.cursor()
+        # print('nhat')
         cursor.execute(query)
+        
         cn.commit
         cn.close()
         return [{'note': 'Insert thành công'}]
@@ -256,11 +259,11 @@ def checkEmail(Email):
         return False 
 
 #hàm lấy đơn nghĩ phép những phòng ban quản lý trực tiếp
-def depart_manager(emplid,jplevel_TP_PP):
+def TPPP_manager(emplid,jplevel_TP_PP):
     s = f"""
         --trước khi thực thi câu lệnh này thì: jplevel <= 50
 
-            SELECT o.regID,o.EmpID,o.Type,o.Reason,o.StartDate,o.Period,o.RegDate,o.Address,
+            SELECT o.regID,o.EmpID,o.Type,o.Reason,o.StartDate,o.Period,o.RegDate,o.Address,o.EndDate,
                     e.LastName,e.FirstName,e.DeptID,e.PosID,e.ComeDate,
                     j.JPLevel,j.Name as JobPositionName,
                     d.Name AS departmentName,
@@ -274,7 +277,7 @@ def depart_manager(emplid,jplevel_TP_PP):
                     when sum(a.ApprovalState) = 1 then 2 --N'Đã Duyệt'
                     when sum(a.ApprovalState) = 0 then 3 --N'Từ Chối'
                     --when sum(a.ApprovalState) = 1 THEN 2 --N'Đã Duyệt'
-                    when sum(a.ApprOrder) = 3 then 4 --N'NS Tiếp Nhận'
+                    when sum(a.ApprOrder) = 3 then 4 --N'NS Tiếp Nhận' --update bản sau, trường hợp đơn đã duyệt đồng ý sau đó hủy đơn 
                     when sum(a.ApprOrder) = 7 then 5 --N'GĐ Kiêm Soát'
                 ELSE 'Error!' end as aStatus
             FROM dbo.OffRegister o
@@ -299,7 +302,7 @@ def depart_manager(emplid,jplevel_TP_PP):
                             )
                             )
             GROUP BY o.regID,o.EmpID,o.Type,o.Reason,o.StartDate,o.Period,o.RegDate,
-            o.Address,e.LastName,e.FirstName,e.DeptID,e.PosID,e.ComeDate,j.JPLevel,j.Name,d.Name,jpl.Name,al.AnnualLeave
+            o.Address,o.EndDate,e.LastName,e.FirstName,e.DeptID,e.PosID,e.ComeDate,j.JPLevel,j.Name,d.Name,jpl.Name,al.AnnualLeave
             ORDER BY aStatus ASC, o.StartDate ASC
                     """
     result = get_data(s,1)
@@ -307,9 +310,17 @@ def depart_manager(emplid,jplevel_TP_PP):
     
 
 #hàm lấy đơn nghĩ phép cùng phòng ban
-def roommates(depid,jplevel):
+def roommates(depid,jplevel,option:int = None):
+    
+    jpName = 'AND j.JPName in (41,42,43) '
+    condition = ''
+    if option == 1:
+        condition = 'AND o.RegDate IS NOT NULL'
+        jpName = ''
+        if depid in ('H01','H03','H05','H06','H07','HST'):
+            return []
     s = f"""
-            SELECT o.regID,o.EmpID,o.Type,o.Reason,o.StartDate,o.Period,o.RegDate,o.Address,
+            SELECT o.regID,o.EmpID,o.Type,o.Reason,o.StartDate,o.Period,o.RegDate,o.Address,o.EndDate,
                 e.LastName,e.FirstName,e.DeptID,e.PosID,e.ComeDate,
                 j.JPLevel,j.Name as JobPositionName,
                 d.Name AS departmentName,
@@ -322,7 +333,7 @@ def roommates(depid,jplevel):
                     when sum(a.ApprovalState) is null then 1 --N'Chờ Duyệt' 
                     when sum(a.ApprovalState) = 1 then 2 --N'Đã Duyệt'
                     when sum(a.ApprovalState) = 0 then 3 --N'Từ Chối'
-                    when sum(a.ApprOrder) = 3 then 4 --N'NS Tiếp Nhận'
+                    when sum(a.ApprOrder) = 3 then 4 --N'NS Tiếp Nhận' --update bản sau, trường hợp đơn đã duyệt đồng ý sau đó hủy đơn 
                     when sum(a.ApprOrder) = 7 then 5 --N'GĐ Kiêm Soát'
                     else 'Error!' end as aStatus
             FROM dbo.OffRegister o
@@ -332,8 +343,8 @@ def roommates(depid,jplevel):
             LEFT JOIN dbo.Department d ON d.DeptID = e.DeptID
             LEFT JOIN dbo.JPLevel jpl ON jpl.JPLevelID = j.JPLevel
             LEFT JOIN dbo.AnnualLeave al ON al.EmpID = o.EmpID 
-            WHERE  e.DeptID = '{depid}' AND	j.JPLevel > '{jplevel}' AND o.RegDate IS NOT NULL
-            group by o.regID,o.EmpID,o.Type,o.Reason,o.StartDate,o.Period,o.RegDate,o.Address,
+            WHERE  e.DeptID = '{depid}' AND	j.JPLevel > '{jplevel}' {condition} {jpName}
+            group by o.regID,o.EmpID,o.Type,o.Reason,o.StartDate,o.Period,o.RegDate,o.Address,o.EndDate,
                 e.LastName,e.FirstName,e.DeptID,e.PosID,e.ComeDate,j.JPLevel,J.Name,d.Name,jpl.Name,al.AnnualLeave
             ORDER BY aStatus ASC, o.StartDate ASC
             """
@@ -366,7 +377,7 @@ def myself(emplid): #filter
     # if len(sFilter)>0:
     #         sFilter = 'AND (' + sFilter + ')'
     s = f"""
-                select r.EmpID,r.regID,r.Period,r.StartDate,r.RegDate,r.Type,r.Address,r.Reason,
+                select r.EmpID,r.regID,r.Period,r.StartDate,r.RegDate,r.Type,r.Address,r.Reason,r.EndDate,
                 e.FirstName,e.LastName,e.ComeDate,e.DeptID,e.PosID,
                 j.JPLevel,j.Name as JobPositionName,
                 d.Name AS departmentName,
@@ -379,7 +390,7 @@ def myself(emplid): #filter
                         when sum(a.ApprovalState) is null then 1 --N'Chờ Duyệt' 
                         when sum(a.ApprovalState) = 1 then 2 --N'Đã Duyệt'
                         when sum(a.ApprovalState) = 0 then 3 --N'Từ Chối'
-                        when sum(a.ApprOrder) = 3 then 4 --N'NS Tiếp Nhận'
+                        when sum(a.ApprOrder) = 3 then 4 --N'NS Tiếp Nhận' --update bản sau, trường hợp đơn đã duyệt đồng ý sau đó hủy đơn 
                         when sum(a.ApprOrder) = 7 then 5 --N'GĐ Kiêm Soát'
                         else 'Error!' end as aStatus
                 from [dbo].[OffRegister] r 
@@ -390,17 +401,17 @@ def myself(emplid): #filter
                 LEFT JOIN dbo.JPLevel jpl ON jpl.JPLevelID = j.JPLevel
                 LEFT JOIN dbo.AnnualLeave al ON al.EmpID = r.EmpID 
                 WHERE r.EmpID = '{emplid}'--trường hợp lấy empid trong bảng offregister
-                group by r.EmpID,r.regID,r.Period,r.StartDate,r.RegDate,r.Type,r.Address,r.Reason,e.FirstName,e.LastName,
+                group by r.EmpID,r.regID,r.Period,r.StartDate,r.RegDate,r.Type,r.Address,r.Reason,r.EndDate,e.FirstName,e.LastName,
                 e.ComeDate,e.DeptID,e.PosID,j.JPLevel,j.Name,d.Name,jpl.Name,al.AnnualLeave
                 ORDER BY aStatus ASC, r.StartDate ASC
                     """
     result = get_data(s,1)
     return result
 
-#lấy danh sách phê duyệt được chỉ định
-def depart_staff_manager(EmpID):
+#lấy danh sách phê duyệt được chỉ định depart_staff_manager
+def entrust(EmpID):
     s = f'''
-            SELECT o.regID,o.EmpID,o.Type,o.Reason,o.StartDate,o.Period,o.RegDate,o.AnnualLeave,o.Address,
+            SELECT o.regID,o.EmpID,o.Type,o.Reason,o.StartDate,o.Period,o.RegDate,o.AnnualLeave,o.Address,o.EndDate,
                     e.LastName,e.FirstName,e.DeptID,e.PosID,e.ComeDate,
                     j.JPLevel,j.Name as JobPositionName,
                     d.Name AS departmentName,
@@ -414,7 +425,7 @@ def depart_staff_manager(EmpID):
                 when sum(a.ApprovalState) = 1 then 2 --N'Đã Duyệt'
                 when sum(a.ApprovalState) = 0 then 3 --N'Từ Chối'
                 --when sum(a.ApprovalState) = 1 THEN 2 --N'Đã Duyệt'
-                when sum(a.ApprOrder) = 3 then 4 --N'NS Tiếp Nhận'
+                when sum(a.ApprOrder) = 3 then 4 --N'NS Tiếp Nhận' --update bản sau, trường hợp đơn đã duyệt đồng ý sau đó hủy đơn 
                 when sum(a.ApprOrder) = 7 then 5 --N'GĐ Kiêm Soát'
             ELSE 'Error!' end as aStatus
             FROM dbo.Employee e
@@ -428,7 +439,7 @@ def depart_staff_manager(EmpID):
             WHERE o.RegDate IS NOT NULL AND e.DeptID IN (
             SELECT DeptID FROM dbo.ApprovalOrder
             WHERE Approver = '{EmpID}')
-            GROUP BY o.regID,o.EmpID,o.Type,o.Reason,o.StartDate,o.Period,o.RegDate,o.AnnualLeave,o.Address,
+            GROUP BY o.regID,o.EmpID,o.Type,o.Reason,o.StartDate,o.Period,o.RegDate,o.AnnualLeave,o.Address,o.EndDate,
                         e.LastName,e.FirstName,e.DeptID,e.PosID,e.ComeDate,
                         j.JPLevel,j.Name,
                         d.Name,
@@ -466,7 +477,14 @@ def sentMail(receiver_email,state):
     message = MIMEMultipart("alternative")
     message["Subject"] = "TBS Logistics Auto Mailer - Đơn nghỉ phép"
     message["From"] = sender_email
-    message["To"] = ';'.join(receiver_email)
+
+    receiver_email_filter = []
+    for i in receiver_email:
+        if isinstance(i,str) and i != '':
+            receiver_email_filter.append(i)
+    print(receiver_email_filter)
+
+    message["To"] = ';'.join(receiver_email_filter)
     # write the text/plain part
     text = f"""\
     Hi,
@@ -499,7 +517,7 @@ def sentMail(receiver_email,state):
         with smtplib.SMTP_SSL(smtp_server, port, context=context) as server:
             server.login(login, password)
             server.sendmail(
-                sender_email, receiver_email, message.as_string()
+                sender_email, receiver_email_filter, message.as_string()
             )
         # tell the script to report if your message was sent or which errors need to be fixed 
         print('Sent')
@@ -591,6 +609,212 @@ def get_receiver_email_manag(emplId):
 #     receiver_mail = []
 #     if 
 
+def deptlevel():
+    dept_level = []
+    s = f'''SELECT DLvlCode FROM dbo.DeptLevel'''
+    result = get_data(s)
+    for row in result:
+        dept_level.append(row[0])
+    return dept_level
+
+def deptID_list():
+    s = f'''SELECT DeptID FROM dbo.Department'''
+    query = get_data(s)
+    deptID_list = []
+    for i in query:
+        deptID_list.append(i[0])
+    return deptID_list
+
+def department_deptID(deptID):
+    s = f'''SELECT d.DeptID,d.Name,d.DeptLevel,d.pDeptID,d.DeptMng,d.Status,d.Note,
+            dl.DLvlName 
+            FROM dbo.Department d
+            INNER JOIN dbo.DeptLevel dl ON dl.DLvlCode = d.DeptLevel
+            WHERE DeptID = '{deptID}' '''
+    result = get_data(s,1)
+    return result
+    
+def department_pdeptID(pdeptID):
+    s = f'''SELECT d.DeptID,d.Name,d.DeptLevel,d.pDeptID,d.DeptMng,d.Status,d.Note,
+            dl.DLvlName  FROM dbo.Department d
+            INNER JOIN dbo.DeptLevel dl ON dl.DLvlCode = d.DeptLevel
+            WHERE pDeptID = '{pdeptID}' '''
+    result = get_data(s,1)
+    return result
+
+
+#------------------------------------------update theo yêu cầu mới
+#lấy đơn phòng ban con
+def depart_manager(emplid):#,jplevel_TP_PP
+    s = f"""
+        --trước khi thực thi câu lệnh này thì: jplevel <= 50
+
+            SELECT o.regID,o.EmpID,o.Type,o.Reason,o.StartDate,o.Period,o.RegDate,o.Address,o.EndDate,
+                    e.LastName,e.FirstName,e.DeptID,e.PosID,e.ComeDate,
+                    j.JPLevel,j.Name as JobPositionName,
+                    d.Name AS departmentName,
+                    jpl.Name AS Position,
+                    al.AnnualLeave,
+                    sum(a.ApprOrder) as apprOrder, sum(a.ApprovalState) as apprState,
+                case 
+                    when o.RegDate is null then 0 --N'chưa gửi' 
+                    --đơn đó duyệt thì trường regdate phải có data
+                    when sum(a.ApprovalState) is null then 1 --N'Chờ Duyệt' 
+                    when sum(a.ApprovalState) = 1 then 2 --N'Đã Duyệt'
+                    when sum(a.ApprovalState) = 0 then 3 --N'Từ Chối'
+                    --when sum(a.ApprovalState) = 1 THEN 2 --N'Đã Duyệt'
+                    when sum(a.ApprOrder) = 3 then 4 --N'NS Tiếp Nhận' --update bản sau, trường hợp đơn đã duyệt đồng ý sau đó hủy đơn 
+                    when sum(a.ApprOrder) = 7 then 5 --N'GĐ Kiêm Soát'
+                ELSE 'Error!' end as aStatus
+            FROM dbo.OffRegister o
+            LEFT JOIN dbo.Approval a ON a.regID = o.regID
+            LEFT JOIN dbo.Employee e ON e.EmpID = o.EmpID
+            LEFT JOIN dbo.JobPosition j ON j.JobPosID = e.PosID
+            LEFT JOIN dbo.Department d ON d.DeptID = e.DeptID
+            LEFT JOIN dbo.JPLevel jpl ON jpl.JPLevelID = j.JPLevel
+            LEFT JOIN dbo.AnnualLeave al ON al.EmpID = o.EmpID 
+            WHERE o.RegDate IS NOT NULL -- lấy những đơn đã gửi
+            --AND j.JPLevel <= 'jplevel_TP_PP' -- lấy Trưởng Phòng,Phó Phòng --jplevel_TP_PP: do công thức tính ra
+            -- lấy danh sách nhân viên trong depID con 
+            AND	 o.EmpID IN (
+            SELECT EmpID FROM dbo.Employee
+            -- lấy danh sách depID con
+            WHERE DeptID IN (
+                            SELECT d.DeptID AS cDeptID
+                            FROM dbo.Employee e
+                            JOIN dbo.JobPosition j ON j.JobPosID = e.PosID
+                            JOIN dbo.Department d ON d.pDeptID = e.DeptID
+                            WHERE e.EmpID = '{emplid}' AND j.JPLevel <= 50
+                            )
+                            )
+            GROUP BY o.regID,o.EmpID,o.Type,o.Reason,o.StartDate,o.Period,o.RegDate,
+            o.Address,o.EndDate,e.LastName,e.FirstName,e.DeptID,e.PosID,e.ComeDate,j.JPLevel,j.Name,d.Name,jpl.Name,al.AnnualLeave
+            ORDER BY aStatus ASC, o.StartDate ASC
+                    """
+    result = get_data(s,1)
+    return result
 
 
 
+
+def HTTP_RETURN(status_code, messange, error: None = "" ,data: Union[list, dict,str,int] | None = {}): #, headers: dict | None = {}
+    return {
+        'rCode': status_code,
+        'rMsg': messange,
+        'rError': error,
+        'rData': data
+    }
+
+
+
+
+def numberDays(emplID,startDate,endDate):
+    if emplID is None or startDate is None or endDate is None:
+        return HTTP_RETURN(status_code=0,messange='Vui lòng nhập đầy đủ thông tin')
+    s = f'''select IDWorkingTime from Employee where EmpID = {emplID}'''
+    query = get_data(s)
+    if len(query) <= 0:
+        return HTTP_RETURN(status_code=0,messange='Mã nhân viên không tồn tại')#Employee code does not exist
+    
+    if startDate is None or endDate is None:
+        return HTTP_RETURN(status_code=0,messange='Vui lòng kiểm tra lại ngày bắt đầu hoặc kết thúc')
+
+    if startDate > endDate:
+        return HTTP_RETURN(status_code=0,messange='Vui lòng chọn lại ngày nghỉ phép')
+    
+    
+    time_delta = endDate - startDate + timedelta(days=1)
+    period = time_delta.days
+
+
+    listDays = []
+    listDays_Subtracted = []
+    for i in range(0,period):
+        day= startDate + timedelta(days=i)
+        listDays.append(day)
+        # print(startDate)
+    # print(listDays)
+    if query[0][0] == 0: #công nhân (tally,xn,bx)
+        if period >= 7 and period < 14:
+            period -= 1
+            del listDays[int((len(listDays)-1)/2)] # trừ ngày nghỉ ở giữa - ngày ở giữa là ngày nghỉ mỗi tuần
+            listDays_Subtracted = listDays #đưa vào danh sách khác, do biến dùng chung
+        elif period >= 14 and period < 21:
+            period -= 2
+            del listDays[int((len(listDays)-1)/2)]
+            del listDays[int((len(listDays)-1)/2)] #trừ 2 ngày nghỉ cuối cùng - 2 ngày cuối cùng là ngày nghỉ mỗi tuần
+            listDays_Subtracted = listDays
+        else:
+            return HTTP_RETURN(status_code=0,messange='Vui lòng liên hệ quản lý trực tiếp hoặc phòng nhân sự')
+    elif query[0][0] == 2: #chế độ nghĩ t7,cn
+        index = len(listDays)
+        
+        for e in range(0,index):
+            weekday = datetime.isoweekday(listDays[e])
+            if weekday == 7 or weekday == 6:#ngày chủ nhật hoặc thứ 7
+                period -= 1
+            else:
+                listDays_Subtracted.append(listDays[e])
+    else: #query[0][0] == 1 chế độ nghỉ 1 ngày cn
+        index = len(listDays)
+        
+        for e in range(0,index):
+            weekday = datetime.isoweekday(listDays[e])
+            if weekday == 7:
+                period -= 1
+            else:
+                listDays_Subtracted.append(listDays[e])
+
+    # print(listDays_Subtracted)
+    # print(period)
+    if period >0:
+        return HTTP_RETURN(status_code=1,messange='Số ngày nghỉ phép của bạn',data={'period':period,'listDays':listDays_Subtracted})
+    return HTTP_RETURN(status_code=1,messange='Vui lòng Chọn lại ngày nghỉ phép')
+
+#lấy tất cả đơn nghỉ phép đã duyệt trong tháng
+def getDaysOff_Month(month,year,deptID):
+    if deptID == 'NS':
+        var = ''
+    else:
+        var = f'''and e.DeptID = '{deptID}' '''
+
+    s = f'''select o.EmpID,o.StartDate,o.EndDate,o.Period,o.RegDate,o.Address, --o.regID,o.reason,o.Type,
+            e.IDWorkingTime,e.FirstName,e.LastName,e.DeptID,
+            j.Name as 'JobPositionName',
+            d.Name as 'DepartmentName',
+            ot.Name AS 'OffTypeName' from offregister o
+            inner join Employee e on o.EmpID = e.EmpID
+            inner join JobPosition j on e.PosID = j.JobPosID
+            inner join Department d on e.DeptID = d.DeptID
+            inner join OffType ot on o.Type = ot.OffTypeID
+            where month(o.startdate) = {month} and year(o.startdate) = {year} {var} and o.regid in
+            (select regid from Approval --sum(approvalstate)
+            group by regID
+            having SUM(approvalstate) = 1)'''
+    query = get_data(s,1)
+    # print(s)
+    if len(query) >0:
+        return query
+    return []
+
+# #lấy danh sách ngày đã đăng nghỉ phép của 1 nhân viên trong tháng
+# def daysList_Registered(emplID,month):
+#     s = f'''select a.regID,o.StartDate,o.EndDate,o.EmpID from Approval a
+#             inner join OffRegister o on a.regID = o.regID
+#             where o.EmpID = {emplID} and MONTH(o.StartDate) = {month}
+#             group by a.regID,o.StartDate,o.EndDate,o.EmpID
+#             having sum(approvalstate) = 1'''
+#     query = get_data(s,1)
+#     if len(query)>0:
+#         return query
+#     return []
+
+def daysList_Registered(emplID,month):
+    s = f'''select o.regID,o.StartDate,o.EndDate,o.EmpID from OffRegister o
+            where o.EmpID = {emplID} and MONTH(o.StartDate) = {month}
+            and o.RegDate is not null
+           '''
+    query = get_data(s,1)
+    if len(query)>0:
+        return query
+    return []
