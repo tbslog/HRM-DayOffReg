@@ -108,8 +108,9 @@ const ChangePass = (props) => {
         setValue("Password", data.passwordNew);
         console.log(data.MSNV);
         Cookies.set("empid", data.MSNV);
-        window.location.reload();
         hideModal();
+        navigate("/");
+        window.location.reload();
       } else {
         toast.error("Đổi mật khẩu thất bại Lỗi: \n" + create.note, {
           autoClose: 2000,

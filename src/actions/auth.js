@@ -31,7 +31,7 @@ export const login = (username, password, autogen) => (dispatch) => {
       if (data.rCode === 1) {
         const message =
           data.rMsg +
-          "  bạn có muốn tạo tự động tài khoản bằng mã só nhân viên không ?";
+          "  bạn có muốn tạo tự động tài khoản bằng mã số nhân viên không ?";
         dispatch({
           type: LOGIN_FAIL,
         });

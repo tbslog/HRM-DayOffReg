@@ -153,7 +153,7 @@
       $("body").addClass("sidebar-collapse");
       $(window).trigger("resize");
     } else {
-      $("body").removeClass("sidebar-collapse");
+      $("body").addClass("sidebar-collapse");
       $(window).trigger("resize");
     }
   });

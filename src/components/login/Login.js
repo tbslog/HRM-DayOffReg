@@ -63,7 +63,6 @@ const Login = (props) => {
   const offRegis = () => {
     window.location.reload();
   };
-  console.log(rcode);
 
   const Regis = (e) => {
     Cookies.set("empid", JSON.stringify(username));

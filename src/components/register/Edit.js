@@ -1,8 +1,7 @@
-import Popup from "../common/Popup";
 import React, { useState, useEffect, useCallback } from "react";
 import { useForm, Controller, set } from "react-hook-form";
 import Cookies from "js-cookie";
-import { getData, postData, putData } from "../../services/user.service";
+import { getData, putDataCus } from "../../services/user.service";
 import moment from "moment";
 import DatePicker from "react-datepicker";
 import { Navigate, useNavigate } from "react-router-dom";
@@ -10,6 +9,7 @@ import Loading from "../common/loading/Loading";
 import { toast } from "react-toastify";
 
 import Pupup from "../common/Pupup";
+
 let emID = Cookies.get("empid");
 const Edit = (props) => {
   const {
@@ -44,14 +44,12 @@ const Edit = (props) => {
 
   useEffect(
     () => {
-      //console.log(props.dataRegByID);
       if (
         props &&
         props.dataRegByID &&
         Object.keys(props.dataRegByID).length > 0 &&
         Object.keys(props).length > 0
       ) {
-        //console.log(props.dataRegByID.rData.EmpID);
         setregID(props.dataRegByID.rData?.regID);
         setType(props.dataRegByID.rData.Type);
         setValue("NgayBatDau", new Date(props.dataRegByID.rData.StartDate));
@@ -60,6 +58,10 @@ const Edit = (props) => {
         setValue("address", props.dataRegByID.rData.Address);
         setValue("reason", props.dataRegByID.rData.Reason);
         setValue("offType", props.dataRegByID.rData.Type);
+        setperiod(props.dataRegByID.rData.Period);
+        setenddateV(
+          moment(props.dataRegByID.rData.EndDate).format("DD-MM-YYYY")
+        );
       }
     },
     [props, props.dataRegByID, props.fullName],
@@ -67,8 +69,9 @@ const Edit = (props) => {
   );
   useEffect(() => {
     (async () => {
+      setIsLoading(true);
       let data = await getData(`day-off-letter?regid=${regID}`);
-      console.log(data.rData);
+
       setValue("MSNV", data.rData?.EmpID);
       setemIDnv(data.rData?.EmpID);
       //console.log(data.rData);
@@ -76,11 +79,12 @@ const Edit = (props) => {
       setDepartmentName(data.rData.departmentName);
       setJobpositionName(data.rData?.JobPositionName);
       setAnnualLeave(data.rData.AnnualLeave);
-      setcomeDate(moment(data.rData.ComeDate).format("DD-MM-YYYY"));
+      setcomeDate(moment(data.rData.comedate).format("DD-MM-YYYY"));
       setJPLevelName(data.rData.Position);
       let dataTypeOff = await getData("dayOffType");
       setlistTypeOff(dataTypeOff.rData);
       //console.log(dataTypeOff);
+      setIsLoading(false);
     })();
   }, [props, regID]);
   const checkType = (id) => {
@@ -137,21 +141,19 @@ const Edit = (props) => {
 
   const save = async (data) => {
     setIsLoading(true);
-    var create = await putData("adjust-day-off", {
+    var create = await putDataCus("adjust-day-off", {
       regid: regID,
       offtype: data.offType,
       reason: data.reason,
       startdate: moment(new Date(data.NgayBatDau).toISOString()).format(
         "YYYY-MM-DD"
       ),
-      endDate: moment(new Date(data.NgayKetThuc).toISOString()).format(
-        "YYYY-MM-DD"
-      ),
 
       address: data.address,
       command: 0,
+      period: period,
     });
-    // console.log(create);
+
     if (create.isSuccess === 1) {
       toast.success("lưu đơn thành công \n" + create.note, {
         autoClose: 2000,
@@ -163,6 +165,7 @@ const Edit = (props) => {
       setsavesendbutton(0);
       props.fetchData();
       props.hideModal();
+
       reset();
       setIsLoading(false);
       navigate("/indexListRegister");
@@ -179,26 +182,22 @@ const Edit = (props) => {
   };
 
   const send = async (data) => {
-    let isotherRegis = "";
+    // let isotherRegis = "";
 
-    if (emID != emIDnv) {
-      isotherRegis = 1;
-    } else {
-      isotherRegis = 0;
-    }
-    console.log(isotherRegis);
+    // if (emID != emIDnv) {
+    //   isotherRegis = 1;
+    // } else {
+    //   isotherRegis = 0;
+    // }
     setIsLoading(true);
-    var create = await putData("adjust-day-off", {
+    var create = await putDataCus("adjust-day-off", {
       regid: regID,
       offtype: data.offType,
       reason: data.reason,
       startdate: moment(new Date(data.NgayBatDau).toISOString()).format(
         "YYYY-MM-DD"
       ),
-      endDate: moment(new Date(data.NgayKetThuc).toISOString()).format(
-        "YYYY-MM-DD"
-      ),
-
+      period: period,
       address: data.address,
       command: 1,
     });
@@ -254,61 +253,64 @@ const Edit = (props) => {
       send(data);
     }
   };
-  const handelClickViewWorkingDays = async (e) => {
-    e.preventDefault(); // loại bỏ ngăn chặn reload
-    if (
-      startdateV === "" ||
-      startdateV === undefined ||
-      startdateV === "" ||
-      startdateV === undefined
-    ) {
-      console.log("lỗi");
-    } else {
-      let st = moment(new Date(startdateV).toISOString()).format("YYYY-MM-DD");
-      let ed = moment(new Date(enddateV).toISOString()).format("YYYY-MM-DD");
+  // const handelClickViewWorkingDays = async (e) => {
+  //   e.preventDefault(); // loại bỏ ngăn chặn reload
+  //   if (
+  //     startdateV === "" ||
+  //     startdateV === undefined ||
+  //     startdateV === "" ||
+  //     startdateV === undefined
+  //   ) {
+  //     console.log("lỗi");
+  //   } else {
+  //     let st = moment(new Date(startdateV).toISOString()).format("YYYY-MM-DD");
+  //     let ed = moment(new Date(enddateV).toISOString()).format("YYYY-MM-DD");
 
-      var getDay = await getData(
-        `workingDays?emplID=${emIDnv}&startDate=${st}&endDate=${ed}`
+  //     var getDay = await getData(
+  //       `workingDays?emplID=${emIDnv}&startDate=${st}&endDate=${ed}`
+  //     );
+  //     setperiod(getDay.rData.period);
+  //     console.log(getDay.rData.period);
+  //   }
+  // };
+  const handleBlur = () => {
+    if (startdateV === "" || startdateV === undefined) {
+      setenddateV("Nhập ngày bắt đầu");
+    }
+    if (period !== "") {
+      const roundedNumber = Math.round((Number(period) * 10) / 5) / 2;
+      setperiod(roundedNumber.toString());
+      const roundedNumber1 = Math.round(Number(roundedNumber));
+      const inputDate = new Date(startdateV);
+      const resultDate = new Date(
+        inputDate.getTime() +
+          roundedNumber1.toString() * 24 * 60 * 60 * 1000 -
+          1 * 24 * 60 * 60 * 1000
       );
-      setperiod(getDay.rData.period);
-      console.log(getDay.rData.period);
+      setenddateV(
+        moment(new Date(resultDate).toISOString()).format("DD-MM-YYYY")
+      );
     }
   };
-  const onchangeday = async (e, id) => {
-    if (id === 1) {
-      setstartdateV(e);
-      console.log(enddateV);
-      if (enddateV === "" || enddateV === undefined) {
-        setperiod(" Chọn ngày kết thúc");
-      } else {
-        let st = moment(new Date(e).toISOString()).format("YYYY-MM-DD");
-        let ed = moment(new Date(enddateV).toISOString()).format("YYYY-MM-DD");
-        if (st < ed) {
-          var getDay = await getData(
-            `workingDays?emplID=${emIDnv}&startDate=${st}&endDate=${ed}`
-          );
-          setperiod(getDay.rData.period);
-        } else setperiod("Chọn lại ngày");
-      }
-    }
-    if (id === 2) {
-      setenddateV(e);
+  const onchangeday = async (e) => {
+    if (period === "" || period === undefined) {
+      setenddateV("Nhập số ngày nghỉ");
+    } else {
+      const roundedNumber = Math.round((Number(period) * 10) / 5) / 2;
+      setperiod(roundedNumber.toString());
+      const roundedNumber1 = Math.round(Number(roundedNumber));
+      const inputDate = new Date(e);
+      const resultDate = new Date(
+        inputDate.getTime() +
+          roundedNumber1.toString() * 24 * 60 * 60 * 1000 -
+          1 * 24 * 60 * 60 * 1000
+      );
 
-      if (startdateV === "" || startdateV === undefined) {
-        setperiod(" Chọn ngày bắt đầu");
-      } else {
-        let st = moment(new Date(startdateV).toISOString()).format(
-          "YYYY-MM-DD"
-        );
-        let ed = moment(new Date(e).toISOString()).format("YYYY-MM-DD");
-        if (st < ed) {
-          var getDay = await getData(
-            `workingDays?emplID=${emIDnv}&startDate=${st}&endDate=${ed}`
-          );
-          setperiod(getDay.rData.period);
-        } else setperiod("Chọn lại ngày");
-      }
+      setenddateV(
+        moment(new Date(resultDate).toISOString()).format("DD-MM-YYYY")
+      );
     }
+    setstartdateV(e);
   };
 
   return (
@@ -426,9 +428,9 @@ const Edit = (props) => {
                 </div>
               </div>
               <div className="row mt-2">
-                <div className="col-md-4 mt-1 d-flex ">
+                <div className="col-md-4 d-flex  ">
                   <span style={{ minWidth: "120px" }}>
-                    Ngày Bắt Đầu <span style={{ color: "red" }}>*</span>
+                    Ngày bắt đầu<span style={{ color: "red" }}>*</span>
                   </span>
                   <div className="input-group ml-3 ">
                     <Controller
@@ -438,11 +440,11 @@ const Edit = (props) => {
                         <DatePicker
                           className="form-control "
                           dateFormat="dd/MM/yyyy"
-                          placeholderText="Ngày bắt đầu"
+                          placeholderText="Chọn ngày bắt đầu"
                           onChange={(date) => {
                             field.onChange(date);
-                            // setstartdateV(date);
-                            onchangeday(date, 1);
+                            //setstartdateV(date);
+                            onchangeday(date);
                           }}
                           selected={field.value}
                         />
@@ -462,52 +464,28 @@ const Edit = (props) => {
                     )}
                   </div>
                 </div>
-                <div className="col-md-4 d-flex mt-1">
+                <div className="col-md-4 d-flex justify-content-end mt-1">
                   <span style={{ minWidth: "120px" }}>
                     Ngày Kết thúc <span style={{ color: "red" }}>*</span>
                   </span>
                   <div className="input-group ml-3 ">
-                    <Controller
-                      control={control}
-                      name="NgayKetThuc"
-                      render={({ field }) => (
-                        <DatePicker
-                          className="form-control "
-                          dateFormat="dd/MM/yyyy"
-                          placeholderText="Ngày Kết Thúc"
-                          onChange={(date) => {
-                            field.onChange(date);
-                            onchangeday(date, 2);
-                            // setenddateV(date);
-                          }}
-                          selected={field.value}
-                        />
-                      )}
-                      rules={validateForm.NgayKetThuc}
+                    <input
+                      value={enddateV}
+                      className="form-control ml-3 "
+                      readOnly
                     />
-                    {errors.NgayKetThuc && (
-                      <span
-                        className=""
-                        style={{
-                          color: "red",
-                          fontSize: "10px",
-                        }}
-                      >
-                        {errors.NgayKetThuc.message}
-                      </span>
-                    )}
                   </div>
                 </div>
-                <div className="col-md-4 d-flex justify-content-end mt-1">
-                  <span> số ngày nghĩ</span>
-                  <div className="w-100 ml-3" style={{ maxWidth: "140px" }}>
+                <div className="col-md-4 d-flex justify-content-end mt-1 ">
+                  <span> số ngày nghỉ</span>
+                  <div className="w-100 ml-3" style={{ maxWidth: "100px" }}>
                     <input
-                      type="text"
-                      className="form-control "
-                      readOnly
                       value={period}
-                      style={{ fontSize: "12px" }}
+                      className="form-control "
+                      onBlur={handleBlur}
+                      onChange={(e) => setperiod(e.target.value)}
                     />
+
                     <span
                       className=""
                       style={{

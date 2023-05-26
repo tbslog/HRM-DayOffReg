@@ -10,6 +10,7 @@ import moment from "moment";
 import Approve from "./Approve";
 import { toast } from "react-toastify";
 import { Modal } from "bootstrap";
+import Loading from "../common/loading/Loading";
 
 const ManagerPage = (props) => {
   const [dbTableMana, setdbTableMana] = useState([]);
@@ -28,6 +29,7 @@ const ManagerPage = (props) => {
   const [filterText, setFilterText] = useState("");
   const [resetPaginationToggle, setResetPaginationToggle] = useState(false);
   const [callback, setcallback] = useState(false);
+  const [IsLoading, setIsLoading] = useState(false);
 
   const showModalForm = () => {
     const modal = new Modal(parseExceptionModal.current, {
@@ -42,6 +44,7 @@ const ManagerPage = (props) => {
   };
 
   useEffect(() => {
+    setIsLoading(true);
     setftTableMana(
       dbTableMana.filter(
         (item) =>
@@ -51,6 +54,7 @@ const ManagerPage = (props) => {
             item.LastName.toLowerCase().includes(filterText.toLowerCase()))
       )
     );
+    setIsLoading(false);
   }, [filterText]);
 
   const handleClear = () => {
@@ -81,16 +85,16 @@ const ManagerPage = (props) => {
 
   useEffect(() => {
     (async () => {
+      setIsLoading(true);
       let dataMana = await getData(
         "day-off-letters?needAppr=1&astatus=1%2C2%2C3%2C4%2C5"
       );
-      console.log(dataMana);
-
       setdbTableMana(dataMana.rData);
       setftTableMana(dataMana.rData);
       let dataTypeOff = await getData("dayOffType");
       // console.log(dataTypeOff);
       setlistTypeOff(dataTypeOff.rData);
+      setIsLoading(false);
     })();
   }, [callback]);
   const col = [
@@ -156,9 +160,7 @@ const ManagerPage = (props) => {
     return a?.Name + "(" + a?.Note + ")";
   };
   const handleReturn = async (id) => {
-    console.log(id);
     let res = await putDataCus(`recall-approved-leave?regid=${id}`);
-    console.log(res);
     if (res.isSuccess === 1) {
       console.log("first");
       toast.success("Thu hồi đơn thành công \n", {
@@ -322,68 +324,73 @@ const ManagerPage = (props) => {
           className="card-body m-0 p-0 "
           style={{ height: props.sizeConten }}
         >
-          <DataTable
-            columns={col}
-            data={ftTableMana}
-            pagination
-            paginationRowsPerPageOptions={[25, 50, 100]}
-            paginationResetDefaultPage={resetPaginationToggle}
-            fixedHeader
-            fixedHeaderScrollHeight={props.sizeContenTB}
-            selectableRows
-            selectableRowsHighlight
-            highlightOnHover
-            persistTableHead
-            subHeader
-            subHeaderComponent={
-              <div className="d-flex justify-content-between w-100">
-                <div className="dropdown show">
-                  <select
-                    className="form-control btn btn-secondary dropdown-toggle text-left"
-                    onClick={(e) => {
-                      let a = [];
-                      if (parseInt(e.target.value) === 10) {
-                        setftTableMana(dbTableMana);
-                      } else {
-                        a = dbTableMana.filter((element) => {
-                          return element.aStatus === parseInt(e.target.value);
-                        });
-                        setftTableMana(a);
-                      }
+          {IsLoading ? (
+            <Loading />
+          ) : (
+            <DataTable
+              columns={col}
+              data={ftTableMana}
+              pagination
+              paginationRowsPerPageOptions={[25, 50, 100]}
+              paginationResetDefaultPage={resetPaginationToggle}
+              fixedHeader
+              fixedHeaderScrollHeight={props.sizeContenTB}
+              selectableRows
+              selectableRowsHighlight
+              noDataComponent="Không có dữ liệu"
+              highlightOnHover
+              persistTableHead
+              subHeader
+              subHeaderComponent={
+                <div className="d-flex justify-content-between w-100">
+                  <div className="dropdown show">
+                    <select
+                      className="form-control btn btn-secondary dropdown-toggle text-left"
+                      onClick={(e) => {
+                        let a = [];
+                        if (parseInt(e.target.value) === 10) {
+                          setftTableMana(dbTableMana);
+                        } else {
+                          a = dbTableMana.filter((element) => {
+                            return element.aStatus === parseInt(e.target.value);
+                          });
+                          setftTableMana(a);
+                        }
 
-                      // handleOpption(e.target.value);
-                    }}
-                  >
-                    <option value="10">Tất cả đơn</option>
-                    <option value="1">Chờ Duyệt</option>
-                    <option value="2">Đã Duyệt</option>
-                    <option value="3">Từ Chối</option>
-                    <option value="4">Đã Hủy</option>
-                  </select>
-                </div>
-                <div className="input-group mb-2" style={{ width: "30%" }}>
-                  <input
-                    type="text"
-                    id="search"
-                    className="form-control"
-                    placeholder="Search..."
-                    aria-label="Search Input"
-                    value={filterText}
-                    onChange={(e) => setFilterText(e.target.value)}
-                  />
-                  <div className="input-group-append">
-                    <button
-                      className="btn btn-primary"
-                      type="button"
-                      onClick={handleClear}
+                        // handleOpption(e.target.value);
+                      }}
                     >
-                      <i className="fas fa-times"> </i>
-                    </button>
+                      <option value="10">Tất cả đơn</option>
+                      <option value="1">Chờ Duyệt</option>
+                      <option value="2">Đã Duyệt</option>
+                      <option value="3">Từ Chối</option>
+                      <option value="4">Đã Hủy</option>
+                    </select>
+                  </div>
+                  <div className="input-group mb-2" style={{ width: "30%" }}>
+                    <input
+                      type="text"
+                      id="search"
+                      className="form-control"
+                      placeholder="Search..."
+                      aria-label="Search Input"
+                      value={filterText}
+                      onChange={(e) => setFilterText(e.target.value)}
+                    />
+                    <div className="input-group-append">
+                      <button
+                        className="btn btn-primary"
+                        type="button"
+                        onClick={handleClear}
+                      >
+                        <i className="fas fa-times"> </i>
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            }
-          />
+              }
+            />
+          )}
         </div>
       </form>
       <>

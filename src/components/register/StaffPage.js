@@ -9,11 +9,13 @@ import { toast } from "react-toastify";
 
 import Edit from "./Edit";
 import Approve from "./Approve";
+import Loading from "../common/loading/Loading";
 
 let info = Cookies.get("info") && JSON?.parse(Cookies.get("info")); // kiểm tra đk 1 nếu có chạy câu lệnh sau
 let emID = Cookies.get("empid");
 const StaffPage = (props) => {
   const [dbTable, setdbTable] = useState([]);
+  const [IsLoading, setIsLoading] = useState(false);
 
   const [ftTable, setftTable] = useState([]);
 
@@ -38,10 +40,14 @@ const StaffPage = (props) => {
 
   useEffect(() => {
     (async () => {
+      setIsLoading(true);
       let data = await getData("day-off-letters?needAppr=0");
+      //console.log(data);
       setdbTable(data.rData);
       setftTable(data.rData);
-
+      let dataTypeOff = await getData("dayOffType");
+      setlistTypeOff(dataTypeOff.rData);
+      setIsLoading(false);
       let dataMana = await getData(
         "day-off-letters?needAppr=1&astatus=1%2C2%2C3%2C4%2C5"
       );
@@ -54,18 +60,20 @@ const StaffPage = (props) => {
       setdbEmpid(emID);
       setdbFullName(info.LastName + "" + info.FirstName);
 
-      let dataTypeOff = await getData("dayOffType");
-      setlistTypeOff(dataTypeOff.rData);
       let listlowergradedata = await getData("list-of-subordinates");
-      let lista = listlowergradedata.rData.map(
+      let lista = listlowergradedata.rData?.map(
         ({ EmpID, FirstName, LastName }) => ({
           EmpID,
           Name: `${LastName} ${FirstName}`,
         })
       );
-      lista.unshift({ EmpID: emID, Name: info.LastName + "" + info.FirstName });
+      lista?.unshift({
+        EmpID: emID,
+        Name: info.LastName + "" + info.FirstName,
+      });
 
       setlistNV(lista);
+      setIsLoading(false);
     })();
   }, [callback]);
   const col = [
@@ -142,7 +150,7 @@ const StaffPage = (props) => {
       return (
         <i
           className="fas fa-undo"
-          style={{ fontSize: "20px", color: "#ffc107" }}
+          style={{ fontSize: "20px", color: "rgb(157 157 157)" }}
           title="Đã Hủy"
         />
       );
@@ -186,19 +194,13 @@ const StaffPage = (props) => {
             className="btn btn-warning"
             onClick={() => handleReturn(id)}
           >
-            <i className="fas fa-undo " title="Thu hồi " />
+            <i className="fas fa-long-arrow-alt-left " title="Thu hồi " />
           </button>
-        </>
-      );
-    }
-    if (aStatus === 4) {
-      return (
-        <>
           <button
             type="button"
             data-toggle="modal"
             data-target="#exampleModalCenter"
-            className="btn btn-danger ml-1"
+            className="btn btn-success ml-1"
             onClick={() =>
               handleInfo(
                 id,
@@ -208,11 +210,12 @@ const StaffPage = (props) => {
               )
             }
           >
-            <i className="fas fa-undo " title="Thu hồi " />
+            <i className="fas fa-info-circle" title="Thông tin"></i>
           </button>
         </>
       );
     }
+
     return (
       <>
         <button
@@ -241,11 +244,9 @@ const StaffPage = (props) => {
   };
 
   const handleReturn = async (id) => {
-    console.log(id);
     let res = await putDataCus(`recall?regID=${id}`);
-    console.log(res);
+
     if (res.isSuccess === 1) {
-      console.log("first");
       toast.success(res.note, {
         autoClose: 2000,
         className: "",
@@ -280,6 +281,7 @@ const StaffPage = (props) => {
   };
 
   const fetchData = async () => {
+    setcallback(!callback);
     let data = await getData("day-off-letters?needAppr=0");
     setdbTable(data.rData);
   };
@@ -302,63 +304,67 @@ const StaffPage = (props) => {
           className="card-body m-0 p-0 "
           style={{ height: props.sizeConten }}
         >
-          <DataTable
-            columns={col}
-            data={ftTable}
-            pagination
-            paginationRowsPerPageOptions={[25, 50, 100]}
-            fixedHeader
-            fixedHeaderScrollHeight={props.sizeContenTB}
-            highlightOnHover
-            subHeader
-            subHeaderComponent={
-              <div
-                className="d-flex justify-content-between w-100 p-0 m-0"
-                // style={{
-                //   background: "rgb(224 224 224)",
-                // }}
-              >
-                <div className="dropdown show pt-1">
-                  <select
-                    className=" btn btn-sm btn-outline-light dropdown-toggle text-left "
-                    onClick={(e) => {
-                      let a = [];
-                      if (parseInt(e.target.value) === 10) {
-                        setftTable(dbTable);
-                      } else {
-                        a = dbTable.filter((element) => {
-                          console.log(element);
-                          return element.EmpID === parseInt(e.target.value);
-                        });
-                        setftTable(a);
-                      }
+          {IsLoading ? (
+            <Loading />
+          ) : (
+            <DataTable
+              columns={col}
+              data={ftTable}
+              pagination
+              paginationRowsPerPageOptions={[25, 50, 100]}
+              fixedHeader
+              fixedHeaderScrollHeight={props.sizeContenTB}
+              highlightOnHover
+              noDataComponent="Không có dữ liệu"
+              subHeader
+              subHeaderComponent={
+                <div
+                  className="d-flex justify-content-between w-100 p-0 m-0"
+                  // style={{
+                  //   background: "rgb(224 224 224)",
+                  // }}
+                >
+                  <div className="dropdown show pt-1">
+                    <select
+                      className=" btn btn-sm btn-outline-light dropdown-toggle text-left "
+                      onClick={(e) => {
+                        let a = [];
+                        if (parseInt(e.target.value) === 10) {
+                          setftTable(dbTable);
+                        } else {
+                          a = dbTable.filter((element) => {
+                            return element.EmpID === parseInt(e.target.value);
+                          });
+                          setftTable(a);
+                        }
 
-                      // handleOpption(e.target.value);
-                    }}
-                  >
-                    <option value="10">Tất cả đơn</option>
-                    {listNV &&
-                      listNV.map((val) => {
-                        return (
-                          <option value={val.EmpID} key={val.EmpID}>
-                            {val.EmpID}({val.Name})
-                          </option>
-                        );
-                      })}
-                  </select>
+                        // handleOpption(e.target.value);
+                      }}
+                    >
+                      <option value="10">Tất cả đơn</option>
+                      {listNV &&
+                        listNV.map((val) => {
+                          return (
+                            <option value={val.EmpID} key={val.EmpID}>
+                              {val.EmpID}({val.Name})
+                            </option>
+                          );
+                        })}
+                    </select>
+                  </div>
+                  <div className="pt-1 ">
+                    {/* style={{ alignSelf: "end" }} */}
+                    <a
+                      href="/Register"
+                      className="btn btn-sm btn-success mr-3 mb-2"
+                    >
+                      <i className="fas fa-plus" /> Tạo Đơn
+                    </a>
+                  </div>
                 </div>
-                <div className="pt-1 ">
-                  {/* style={{ alignSelf: "end" }} */}
-                  <a
-                    href="/Register"
-                    className="btn btn-sm btn-success mr-3 mb-2"
-                  >
-                    <i className="fas fa-plus" /> Tạo Đơn
-                  </a>
-                </div>
-              </div>
-            }
-          />
+              }
+            />
+          )}
         </div>
       </form>
       <>

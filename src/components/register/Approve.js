@@ -1,8 +1,7 @@
 import Popup from "../common/Popup";
 import moment from "moment";
-import { getData, postData } from "../../services/user.service";
+import { getData, postData, postDataCustom } from "../../services/user.service";
 import React, { useState, useEffect, useCallback } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import Loading from "../common/loading/Loading";
 import { useForm, Controller } from "react-hook-form";
@@ -56,7 +55,6 @@ const Approve = (props) => {
       setshow(true);
     }
     (async () => {
-      // console.log(props.dataRegByID.rData);
       setregID(props.dataRegByID?.rData.regID);
       setMSNV(props.dataRegByID.rData.EmpID);
       setname(
@@ -281,8 +279,10 @@ const Approve = (props) => {
     }
   };
   const handleApprove = async (data) => {
+    console.log(data);
+    console.log(regID);
     setIsLoading(true);
-    var create = await postData("approve", {
+    var create = await postDataCustom("approve", {
       regid: regID,
       comment: data.comment,
       state: 1,
@@ -297,6 +297,15 @@ const Approve = (props) => {
       console.log("Duyệt");
       props.fetchData();
       props.hideModal();
+    } else {
+      toast.error("lưu  thất bại Lỗi \n" + create.note, {
+        autoClose: 2000,
+        className: "",
+        position: "top-center",
+        theme: "colored",
+      });
+
+      setIsLoading(false);
     }
   };
   return (

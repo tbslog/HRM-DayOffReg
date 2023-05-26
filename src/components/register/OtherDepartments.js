@@ -325,8 +325,7 @@ const OtherDepartments = (props) => {
             paginationResetDefaultPage={resetPaginationToggle}
             fixedHeader
             fixedHeaderScrollHeight={props.sizeContenTB}
-            selectableRows
-            selectableRowsHighlight
+            noDataComponent="Không có dữ liệu"
             highlightOnHover
             persistTableHead
             subHeader

@@ -21,6 +21,8 @@ const IndexListRegister = () => {
   const [pbkhac, setpbkhac] = useState([]);
   const [showMess, setShowMess] = useState(false);
   const [showMesspb, setShowMesspb] = useState(false);
+  const [showNotiMana, setShowNotiMana] = useState();
+  const [showNotiManapbk, setShowNotiManapbk] = useState();
 
   useEffect(() => {
     (async () => {
@@ -28,16 +30,38 @@ const IndexListRegister = () => {
       let datapb = await getData(
         "day-off-letters?needAppr=3 &astatus=1%2C2%2C3%4%5"
       );
-      if (dataMana.rData[0]?.aStatus === 1) {
+
+      let notiMana = dataMana.rData.reduce((count, i) => {
+        if (i.aStatus === 1) {
+          count += 1;
+        }
+        return count;
+      }, 0);
+      let notiManaPbk = datapb.rData.reduce((count, i) => {
+        if (i.aStatus === 1) {
+          count += 1;
+        }
+        return count;
+      }, 0);
+      if (notiMana > 0 || notiManaPbk > 0) {
         setShowMess(true);
+        setShowNotiMana(notiMana);
+        setShowNotiManapbk(notiManaPbk);
       } else {
         setShowMess(false);
+        setShowNotiMana();
+        setShowNotiManapbk();
       }
-      if (datapb.rData[0]?.aStatus === 1) {
-        setShowMesspb(true);
-      } else {
-        setShowMesspb(true);
-      }
+      // if (dataMana.rData[0]?.aStatus === 1) {
+      //   setShowMess(true);
+      // } else {
+      //   setShowMess(false);
+      // }
+      // if (datapb.rData[0]?.aStatus === 1) {
+      //   setShowMesspb(true);
+      // } else {
+      //   setShowMesspb(true);
+      // }
 
       setpbkhac(datapb);
       //console.log(dataMana);
@@ -92,45 +116,31 @@ const IndexListRegister = () => {
                     <Tab>
                       Đơn Cần Phê Duyệt {""}
                       {showMess && (
-                        <i
-                          className="fas fa-info-circle "
-                          style={{ color: "#ff0000" }}
-                        />
+                        <span
+                          className="badge badge-danger navbar-badge"
+                          style={{ right: " -2px", top: "12px" }}
+                        >
+                          {showNotiMana}
+                        </span>
                       )}
                     </Tab>
                     {pbkhac.rData.length > 0 && (
                       <Tab>
                         Đơn Cần Phê Duyệt Phòng Ban Khác {""}
                         {showMesspb && (
-                          <i
-                            className="fas fa-info-circle "
-                            style={{ color: "#ff0000" }}
-                          />
+                          <span
+                            className="badge badge-danger navbar-badge"
+                            style={{ right: " -2px", top: "12px" }}
+                          >
+                            {showNotiManapbk}
+                          </span>
                         )}
                       </Tab>
                     )}
 
                     <Tab>Hướng Dẫn Quy Trình</Tab>
                     {(info?.DeptID === "NS" || info?.JPLevelID <= 50) && (
-                      <Tab>
-                        <div className="d-flex align-items-center ">
-                          <span
-                            style={{ fontSize: "12px", whiteSpace: "nowrap" }}
-                          >
-                            File tổng hợp &nbsp;
-                          </span>
-                          <DatePicker
-                            className=" border border-primary rounded "
-                            showicon
-                            selected={startDate}
-                            onChange={(date) =>
-                              handelDownd(date, setStartDate(date))
-                            }
-                            dateFormat="MM/yyyy"
-                            showMonthYearPicker
-                          />
-                        </div>
-                      </Tab>
+                      <Tab>Export</Tab>
                     )}
                   </TabList>
                   <TabPanel>
@@ -159,6 +169,27 @@ const IndexListRegister = () => {
                       <Usermanual />
                     </div>
                   </TabPanel>
+                  {(info?.DeptID === "NS" || info?.JPLevelID <= 50) && (
+                    <TabPanel>
+                      <div className="card-body  p-0 d-flex justify-content-center mt-3">
+                        <span>
+                          Chọn Tháng cần lấy danh sách nghỉ phép &nbsp;
+                        </span>
+                        <div>
+                          <DatePicker
+                            className=" border border-primary rounded "
+                            showicon
+                            selected={startDate}
+                            onChange={(date) =>
+                              handelDownd(date, setStartDate(date))
+                            }
+                            dateFormat="MM/yyyy"
+                            showMonthYearPicker
+                          />
+                        </div>
+                      </div>
+                    </TabPanel>
+                  )}
                 </Tabs>
               </div>
             </div>
@@ -174,21 +205,7 @@ const IndexListRegister = () => {
               <Tab>QL Đơn Nghỉ Phép</Tab>
               <Tab>Hướng Dẫn Quy Trình</Tab>
               {(info?.DeptID === "NS" || info?.JPLevelID <= 50) && (
-                <Tab>
-                  <div className="d-flex align-items-center ">
-                    <span style={{ fontSize: "12px", whiteSpace: "nowrap" }}>
-                      File tổng hợp &nbsp;
-                    </span>
-                    <DatePicker
-                      className=" border border-primary rounded "
-                      showicon
-                      selected={startDate}
-                      onChange={(date) => handelDownd(date, setStartDate(date))}
-                      dateFormat="MM/yyyy"
-                      showMonthYearPicker
-                    />
-                  </div>
-                </Tab>
+                <Tab>Export</Tab>
               )}
             </TabList>
 
@@ -202,6 +219,23 @@ const IndexListRegister = () => {
                 <Usermanual />
               </div>
             </TabPanel>
+            {(info?.DeptID === "NS" || info?.JPLevelID <= 50) && (
+              <TabPanel>
+                <div className="card-body  p-0 d-flex justify-content-center mt-3">
+                  <span>Chọn Tháng cần lấy danh sách nghỉ phép &nbsp;</span>
+                  <div>
+                    <DatePicker
+                      className=" border border-primary rounded "
+                      showicon
+                      selected={startDate}
+                      onChange={(date) => handelDownd(date, setStartDate(date))}
+                      dateFormat="MM/yyyy"
+                      showMonthYearPicker
+                    />
+                  </div>
+                </div>
+              </TabPanel>
+            )}
           </Tabs>
         </div>
       )}

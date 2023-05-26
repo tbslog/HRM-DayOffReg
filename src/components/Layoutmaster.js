@@ -131,9 +131,6 @@ const Header = ({ children }) => {
                     className="dropdown-menu dropdown-menu-lg dropdown-menu-right"
                     style={{ borderRadius: "8px", overflow: "hidden" }}
                   >
-                    <span className="dropdown-item dropdown-header">
-                      thông báo
-                    </span>
                     {showNotiMana > 0 && (
                       <>
                         <div className="dropdown-divider" />
