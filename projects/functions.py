@@ -12,6 +12,8 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from socket import gaierror
 from typing import  Union
+import calendar
+import math
 
 # with open('projects/config.json') as f:
 with open('projects/config.json') as f:
@@ -107,7 +109,7 @@ def commit_data(query):
 
 
 #chỉ kết nối database 1 lần
-cn = connect_db1()
+# cn = connect_db1()
 
 
 #A.thái-----------------------------------------------------------------------------
@@ -312,12 +314,13 @@ def TPPP_manager(emplid,jplevel_TP_PP):
 #hàm lấy đơn nghĩ phép cùng phòng ban
 def roommates(depid,jplevel,option:int = None):
     
-    jpName = 'AND j.JPName in (41,42,43) '
+    jpName = f'AND j.JPName in {idRegisteredJobName()} '
+    print(jpName)
     condition = ''
     if option == 1:
         condition = 'AND o.RegDate IS NOT NULL'
         jpName = ''
-        if depid in ('H01','H03','H05','H06','H07','HST'):
+        if depid in authorDeptRegis():#('VT','HST','BX_NM2','H05','BT','H03','H01','H07','H06','KST','BD','QTM','BCT'):#('H01','H03','H05','H06','H07','HST','BD'):
             return []
     s = f"""
             SELECT o.regID,o.EmpID,o.Type,o.Reason,o.StartDate,o.Period,o.RegDate,o.Address,o.EndDate,
@@ -708,95 +711,104 @@ def HTTP_RETURN(status_code, messange, error: None = "" ,data: Union[list, dict,
 
 
 
-def numberDays(emplID,startDate,endDate):
-    if emplID is None or startDate is None or endDate is None:
-        return HTTP_RETURN(status_code=0,messange='Vui lòng nhập đầy đủ thông tin')
-    s = f'''select IDWorkingTime from Employee where EmpID = {emplID}'''
-    query = get_data(s)
-    if len(query) <= 0:
-        return HTTP_RETURN(status_code=0,messange='Mã nhân viên không tồn tại')#Employee code does not exist
+# def numberDays(emplID,startDate,endDate,period):
+    # if emplID is None or startDate is None or endDate is None:
+    #     return HTTP_RETURN(status_code=0,messange='Vui lòng nhập đầy đủ thông tin')
+    # s = f'''select IDWorkingTime from Employee where EmpID = {emplID}'''
+    # query = get_data(s)
+    # if len(query) <= 0:
+    #     return HTTP_RETURN(status_code=0,messange='Mã nhân viên không tồn tại')#Employee code does not exist
     
-    if startDate is None or endDate is None:
-        return HTTP_RETURN(status_code=0,messange='Vui lòng kiểm tra lại ngày bắt đầu hoặc kết thúc')
+    # if startDate is None or endDate is None:
+    #     return HTTP_RETURN(status_code=0,messange='Vui lòng kiểm tra lại ngày bắt đầu hoặc kết thúc')
 
-    if startDate > endDate:
-        return HTTP_RETURN(status_code=0,messange='Vui lòng chọn lại ngày nghỉ phép')
+    # if startDate > endDate:
+    #     return HTTP_RETURN(status_code=0,messange='Vui lòng chọn lại ngày nghỉ phép')
+    
+    # if period < 0.5:
+    #     return HTTP_RETURN(status_code=0,messange='Vui lòng Nhập số ngày nghĩ phép')
+    
+    # time_delta = endDate - startDate + timedelta(days=1)
+    # period = time_delta.days
     
     
-    time_delta = endDate - startDate + timedelta(days=1)
-    period = time_delta.days
+    # listDays = []
+    # listDays_Subtracted = []
+    # for i in range(0,period):
+    #     day= startDate + timedelta(days=i)
+    #     listDays.append(day)
 
-
-    listDays = []
-    listDays_Subtracted = []
-    for i in range(0,period):
-        day= startDate + timedelta(days=i)
-        listDays.append(day)
-        # print(startDate)
-    # print(listDays)
-    if query[0][0] == 0: #công nhân (tally,xn,bx)
-        if period >= 7 and period < 14:
-            period -= 1
-            del listDays[int((len(listDays)-1)/2)] # trừ ngày nghỉ ở giữa - ngày ở giữa là ngày nghỉ mỗi tuần
-            listDays_Subtracted = listDays #đưa vào danh sách khác, do biến dùng chung
-        elif period >= 14 and period < 21:
-            period -= 2
-            del listDays[int((len(listDays)-1)/2)]
-            del listDays[int((len(listDays)-1)/2)] #trừ 2 ngày nghỉ cuối cùng - 2 ngày cuối cùng là ngày nghỉ mỗi tuần
-            listDays_Subtracted = listDays
-        else:
-            return HTTP_RETURN(status_code=0,messange='Vui lòng liên hệ quản lý trực tiếp hoặc phòng nhân sự')
-    elif query[0][0] == 2: #chế độ nghĩ t7,cn
-        index = len(listDays)
+    #     # print(startDate)
+    # # print(listDays)
+    # if query[0][0] == 0: #công nhân (tally,xn,bx) + chứng từ
+    #     if period >= 7 and period < 14:
+    #         # period -= 1
+    #         del listDays[int((len(listDays)-1)/2)] # trừ ngày nghỉ ở giữa - ngày ở giữa là ngày nghỉ mỗi tuần
+    #         listDays_Subtracted = listDays #đưa vào danh sách khác, do biến dùng chung
+    #     elif period >= 14 and period < 21:
+    #         # period -= 2
+    #         del listDays[int((len(listDays)-1)/2)]
+    #         del listDays[int((len(listDays)-1)/2)] #trừ 2 ngày nghỉ cuối cùng - 2 ngày cuối cùng là ngày nghỉ mỗi tuần
+    #         listDays_Subtracted = listDays
+    #     elif period >= 21:
+    #         # period -= 3
+    #         del listDays[int((len(listDays)-1)/2)]
+    #         del listDays[int((len(listDays)-1)/2)]
+    #         del listDays[int((len(listDays)-1)/2)]
+    #         listDays_Subtracted = listDays
+    # elif query[0][0] == 2: #chế độ nghĩ t7,cn
+    #     index = len(listDays)
         
-        for e in range(0,index):
-            weekday = datetime.isoweekday(listDays[e])
-            if weekday == 7 or weekday == 6:#ngày chủ nhật hoặc thứ 7
-                period -= 1
-            else:
-                listDays_Subtracted.append(listDays[e])
-    else: #query[0][0] == 1 chế độ nghỉ 1 ngày cn
-        index = len(listDays)
-        
-        for e in range(0,index):
-            weekday = datetime.isoweekday(listDays[e])
-            if weekday == 7:
-                period -= 1
-            else:
-                listDays_Subtracted.append(listDays[e])
+    #     for e in range(0,index):
+    #         weekday = datetime.isoweekday(listDays[e])
+    #         if weekday == 7 or weekday == 6:#ngày chủ nhật hoặc thứ 7
+    #             period -= 1
+    #         else:
+    #             listDays_Subtracted.append(listDays[e])
+    # else: #query[0][0] == 1 chế độ nghỉ 1 ngày cn
+    #     index = len(listDays)
+    #     for e in range(0,index):
+    #         weekday = datetime.isoweekday(listDays[e])
+    #         if weekday == 7:
+    #             period -= 1
+    #         else:
+    #             listDays_Subtracted.append(listDays[e])
 
-    # print(listDays_Subtracted)
-    # print(period)
-    if period >0:
-        return HTTP_RETURN(status_code=1,messange='Số ngày nghỉ phép của bạn',data={'period':period,'listDays':listDays_Subtracted})
-    return HTTP_RETURN(status_code=1,messange='Vui lòng Chọn lại ngày nghỉ phép')
+    # # print(listDays_Subtracted)
+    # # print(period)
+    
+    # if period >0:
+    #     return HTTP_RETURN(status_code=1,messange='Số ngày nghỉ phép của bạn',data={'listDays':listDays_Subtracted})
+    # return HTTP_RETURN(status_code=1,messange='Vui lòng Chọn lại ngày nghỉ phép')
 
 #lấy tất cả đơn nghỉ phép đã duyệt trong tháng
 def getDaysOff_Month(month,year,deptID):
-    if deptID == 'NS':
-        var = ''
-    else:
-        var = f'''and e.DeptID = '{deptID}' '''
+    try:
+        if deptID == 'NS':
+            var = ''
+        else:
+            var = f'''and e.DeptID = '{deptID}' '''
 
-    s = f'''select o.EmpID,o.StartDate,o.EndDate,o.Period,o.RegDate,o.Address, --o.regID,o.reason,o.Type,
-            e.IDWorkingTime,e.FirstName,e.LastName,e.DeptID,
-            j.Name as 'JobPositionName',
-            d.Name as 'DepartmentName',
-            ot.Name AS 'OffTypeName' from offregister o
-            inner join Employee e on o.EmpID = e.EmpID
-            inner join JobPosition j on e.PosID = j.JobPosID
-            inner join Department d on e.DeptID = d.DeptID
-            inner join OffType ot on o.Type = ot.OffTypeID
-            where month(o.startdate) = {month} and year(o.startdate) = {year} {var} and o.regid in
-            (select regid from Approval --sum(approvalstate)
-            group by regID
-            having SUM(approvalstate) = 1)'''
-    query = get_data(s,1)
-    # print(s)
-    if len(query) >0:
-        return query
-    return []
-
+        s = f'''select o.EmpID,o.StartDate,o.EndDate,o.Period,o.RegDate,o.Address, --o.regID,o.reason,o.Type,
+                e.IDWorkingTime,e.FirstName,e.LastName,e.DeptID,
+                j.Name as 'JobPositionName',
+                d.Name as 'DepartmentName',
+                ot.Name AS 'OffTypeName' from offregister o
+                inner join Employee e on o.EmpID = e.EmpID
+                inner join JobPosition j on e.PosID = j.JobPosID
+                inner join Department d on e.DeptID = d.DeptID
+                inner join OffType ot on o.Type = ot.OffTypeID
+                where month(o.startdate) = {month} and year(o.startdate) = {year} {var} and o.regid in
+                (select regid from Approval --sum(approvalstate)
+                group by regID
+                having SUM(approvalstate) = 1)'''
+        query = get_data(s,1)
+        # print(s)
+        if len(query) >0:
+            return query
+        return []
+    except:
+        return []
 # #lấy danh sách ngày đã đăng nghỉ phép của 1 nhân viên trong tháng
 # def daysList_Registered(emplID,month):
 #     s = f'''select a.regID,o.StartDate,o.EndDate,o.EmpID from Approval a
@@ -818,3 +830,132 @@ def daysList_Registered(emplID,month):
     if len(query)>0:
         return query
     return []
+
+def approvalOrder():
+    s= f'''select approver from ApprovalOrder'''
+    result = get_data(s)
+    approval_Or = []
+    if len(result)>0:
+        for i in result:
+            approval_Or.append(int(i[0]))
+    return approval_Or
+
+#-------------------bảng mới tạo
+
+def authorDeptRegis():
+    s = f'''select * from AuthorDeptRegis'''
+    result = get_data(s)
+    lis = []
+    if len(result)>0:
+        for i in result:
+            lis.append(i[1])
+    return lis
+
+
+def idRegisteredJobName():
+    s = f'''select * from IDRegisteredJobName'''
+    result = get_data(s)
+    tup = [0.1,0.2] #cho 2 số ví dụ khi if không thỏa, thì  chuyển đổi về dạng tuple không gặp dấu phẩy cuối cùng(1 phần tử thì sẻ gặp)
+    print(tuple(tup))
+    if len(result)>0:
+        for i in result:
+            tup.append(i[1])
+
+    # print(tuple(tup))
+    return tuple(tup)
+
+
+#----------------------------------------THIVANNHAT lầm tối ngày 27.05
+
+def daysInMonth(y,m):
+    day_In_Month = []
+    try:
+        number_of_days = calendar.monthrange(y, m)[1]
+        firstDay = datetime.date(datetime(y,m,1))
+        for i in range(0,number_of_days):
+            day = firstDay + timedelta(days=i)
+            day_In_Month.append(day)
+        return day_In_Month
+    except:
+        return day_In_Month
+    
+def nameOffType():
+    offtype = []
+    try:
+        s = f"""SELECT Name FROM dbo.OffType"""
+        result_query1 = get_data(s)
+        for row in result_query1:
+            offtype.append(row[0])
+        return offtype
+    except:
+        return offtype
+        
+
+def numberDays(startDate,endDate):#emplID,
+    try:
+        if  startDate is None or endDate is None:
+            return HTTP_RETURN(status_code=0,messange='Vui lòng nhập đầy đủ thông tin')
+
+        if startDate > endDate:
+            return HTTP_RETURN(status_code=0,messange='Vui lòng chọn lại ngày nghỉ phép')
+        
+        time_delta = endDate - startDate + timedelta(days=1)
+        period = time_delta.days
+        
+        listDays = []
+        if period > 0:
+            for i in range(0,period):
+                day= startDate + timedelta(days=i)
+                listDays.append(day)
+        return listDays
+    except:
+        return []
+
+    
+
+
+
+    # if len(listDays_Subtracted) >0:
+    #     return listDays_Subtracted
+    # return HTTP_RETURN(status_code=1,messange='Vui lòng Chọn lại ngày nghỉ phép')
+
+        # print(startDate)
+    # # print(listDays)
+    # if query[0][0] == 0: #công nhân (tally,xn,bx) + chứng từ
+    #     if period >= 7 and period < 14:
+    #         # period -= 1
+    #         del listDays[int((len(listDays)-1)/2)] # trừ ngày nghỉ ở giữa - ngày ở giữa là ngày nghỉ mỗi tuần
+    #         listDays_Subtracted = listDays #đưa vào danh sách khác, do biến dùng chung
+    #     elif period >= 14 and period < 21:
+    #         # period -= 2
+    #         del listDays[int((len(listDays)-1)/2)]
+    #         del listDays[int((len(listDays)-1)/2)] #trừ 2 ngày nghỉ cuối cùng - 2 ngày cuối cùng là ngày nghỉ mỗi tuần
+    #         listDays_Subtracted = listDays
+    #     elif period >= 21:
+    #         # period -= 3
+    #         del listDays[int((len(listDays)-1)/2)]
+    #         del listDays[int((len(listDays)-1)/2)]
+    #         del listDays[int((len(listDays)-1)/2)]
+    #         listDays_Subtracted = listDays
+    # elif query[0][0] == 2: #chế độ nghĩ t7,cn
+    #     index = len(listDays)
+        
+    #     for e in range(0,index):
+    #         weekday = datetime.isoweekday(listDays[e])
+    #         if weekday == 7 or weekday == 6:#ngày chủ nhật hoặc thứ 7
+    #             period -= 1
+    #         else:
+    #             listDays_Subtracted.append(listDays[e])
+    # else: #query[0][0] == 1 chế độ nghỉ 1 ngày cn
+    #     index = len(listDays)
+    #     for e in range(0,index):
+    #         weekday = datetime.isoweekday(listDays[e])
+    #         if weekday == 7:
+    #             period -= 1
+    #         else:
+    #             listDays_Subtracted.append(listDays[e])
+
+    # print(listDays_Subtracted)
+    # print(period)
+    
+   

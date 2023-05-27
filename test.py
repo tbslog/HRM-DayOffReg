@@ -406,35 +406,113 @@ firstDay = datetime.date(datetime(year,month,1))
 
 # print(x.keys())
 
-a = '2023-05-01 00:00:00.0000000'
+# a = '2023-05-01 00:00:00.0000000'
 
-append = []
-c = datetime.date(datetime.strptime(a[0:a.find(" ")],"%Y-%m-%d"))
-print(type(c))
-append.append(c)
-# print(type(a[0:a.find(" ")]))
-t = datetime.date(datetime(2023,5,1))
-print(t)
-print(append)
-if t in append:
-    print('đúng rồi')
-
-
-g = [1,2,3,4,5,6]
-y = [1,2,3]
-p = g+y
-print(p)
+# append = []
+# c = datetime.date(datetime.strptime(a[0:a.find(" ")],"%Y-%m-%d"))
+# print(type(c))
+# append.append(c)
+# # print(type(a[0:a.find(" ")]))
+# t = datetime.date(datetime(2023,5,1))
+# print(t)
+# print(append)
+# if t in append:
+#     print('đúng rồi')
 
 
+# g = [1,2,3,4,5,6]
+# y = [1,2,3]
+# p = g+y
+# print(p)
 
-a = 'chờ việc'
 
-b = (a[0] + a[(a.find(" ") + 1)]).upper()
-print(b)
 
-import pandas as pd
-o = [{'a':1,'b':2,'c':3},{'c':6,'a':4,'b':5}]
+# a = 'chờ việc'
 
-df = pd.DataFrame(o)
-print(df)
+# b = (a[0] + a[(a.find(" ") + 1)]).upper()
+# print(b)
 
+# import pandas as pd
+# o = [{'a':1,'b':2,'c':3},{'c':6,'a':4,'b':5}]
+
+# df = pd.DataFrame(o)
+# print(df)
+#------------------------------------------------------------------------------------
+import datetime
+
+#công thức chuyển đổi số ngày 
+
+
+#xét điều kiện ngày nhập vào >= 0.5
+
+day = 2.5
+hour = day*23.99
+print(hour)
+a = datetime.datetime(2023,5,25,6,30,30)
+print(a.day)
+
+
+# c = a + datetime.timedelta(hours=hour)# - datetime.timedelta(days=1)
+# print(c)
+# print(datetime.datetime.date(c))
+# # datetime.datetime.date
+
+
+
+# print(type(day)) #kiểm tra số int và float
+
+# period = c-a
+# # print(period)
+# print(period.total_seconds()/86400)
+
+
+b = datetime.datetime(2023,5,25)
+
+if a>b:
+    print(True)
+
+
+b = '621809035'
+a = (621809035,622109002,622211003,621808017)
+if int(b) in a:
+    print('thivannhat')
+
+
+
+
+def daysInMonth(y,m):
+    day_In_Month = []
+    try:
+        number_of_days = calendar.monthrange(y, m)[1]
+        firstDay = datetime.date(datetime(y,m,1))
+        print('nhat')
+        for i in range(0,number_of_days):
+            day = firstDay + datetime.timedelta(days=i)
+            day_In_Month.append(day)
+        return day_In_Month
+    except:
+        
+        return day_In_Month
+
+
+
+# a = datetime.datetime.strftime('2023-05-21 00:00:00',"%Y-%m-%d %H:%M:%S")
+# b = datetime.datetime.strftime('2023-05-21 00:00:00',"%Y-%m-%d %H:%M:%S")
+# if a > b:
+#     print(True)
+# else:
+#     print ((False))
+# 2023-05-21 00:00:00
+# daysInMonth(23234,23423)
+import math
+a = 0.
+
+
+b= math.ceil(a)
+# print(b)
+
+
+a = 2
+b =3
+if a == 2 and b ==2:
+    print('nat')

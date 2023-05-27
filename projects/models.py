@@ -31,15 +31,15 @@ class CheckUsername(BaseModel):
 
 #class đăng ký nghĩ phép
 class Offregister(BaseModel):
-    emplid: int = None
+    emplid: int = 0
     type: int
     reason: str = ""
     startdate: datetime.date #| None = (datetime.datetime.now() + datetime.timedelta(days=2)).strftime("%Y%m%d")
-    endDate: datetime.date
-    # period: int
+    # endDate: datetime.date
+    period: float = None
     address: str = ""
     command: int
-    otherRegis:int
+    # otherRegis:int
 # class phê duyệt
 class Approve(BaseModel):
     regid: int
@@ -67,8 +67,8 @@ class AdjustDayOff(BaseModel):
     offtype: int
     reason: str = ""
     startdate: datetime.date
-    endDate: datetime.date
-    # period: int
+    # endDate: datetime.date
+    period: float = None
     address: str = ""
     command: int
 
