@@ -790,9 +790,10 @@ def getDaysOff_Month(month,year,deptID):
             var = f'''and e.DeptID = '{deptID}' '''
 
         s = f'''select o.EmpID,o.StartDate,o.EndDate,o.Period,o.RegDate,o.Address, --o.regID,o.reason,o.Type,
-                e.IDWorkingTime,e.FirstName,e.LastName,e.DeptID,
-                j.Name as 'JobPositionName',
+                e.IDWorkingTime,e.LastName,e.FirstName,e.DeptID,
                 d.Name as 'DepartmentName',
+                j.Name as 'JobPositionName',
+                
                 ot.Name AS 'OffTypeName' from offregister o
                 inner join Employee e on o.EmpID = e.EmpID
                 inner join JobPosition j on e.PosID = j.JobPosID

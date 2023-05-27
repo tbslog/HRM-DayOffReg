@@ -720,7 +720,7 @@ async def adjust(form: AdjustDayOff,emplid: int = Depends(validate_token)): #, e
 async def sum(date: datetime.date,token: int = Depends(validate_token)):
     m = date.month
     y = date.year
-    layout = [{'EmpID':'','FirstName':'','LastName':'','DeptID':'','JobPositionName':'','DepartmentName':''}]
+    layout = [{'Mã nhân viên':'','Họ':'','Tên':'','Phòng ban':'','Tên vị trí công việc':''}]
     day_In_Month = fn.daysInMonth(y,m)
     offtype = fn.nameOffType()
     for i in day_In_Month:
@@ -738,13 +738,13 @@ async def sum(date: datetime.date,token: int = Depends(validate_token)):
         print({'rCode':0,'Msg':'Token không hợp lệ'})
         df = pd.DataFrame(layout)
         df.to_excel(excel_writer='file.xlsx',sheet_name='summary',index= False)
-        return FileResponse('file.xlsx',filename='Data_DaysOf.xlsx')
+        return FileResponse('file.xlsx',filename='Data_DayOff.xlsx')
     if check[0][1]>50:
         if check[0][0] != 'NS':
             print({'rCode':0,'Msg':'Anh,chị không được phân quyền để lấy đơn nghỉ phép'})
             df = pd.DataFrame(layout)
             df.to_excel(excel_writer='file.xlsx',sheet_name='summary',index= False)
-            return FileResponse('file.xlsx',filename='Data_DaysOf.xlsx') 
+            return FileResponse('file.xlsx',filename='Data_DayOff.xlsx') 
     
     #lấy đơn của tháng trước đã duyệt
     query = fn.getDaysOff_Month(m-1,y,check[0][0])
@@ -765,7 +765,7 @@ async def sum(date: datetime.date,token: int = Depends(validate_token)):
                 print('kiểm tra ngày bắt đầu và kết thúc của đơn trên hệ thống')
                 df = pd.DataFrame([layout])
                 df.to_excel(excel_writer='file.xlsx',sheet_name='summary',index= False)
-                return FileResponse('file.xlsx',filename='Data_DaysOf.xlsx')
+                return FileResponse('file.xlsx',filename='Data_DayOff.xlsx')
             i['Note'] = ''
             if endDate.month == m: #nếu đơn của tháng trước, có số ngày nghĩ nằm trong tháng hiện tại
                 listDays_filter = []
@@ -800,7 +800,7 @@ async def sum(date: datetime.date,token: int = Depends(validate_token)):
                 print('kiểm tra ngày bắt đầu và kết thúc của đơn trên hệ thống')
                 df = pd.DataFrame([layout])
                 df.to_excel(excel_writer='file.xlsx',sheet_name='summary',index= False)
-                return FileResponse('file.xlsx',filename='Data_DaysOf.xlsx')
+                return FileResponse('file.xlsx',filename='Data_DayOff.xlsx')
                 # return result
 
             query[index]['Note'] = ''
@@ -832,7 +832,7 @@ async def sum(date: datetime.date,token: int = Depends(validate_token)):
         print({'rCode':0,'rMsg':'Không có đơn nghỉ phép'})
         df = pd.DataFrame(layout)
         df.to_excel(excel_writer='file.xlsx',sheet_name='summary',index= False)
-        return FileResponse('file.xlsx',filename='Data_DaysOf.xlsx')
+        return FileResponse('file.xlsx',filename='Data_DayOff.xlsx')
         # return {'rCode':0,'rMsg':'Không có đơn nghỉ phép'}
    
     sumPeriod_Type_EmplID = []
@@ -878,10 +878,10 @@ async def sum(date: datetime.date,token: int = Depends(validate_token)):
             if e not in i:
                 i[e] = ''
     df = pd.DataFrame(layout)
-    del df['StartDate'],df['EndDate'],df['Period'],df['RegDate'],df['Address'],df['IDWorkingTime'],df['OffTypeName'],df['Note'],df['listDays']
-
+    del df['StartDate'],df['EndDate'],df['Period'],df['RegDate'],df['Address'],df['IDWorkingTime'],df['OffTypeName'],df['Note'],df['listDays'],df['DeptID'],df['JobPositionName']
+    df.rename(columns={'EmpID':'Mã nhân viên','LastName':'Họ','FirstName':'Tên','DepartmentName':'Phòng ban'},inplace=True)
     df.to_excel(excel_writer='file.xlsx',sheet_name='summary',index= False)
-    return FileResponse('file.xlsx',filename='Data_DaysOf.xlsx')
+    return FileResponse('file.xlsx',filename='Data_DayOff.xlsx')
  
 
   
