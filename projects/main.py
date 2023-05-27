@@ -91,11 +91,11 @@ def index(formdata: CheckLogin):
 
 #đổi password
 @app.post('/changePass',tags=['Login'],summary='Thay đổi password')
-async def change(form:ChangePass):
-    if form.username.isnumeric():
-        s = f"""SELECT top 1 EmpID, Password FROM Users WHERE EmpID = '{form.username}'"""
+async def change(form:ChangePass,username: str = Depends(validate_token)):
+    if username.isnumeric():
+        s = f"""SELECT top 1 EmpID, Password FROM Users WHERE EmpID = '{username}'"""
     else:
-        s = f"""SELECT top 1 EmpID, Password FROM Users WHERE UserName = '{form.username}'"""
+        s = f"""SELECT top 1 EmpID, Password FROM Users WHERE UserName = '{username}'"""
     result = fn.get_data(s)
     if len(result) > 0:
         if (fn.check_pw(form.currentPassword,result[0][1])):

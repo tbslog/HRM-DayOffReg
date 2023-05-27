@@ -35,7 +35,7 @@ class Offregister(BaseModel):
     type: int
     reason: str = ""
     startdate: datetime.date #| None = (datetime.datetime.now() + datetime.timedelta(days=2)).strftime("%Y%m%d")
-    # endDate: datetime.date
+    endDate: datetime.date = None
     period: float = None
     address: str = ""
     command: int
@@ -52,7 +52,7 @@ class Approve(BaseModel):
 
 
 class ChangePass(BaseModel):
-    username: str = ""
+    # username: str = ""
     currentPassword: str = ""
     newPassword: str = ""
     confirmPass: str = ""
@@ -67,7 +67,7 @@ class AdjustDayOff(BaseModel):
     offtype: int
     reason: str = ""
     startdate: datetime.date
-    # endDate: datetime.date
+    endDate: datetime.date = None
     period: float = None
     address: str = ""
     command: int
