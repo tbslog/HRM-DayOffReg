@@ -43,8 +43,13 @@ const IndexListRegister = () => {
         }
         return count;
       }, 0);
-      if (notiMana > 0 || notiManaPbk > 0) {
+      if (notiMana > 0) {
         setShowMess(true);
+        setShowNotiMana(notiMana);
+        setShowNotiManapbk(notiManaPbk);
+      }
+      if (notiManaPbk > 0) {
+        setShowMesspb(true);
         setShowNotiMana(notiMana);
         setShowNotiManapbk(notiManaPbk);
       } else {
@@ -118,7 +123,11 @@ const IndexListRegister = () => {
                       {showMess && (
                         <span
                           className="badge badge-danger navbar-badge"
-                          style={{ right: " -2px", top: "12px" }}
+                          style={{
+                            right: " -2px",
+                            top: "14px",
+                            fontSize: "0.5rem",
+                          }}
                         >
                           {showNotiMana}
                         </span>
@@ -126,11 +135,15 @@ const IndexListRegister = () => {
                     </Tab>
                     {pbkhac.rData.length > 0 && (
                       <Tab>
-                        Đơn Cần Phê Duyệt Phòng Ban Khác {""}
+                        Đơn Cần Phê Duyệt Phòng Ban Khác
                         {showMesspb && (
                           <span
                             className="badge badge-danger navbar-badge"
-                            style={{ right: " -2px", top: "12px" }}
+                            style={{
+                              right: " -2px",
+                              top: "14px",
+                              fontSize: "0.5rem",
+                            }}
                           >
                             {showNotiManapbk}
                           </span>

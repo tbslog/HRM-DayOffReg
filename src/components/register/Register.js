@@ -45,6 +45,7 @@ const Register = () => {
 
   useEffect(() => {
     (async () => {
+      setIsLoading(true);
       let data = await getData(`getEmpInfo?empId=${emID}`);
       setEmIDnv(emID);
       setname(data.rData.LastName + " " + data.rData.FirstName);
@@ -58,8 +59,9 @@ const Register = () => {
       let dataTypeOff = await getData("dayOffType");
       //console.log(dataTypeOff.rData);
       setlistTypeOff(dataTypeOff.rData);
+      setIsLoading(false);
       let listlowergradedata = await getData("list-of-subordinates");
-
+      console.log(listlowergradedata);
       if (listlowergradedata.rCode === 0) {
         setlistNV([
           {
@@ -67,6 +69,7 @@ const Register = () => {
             Name: data.rData.LastName + " " + data.rData.FirstName,
           },
         ]);
+        console.log(listNV);
       } else {
         var lista = listlowergradedata.rData.map(
           ({ EmpID, FirstName, LastName }) => ({
@@ -466,21 +469,9 @@ const Register = () => {
                       )}
                     </div>
                   </div>
-                  <div className="col-md-4 d-flex justify-content-end mt-1">
-                    <span style={{ minWidth: "120px" }}>
-                      Ngày Kết thúc <span style={{ color: "red" }}>*</span>
-                    </span>
-                    <div className="input-group ml-3 ">
-                      <input
-                        value={enddateV}
-                        className="form-control ml-3 "
-                        readOnly
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-4 d-flex justify-content-end mt-1 ">
-                    <span> số ngày nghỉ</span>
-                    <div className="w-100 ml-3" style={{ maxWidth: "100px" }}>
+                  <div className="col-md-4 d-flex justify-content-center mt-1 ">
+                    <span> Số ngày nghỉ</span>
+                    <div className="w-100 ml-3" style={{ maxWidth: "60px" }}>
                       <input
                         value={period}
                         className="form-control "
@@ -497,6 +488,18 @@ const Register = () => {
                       >
                         {errors.songaynghi?.message}
                       </span>
+                    </div>
+                  </div>
+                  <div className="col-md-4 d-flex justify-content-end mt-1">
+                    <span style={{ minWidth: "120px" }}>
+                      Ngày Kết thúc <span style={{ color: "red" }}>*</span>
+                    </span>
+                    <div className="input-group ml-3 ">
+                      <input
+                        value={enddateV}
+                        className="form-control ml-3 "
+                        readOnly
+                      />
                     </div>
                   </div>
                 </div>

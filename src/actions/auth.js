@@ -18,6 +18,10 @@ export const login = (username, password, autogen) => (dispatch) => {
           type: LOGIN_FAIL,
         });
         dispatch({
+          type: NEWPASS,
+          payload: "",
+        });
+        dispatch({
           type: SET_MESSAGE,
           payload: message,
         });
@@ -40,6 +44,10 @@ export const login = (username, password, autogen) => (dispatch) => {
           payload: message,
         });
         dispatch({
+          type: NEWPASS,
+          payload: "",
+        });
+        dispatch({
           type: RCODE,
           payload: data.rCode,
         });
@@ -51,6 +59,10 @@ export const login = (username, password, autogen) => (dispatch) => {
         dispatch({
           type: LOGIN_SUCCESS,
           payload: { user: data },
+        });
+        dispatch({
+          type: NEWPASS,
+          payload: "",
         });
 
         return Promise.resolve();

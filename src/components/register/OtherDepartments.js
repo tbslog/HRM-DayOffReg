@@ -135,6 +135,12 @@ const OtherDepartments = (props) => {
       width: "120px",
     },
     {
+      name: "Trạng Thái",
+      selector: (row) => aStatusShow1(row.aStatus),
+      sortable: true,
+      width: "120px",
+    },
+    {
       name: "",
       cell: (row) => aStatusShow(row.aStatus, row.regID),
 
@@ -172,10 +178,24 @@ const OtherDepartments = (props) => {
       });
     }
   };
+  const aStatusShow1 = (aStatus) => {
+    if (aStatus === 1) {
+      return <span style={{ color: "#ffc107" }}> Chờ Duyệt</span>;
+    }
+    if (aStatus === 3) {
+      return <span style={{ color: "red" }}> Từ Chối</span>;
+    }
+    if (aStatus === 2) {
+      return <span style={{ color: "#28a745" }}> Đã Duyệt</span>;
+    }
+    if (aStatus === 4) {
+      return <span style={{ color: "#c2c3c5" }}>Đã Hủy</span>;
+    }
+  };
   const aStatusShow = (aStatus, regid) => {
     if (aStatus === 1) {
       return (
-        <div>
+        <div style={{ minWidth: "85px" }}>
           <button
             className="border border-light btn btn-primary "
             style={{ width: "40px", height: "40px" }}
@@ -204,69 +224,62 @@ const OtherDepartments = (props) => {
         </div>
       );
     }
-    if (aStatus === 3) {
-      return (
-        <div
-          className="border border-light btn btn-danger "
-          style={{ width: "40px", height: "40px" }}
-          onClick={() =>
-            handleInfoApprove(
-              regid,
-              SetShowModal("Info"),
-              setisAppove(false),
-              setisShow(true)
-            )
-          }
-        >
-          <i className=" fas fa-times" title="Đã Từ Chối" />
-        </div>
-      );
-    }
+
     if (aStatus === 2) {
       return (
-        <>
-          <div
-            className="border border-light btn btn-success"
-            style={{ width: "40px", height: "40px" }}
-            onClick={() =>
-              handleInfoApprove(
-                regid,
-                SetShowModal("Info"),
-                setisAppove(false),
-                setisShow(true)
-              )
-            }
-          >
-            <i className="  fas fa-check-circle" title="Đã Duyệt" />
-          </div>
-          <div
-            className="border border-light btn btn-warning"
+        <div style={{ minWidth: "85px" }}>
+          <button
+            className="border border-light btn btn-warning "
             style={{ width: "40px", height: "40px" }}
             onClick={() => handleReturn(regid)}
           >
-            <i className="fas fa-undo" title="Thu hồi" />
-          </div>
-        </>
-      );
-    }
-    if (aStatus === 4) {
-      return (
-        <>
-          <div
-            className="border border-light btn btn-danger"
+            <i
+              className=" fas fa-undo-alt "
+              style={{ color: "#ffffff" }}
+              title="Thu hồi"
+            />
+          </button>
+
+          <button
+            className="border border-light btn btn-info"
+            type="button"
+            data-toggle="modal"
+            data-target="#exampleModalCenter"
             style={{ width: "40px", height: "40px" }}
             onClick={() =>
               handleInfoApprove(
                 regid,
                 SetShowModal("Info"),
-                setisAppove(false),
-                setisShow(true)
+                setisAppove(true),
+                setisShow(false)
               )
             }
           >
-            <i className="fas fa-undo" title="Đã Thu hồi" />
-          </div>
-        </>
+            <i className="fas fa-info-circle" title="Thông tin"></i>
+          </button>
+        </div>
+      );
+    } else {
+      return (
+        <div>
+          <button
+            className="border border-light btn btn-info"
+            type="button"
+            data-toggle="modal"
+            data-target="#exampleModalCenter"
+            style={{ width: "40px", height: "40px" }}
+            onClick={() =>
+              handleInfoApprove(
+                regid,
+                SetShowModal("Info"),
+                setisAppove(true),
+                setisShow(false)
+              )
+            }
+          >
+            <i className="fas fa-info-circle" title="Thông tin"></i>
+          </button>
+        </div>
       );
     }
   };

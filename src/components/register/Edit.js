@@ -464,20 +464,8 @@ const Edit = (props) => {
                     )}
                   </div>
                 </div>
-                <div className="col-md-4 d-flex justify-content-end mt-1">
-                  <span style={{ minWidth: "120px" }}>
-                    Ngày Kết thúc <span style={{ color: "red" }}>*</span>
-                  </span>
-                  <div className="input-group ml-3 ">
-                    <input
-                      value={enddateV}
-                      className="form-control ml-3 "
-                      readOnly
-                    />
-                  </div>
-                </div>
-                <div className="col-md-4 d-flex justify-content-end mt-1 ">
-                  <span> số ngày nghỉ</span>
+                <div className="col-md-4 d-flex justify-content-center mt-1 ">
+                  <span> Số ngày nghỉ</span>
                   <div className="w-100 ml-3" style={{ maxWidth: "100px" }}>
                     <input
                       value={period}
@@ -495,6 +483,18 @@ const Edit = (props) => {
                     >
                       {errors.songaynghi?.message}
                     </span>
+                  </div>
+                </div>
+                <div className="col-md-4 d-flex justify-content-end mt-1">
+                  <span style={{ minWidth: "120px" }}>
+                    Ngày Kết thúc <span style={{ color: "red" }}>*</span>
+                  </span>
+                  <div className="input-group ml-3 ">
+                    <input
+                      value={enddateV}
+                      className="form-control ml-3 "
+                      readOnly
+                    />
                   </div>
                 </div>
               </div>

@@ -27,10 +27,6 @@ const ChangepassHome = (props) => {
       reset();
     }
   }, [props.clear]);
-  const hideModal = () => {
-    reset();
-    modal.hide();
-  };
 
   const validateForm = {
     Password: {
@@ -80,7 +76,7 @@ const ChangepassHome = (props) => {
 
         Cookies.set("empid", data.MSNV);
         reset();
-        hideModal();
+        props.hideModal();
       } else {
         if (create.note) {
           toast.error("Đổi mật khẩu thất bại Lỗi: \n" + create.note, {

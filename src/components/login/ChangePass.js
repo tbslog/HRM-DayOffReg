@@ -92,7 +92,6 @@ const ChangePass = (props) => {
     } else {
       console.log("first");
       var create = await postData("changePass", {
-        username: data.MSNV,
         currentPassword: data.Password,
         newPassword: data.passwordNew,
         confirmPass: data.passwordNewVerify,

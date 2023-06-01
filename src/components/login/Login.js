@@ -7,7 +7,6 @@ import logo from "../../assets/imgs/logoTBS.jpg";
 import "./login.css";
 
 import { login } from "../../actions/auth";
-import ChangePass from "./ChangePass";
 
 import { Modal } from "bootstrap";
 import Cookies from "js-cookie";
@@ -16,6 +15,7 @@ const Login = (props) => {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm();
   let navigate = useNavigate();
@@ -30,31 +30,10 @@ const Login = (props) => {
   const { rcode } = useSelector((state) => state.rcode);
   const { newpass } = useSelector((state) => state.newpass);
 
-  const [onchanpass, setonchanpass] = useState(false);
-
   const [showPassword, setShowPassword] = useState(false);
-
-  const [ShowModal, SetShowModal] = useState("");
-  const [modal, setModal] = useState(null);
-  const parseExceptionModal = useRef();
-
-  const showModalForm = () => {
-    const modal = new Modal(parseExceptionModal.current, {
-      keyboard: false,
-      backdrop: "static",
-    });
-    setModal(modal);
-    modal.show();
-  };
-  const hideModal = () => {
-    modal.hide();
-  };
+  const [message1, setMessage1] = useState("");
 
   const dispatch = useDispatch();
-  const showRegis = (e) => {
-    const username = e.target.value;
-    setUsername(username);
-  };
 
   const onChangeUsername = (e) => {
     const username = e.target.value;
@@ -64,36 +43,39 @@ const Login = (props) => {
     window.location.reload();
   };
 
-  const Regis = (e) => {
+  const Regis = () => {
+    setShowPassword(true);
+
     Cookies.set("empid", JSON.stringify(username));
+    Cookies.set("fisstlogin", JSON.stringify(1));
+    setMessage1(
+      "Tạo mới tài khoản thành công \n Anh,Chị vui lòng nhớ mật khẩu cho lần đăng nhập lần sau"
+    );
     dispatch(login(username, password, 1))
       .then(() => {
-        showModalForm();
-        SetShowModal("change");
+        // console.log("first1");
+        // setPassword(newpass);
+        // setValue("password", newpass);
+        // setMessage1(
+        //   "Tạo mới tài khoản thành công \n Anh,Chị vui lòng nhớ mật khẩu cho lần đăng nhập lần sau"
+        // );
       })
       .catch(() => {
         setLoading(false);
       });
-
-    showModalForm();
-    SetShowModal("change");
-    setPassword(newpass);
   };
-
-  const onChangePassword = (e) => {
-    const password = e.target.value;
-    setPassword(password);
-  };
+  useEffect(() => {
+    if (newpass !== "" || newpass !== undefined) {
+      setValue("password", newpass);
+      setPassword(newpass);
+    } else {
+      setShowPassword(false);
+    }
+  }, [newpass]);
 
   const validateLogin = {
     userName: {
       required: " Không được để trống",
-      maxLength: {
-        value: 10,
-        message: " không được hơn 10 kí tự",
-      },
-    },
-    Password: {
       maxLength: {
         value: 10,
         message: " không được hơn 10 kí tự",
@@ -104,7 +86,6 @@ const Login = (props) => {
   const onSubmit = (e) => {
     setLoading(true);
     setUsername(username);
-    //console.log(e);
 
     if (!errors.userName?.message && !errors.password?.message) {
       dispatch(login(username, e.password, 0))
@@ -215,6 +196,13 @@ const Login = (props) => {
                           )}
                           <span>Login</span>
                         </button>
+                        {message1 && (
+                          <div className="form-group">
+                            <div className="alert text-center" role="alert">
+                              {message1}
+                            </div>
+                          </div>
+                        )}
                         {message && rcode === 1 && (
                           <div className="form-group">
                             <div className="alert text-center" role="alert">
@@ -243,47 +231,6 @@ const Login = (props) => {
                           </div>
                         )}
                       </div>
-                      <>
-                        <div
-                          className="modal fade"
-                          id="modal-xl"
-                          data-backdrop="static"
-                          ref={parseExceptionModal}
-                          aria-labelledby="parseExceptionModal"
-                          backdrop="static"
-                        >
-                          <div
-                            className="modal-dialog modal-dialog-scrollable"
-                            style={{ maxWidth: "88%" }}
-                          >
-                            <div className="modal-content">
-                              <div className="modal-header border-0 p-0">
-                                <button
-                                  type="button"
-                                  className="close ml"
-                                  data-dismiss="modal"
-                                  onClick={() => hideModal()}
-                                  aria-label="Close"
-                                >
-                                  <span
-                                    aria-hidden="true"
-                                    style={{ fontSize: "30px" }}
-                                  >
-                                    ×
-                                  </span>
-                                </button>
-                              </div>
-                              <div className="modal-body pt-0">
-                                <>
-                                  {ShowModal === "change" && (
-                                    <ChangePass user={username} />
-                                  )}
-                                </>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </>
                     </div>
                   </div>
                   <div className="col-lg-6 d-flex align-items-center gradient-custom-2">

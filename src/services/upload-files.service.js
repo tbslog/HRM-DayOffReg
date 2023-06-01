@@ -1,7 +1,8 @@
 import axios from "axios";
 import authHeader from "./auth-headerIMG";
 
-const API_URL = "http://tlogapi.tbslogistics.com.vn:202/";
+import baseURL from "./baseURL";
+const API_URL = baseURL;
 //103.149.28.137:300/ // anh kiểu
 //http://192.168.0.42:300
 //"http://tlogapi.tbslogistics.com.vn:202/";

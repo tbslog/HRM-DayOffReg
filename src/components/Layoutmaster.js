@@ -40,6 +40,25 @@ const Header = ({ children }) => {
     setClear(false);
     modal.hide();
   };
+  useEffect(() => {
+    var fistlog = Cookies.get("fisstlogin");
+    console.log(fistlog);
+    if (fistlog == 1) {
+      console.log("log");
+      handelchangepass(SetShowModal("FirstLogin"));
+      // confirmAlert({
+      //   title: "Cảnh báo",
+      //   message: "Bạn đang đăng nhập lần đầu tiên \n Vui lòng đổi mật khẩu ",
+      //   buttons: [
+      //     {
+      //       label: "Đồng Ý",
+      //       onClick: () =>
+      //         handelchangepass(SetShowModal("Changepass"), setClear(true)),
+      //     },
+      //   ],
+      // });
+    }
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -89,6 +108,10 @@ const Header = ({ children }) => {
     })();
   }, []);
   const handelchangepass = () => {
+    showModalForm();
+  };
+  const handelchangepass1 = () => {
+    hideModal();
     showModalForm();
   };
 
@@ -346,7 +369,37 @@ const Header = ({ children }) => {
               <div className="modal-body pt-0">
                 <>
                   {ShowModal === "Changepass" && (
-                    <ChangepassHome clear={clear} />
+                    <ChangepassHome clear={clear} hideModal={hideModal} />
+                  )}
+                </>
+                <>
+                  {ShowModal === "FirstLogin" && (
+                    <div className="row d-flex flex-column h-100">
+                      <div className="text-center">
+                        <h3 style={{ color: "#ffc107" }}>CẢNH BÁO</h3>
+                        <div className="dropdown-divider" />
+                        <div className=" mb-1">
+                          <label className="form-label" htmlFor="password">
+                            Bạn đang đăng nhập lần đầu tiên <br></br> Vui lòng
+                            đổi mật khẩu
+                          </label>
+                        </div>
+                      </div>
+                      <div className="d-flex justify-content-end">
+                        <button
+                          type="button"
+                          className="btn btn-outline-secondary"
+                          onClick={() =>
+                            handelchangepass1(
+                              SetShowModal("Changepass"),
+                              setClear(true)
+                            )
+                          }
+                        >
+                          Đồng Ý
+                        </button>
+                      </div>
+                    </div>
                   )}
                 </>
               </div>

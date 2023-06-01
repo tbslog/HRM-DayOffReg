@@ -58,7 +58,7 @@ const StaffPage = (props) => {
       } else setOpen(false);
 
       setdbEmpid(emID);
-      setdbFullName(info.LastName + "" + info.FirstName);
+      setdbFullName(info?.LastName + "" + info?.FirstName);
 
       let listlowergradedata = await getData("list-of-subordinates");
       let lista = listlowergradedata.rData?.map(
@@ -116,44 +116,26 @@ const StaffPage = (props) => {
     {
       name: "Action",
       cell: (row) => actionEdit(row.aStatus, row.regID),
+      conditionalCellStyles: [
+        {
+          when: (row) => 0 === 0,
+          classNames: ["d-flex justify-content-center"],
+        },
+      ],
     },
   ];
   const aStatusShow = (aStatus) => {
     if (aStatus === 1) {
-      return (
-        <i
-          className="fas fa-long-arrow-alt-right  "
-          style={{ fontSize: "20px", color: "#ffc107" }}
-          title="Chờ Duyệt"
-        />
-      );
+      return <span style={{ color: "#ffc107" }}> Chờ Duyệt</span>;
     }
     if (aStatus === 3) {
-      return (
-        <i
-          className="fas fa-times"
-          style={{ fontSize: "20px", color: "#dc3545" }}
-          title="Từ Chối"
-        />
-      );
+      return <span style={{ color: "#dc3545" }}> Từ Chối</span>;
     }
     if (aStatus === 2) {
-      return (
-        <i
-          className="fas fa-check-circle"
-          style={{ fontSize: "20px", color: "#0d6efd" }}
-          title="Đã Duyệt"
-        />
-      );
+      return <span style={{ color: "#0d6efd" }}> Đã Duyệt</span>;
     }
     if (aStatus === 4) {
-      return (
-        <i
-          className="fas fa-undo"
-          style={{ fontSize: "20px", color: "rgb(157 157 157)" }}
-          title="Đã Hủy"
-        />
-      );
+      return <span style={{ color: "rgb(157 157 157)" }}> Đã Hủy</span>;
     }
   };
 
@@ -187,42 +169,45 @@ const StaffPage = (props) => {
     if (aStatus === 1) {
       return (
         <>
-          <button
-            type="button"
-            data-toggle="modal"
-            data-target="#exampleModalCenter"
-            className="btn btn-warning"
-            onClick={() => handleReturn(id)}
-          >
-            <i className="fas fa-long-arrow-alt-left " title="Thu hồi " />
-          </button>
-          <button
-            type="button"
-            data-toggle="modal"
-            data-target="#exampleModalCenter"
-            className="btn btn-success ml-1"
-            onClick={() =>
-              handleInfo(
-                id,
-                SetShowModal("Info"),
-                setisAppove(false),
-                setisme(true)
-              )
-            }
-          >
-            <i className="fas fa-info-circle" title="Thông tin"></i>
-          </button>
+          <div style={{ minWidth: "85px" }}>
+            <button
+              className="border border-light btn btn-primary "
+              style={{ width: "40px", height: "40px" }}
+              onClick={() => handleReturn(id)}
+            >
+              <i className=" fas fa-check-circle" title="Duyệt" />
+            </button>
+
+            <button
+              className="border border-light btn btn-info"
+              type="button"
+              data-toggle="modal"
+              data-target="#exampleModalCenter"
+              style={{ width: "40px", height: "40px" }}
+              onClick={() =>
+                handleInfo(
+                  id,
+                  SetShowModal("Info"),
+                  setisAppove(false),
+                  setisme(true)
+                )
+              }
+            >
+              <i className="fas fa-info-circle" title="Thông tin"></i>
+            </button>
+          </div>
         </>
       );
     }
 
     return (
-      <>
+      <div>
         <button
+          className="border border-light btn btn-info"
           type="button"
           data-toggle="modal"
           data-target="#exampleModalCenter"
-          className="btn btn-success ml-1"
+          style={{ width: "40px", height: "40px" }}
           onClick={() =>
             handleInfo(
               id,
@@ -234,7 +219,7 @@ const StaffPage = (props) => {
         >
           <i className="fas fa-info-circle" title="Thông tin"></i>
         </button>
-      </>
+      </div>
     );
   };
   const handleInfo = async (id) => {

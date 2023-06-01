@@ -1,9 +1,9 @@
 import axios from "axios";
 import authHeader from "./auth-header";
 import { computeHeadingLevel } from "@testing-library/react";
-
-const API_URL = "http://tlogapi.tbslogistics.com.vn:202/";
-//103.149.28.137:300/ // anh kiểu
+import baseURL from "./baseURL";
+const API_URL = baseURL;
+//103.149.28.137:300/ // anh kiểuy
 
 const getDataCustom = async (url, data, header = null) => {
   let dataReturn = [];
