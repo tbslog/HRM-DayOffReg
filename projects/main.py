@@ -92,10 +92,14 @@ def index(formdata: CheckLogin):
 #đổi password
 @app.post('/changePass',tags=['Login'],summary='Thay đổi password')
 async def change(form:ChangePass,username: str = Depends(validate_token)):
-    if username.isnumeric():
-        s = f"""SELECT top 1 EmpID, Password FROM Users WHERE EmpID = '{username}'"""
+    user = username
+    if form.username:
+        user = form.username
+
+    if user.isnumeric():
+        s = f"""SELECT top 1 EmpID, Password FROM Users WHERE EmpID = '{user}'"""
     else:
-        s = f"""SELECT top 1 EmpID, Password FROM Users WHERE UserName = '{username}'"""
+        s = f"""SELECT top 1 EmpID, Password FROM Users WHERE UserName = '{user}'"""
     result = fn.get_data(s)
     if len(result) > 0:
         if (fn.check_pw(form.currentPassword,result[0][1])):
@@ -222,6 +226,10 @@ async def getsListoffstatus(needAppr: int = "",astatus:str = "",emplid: int = De
             WHERE e.EmpID = '{emplid}'
             '''
     result = fn.get_data(s)
+    #--cập nhật---------------------------------------
+    if len(result) <= 0:
+        return {'rCode':0,'rMsg':'token không hợp lệ'}
+    #-------------------------------------------------
     for i in result:
         depid = i[0]
         jplevel = i[1]
@@ -251,7 +259,7 @@ async def getsListoffstatus(needAppr: int = "",astatus:str = "",emplid: int = De
             if i['aStatus'] in list_astatus:
                 ketqua.append(i)
         return {'rCode':1, 'rData': ketqua,'rMsg': 'lấy danh sách nghĩ phép thành công'}
-    return {'rCode':1, 'rData': query,'rMsg': 'lấy danh sách nghĩ phép không thành công'}
+    return {'rCode':1, 'rData': query,'rMsg': 'lấy danh sách nghĩ phép thành công'}
 
 
 
@@ -372,17 +380,19 @@ async def approve(form: Approve,approver: int = Depends(validate_token)): #form:
     # kiểm tra regID có tồn tại hay ko
     s = f"""
             select 
-            CASE WHEN max(a.approrder) IS NULL THEN 0 ELSE max(a.apprOrder)   END as aOrder,o.Period,e.PosID,j.JPLevel,e.DeptID from OffRegister o
+            CASE WHEN max(a.approrder) IS NULL THEN 0 ELSE max(a.apprOrder)   END as aOrder,o.Period,e.PosID,j.JPLevel,e.DeptID,u.Email from OffRegister o
             left join Approval a on o.regID = a.regID
             inner join Employee e on o.EmpID = e.EmpID
             inner join JobPosition j on e.PosID = j.JobPosID
+            inner join Users u on o.EmpID = u.EmpID
             where o.regID = {form.regid} and o.RegDate is not null
-            group by o.Period,e.PosID,j.JPLevel,e.DeptID    
+            group by o.Period,e.PosID,j.JPLevel,e.DeptID,u.Email    
         """
     result = fn.get_data(s)
     
     #kiểm nếu có đơn thì kiểm tra duyệt chưa, không có đơn trả về lỗi
     if len(result)>0:
+        mail_Application = result[0][5]
         aOrder = result[0][0]
         period = result[0][1]
         jplevel_Regis = result[0][3]
@@ -417,6 +427,24 @@ async def approve(form: Approve,approver: int = Depends(validate_token)): #form:
                 ('{form.regid}','{aOrder}','{approver}','{jobposid_Approver}',0,SYSDATETIME(),0,N'{form.comment}','{form.state}',SYSDATETIME())
                 ''' 
                 fn.commit_data(s)
+                #----------------------------------------------------------------------
+                receiver_mail = []
+                receiver_mail.append(mail_Application)
+                fn.sentMail(receiver_mail,1)
+                # if form.state == 1:
+                # #lấy mail nhân sự
+                #     mail_HRM = []
+                #     s1 = f'''  
+                #             SELECT e.EmpID,e.FirstName,e.LastName,j.JPLevel,u.Email FROM dbo.Employee e 
+                #             LEFT JOIN dbo.JobPosition j ON j.JobPosID = e.PosID
+                #             LEFT JOIN dbo.Users u ON u.EmpID = e.EmpID
+                #             WHERE e.DeptID = 'NS'AND j.JPLevel <=50
+                #             '''
+                #     query = fn.get_data(s1)
+                #     for row in query:
+                #         mail_HRM.append(row[4])
+                #     fn.sentMail(mail_HRM,2)
+                #------------------------------------------------------------------------------
                 return {'rCode':1,'rData':{},'rMsg':'Phê duyệt thành công'}
             return{'rCode':0,'rData':{},'rMsg':'không xác định được vị trí công việc (jobposID) và chức vụ (jplevel) của người phê duyệt , phê duyệt không thành công'}
         #-------------------------------------------------------------------------
@@ -612,13 +640,11 @@ async def offDayRegister(form: Offregister,emplid: int = Depends(validate_token)
     fn.commit_data(s)
     print(s)
     #gửi mail nếu như trạng thái gửi đơn là gửi
-    # if form.command == 1:
-    #     receiver_mails_manag = fn.get_receiver_email_manag(emplid)
-    
-    #     print(receiver_mails_manag)
-    #     if len(receiver_mails_manag)>0:
-    #         fn.sentMail(receiver_mails_manag,0)
-
+    if form.command == 1:
+        receiver_mails_manag = fn.get_receiver_email_manag(emplid)
+        # print(receiver_mails_manag)
+        if len(receiver_mails_manag)>0:
+            fn.sentMail(receiver_mails_manag,0)
 
     if warning == []: #and warning_2 == []   and email_notifi == []
         return {'rCode':1,'rMsg': rMsg,'rData':{}}
@@ -644,9 +670,7 @@ async def adjust(form: AdjustDayOff,emplid: int = Depends(validate_token)): #, e
     
     if len(query) <= 0:
         return {'rCode':0,'rData':{},'rMsg':'regId không tồn tại hoặc regId đã gửi đơn'}
-
-
-
+   
     if form.period < 0.5:
         return {'rCode':0,'rData':{},'rMsg':'Vui lòng nhập số ngày nghĩ'}
 
@@ -654,7 +678,11 @@ async def adjust(form: AdjustDayOff,emplid: int = Depends(validate_token)): #, e
     hour = period * 23.99
     startDate = datetime.datetime.combine(form.startdate,datetime.time())
     endDate = startDate + datetime.timedelta(hours=hour)
-
+    
+    #nhớ thêm lên server
+    emplid = query[0][4] #lấy emplid của đơn nghỉ phép check, không lấy theo token người đăng nhập, trường hợp chỉnh sửa đơn hộ
+    #-------------------
+    
     r = {'rCode':0,'rMsg':'Ngày nghỉ phép của bạn đã tồn tại, vui lòng chọn lại ngày'}
     regID_List = fn.daysList_Registered(emplid,startDate.month-1) + fn.daysList_Registered(emplid,startDate.month) #lấy sách đơn nghỉ phép regIDs
     if len(regID_List) >0:
@@ -704,11 +732,11 @@ async def adjust(form: AdjustDayOff,emplid: int = Depends(validate_token)): #, e
     fn.commit_data(s)
     # print(a)
     #gửi mail nếu như đã phê duyệt đồng ý
-    # if form.command == 1:
-    #     receiver_mails_manag = fn.get_receiver_email_manag(emplid)
-    #     print(receiver_mails_manag)
-    #     if len(receiver_mails_manag)>0:
-    #         fn.sentMail(receiver_mails_manag,0)
+    if form.command == 1:
+        receiver_mails_manag = fn.get_receiver_email_manag(emplid)
+        # print(receiver_mails_manag)
+        if len(receiver_mails_manag)>0:
+            fn.sentMail(receiver_mails_manag,0)
     if warning == []: #and warning_2 == []  and email_notifi == []
         # return {'rCode':1,'rMsg': rMsg}
         return {'rCode':1,'rMsg': rMsg,'rData':{'period':period}}
@@ -735,7 +763,7 @@ async def sum(date: datetime.date,token: int = Depends(validate_token)):
     check = fn.get_data(s)
     print(check)
     if len(check)<=0:
-        print({'rCode':0,'Msg':'Token không hợp lệ'})
+        print({'rCode':0,'Msg':'Mã nhân viên không tồn tại'})
         df = pd.DataFrame(layout)
         df.to_excel(excel_writer='file.xlsx',sheet_name='summary',index= False)
         return FileResponse('file.xlsx',filename='Data_DayOff.xlsx')

@@ -534,9 +534,10 @@ def sentMail(receiver_email,state):
 # viết đơn nghĩ phép gửi mail cho sếp
 def get_receiver_email_manag(emplId):
     s1 = f'''
-            SELECT u.Email,e.DeptID,j.JPLevel  FROM dbo.Users u
+            SELECT u.Email,e.DeptID,j.JPLevel,d.DeptLevel  FROM dbo.Users u
             INNER JOIN	dbo.Employee e ON e.EmpID = u.EmpID
             INNER JOIN dbo.JobPosition j ON j.JobPosID = e.PosID
+            INNER JOIN Department d on e.DeptID = d.DeptID
             WHERE u.EmpID = '{emplId}'
         ''' #lấy thông tin nhân viên nghĩ phép
     query_sender = get_data(s1)
@@ -545,12 +546,16 @@ def get_receiver_email_manag(emplId):
         email = query_sender[0][0] #chưa sử dụng biến này
         deptID = query_sender[0][1]
         jplevel = query_sender[0][2]
+        dept_level = query_sender[0][3]
         #nếu là nhân viên gửi
         a = 'd.DeptID'
-        if jplevel > 50:
+        if jplevel > 50 and dept_level <= 16: #trường hợp từ cấp phòng ban trở lên
+            b = '<=50'
+        elif jplevel > 50 and dept_level > 16: #trường hợp  nhóm trở xuống gửi đơn
+            a = 'd.pDeptID'
             b = '<=50'
         elif jplevel == 50 or jplevel == 40 or jplevel == 30:
-            a = "d.pDeptID"
+            a = 'd.pDeptID'
             b = f'<{jplevel}'
         elif jplevel > 40:
             b = '= 40'
@@ -861,7 +866,6 @@ def idRegisteredJobName():
     if len(result)>0:
         for i in result:
             tup.append(i[1])
-
     # print(tuple(tup))
     return tuple(tup)
 
