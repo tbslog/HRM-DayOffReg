@@ -426,6 +426,7 @@ const ManagerPage = (props) => {
                 <button
                   type="button"
                   className="close ml"
+                  style={{ marginRight: "1px" }}
                   data-dismiss="modal"
                   onClick={() => hideModal()}
                   aria-label="Close"

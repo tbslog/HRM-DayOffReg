@@ -15,6 +15,8 @@ let emID = Cookies.get("empid");
 const Register = () => {
   const {
     register,
+    setValue,
+    watch,
     handleSubmit,
     reset,
     control,
@@ -63,6 +65,8 @@ const Register = () => {
       let listlowergradedata = await getData("list-of-subordinates");
       console.log(listlowergradedata);
       if (listlowergradedata.rCode === 0) {
+        console.log(emID);
+        console.log(data.rData.LastName + " " + data.rData.FirstName);
         setlistNV([
           {
             EmpID: emID,
@@ -86,6 +90,12 @@ const Register = () => {
       }
     })();
   }, []);
+
+  useEffect(() => {
+    if (listNV && listNV.length > 0) {
+      setValue("selectEmpIDNV", emID);
+    }
+  }, [listNV]);
 
   useEffect(() => {
     (async () => {
@@ -127,6 +137,9 @@ const Register = () => {
     offType: {
       required: " Không được để trống",
     },
+    period: {
+      required: " Không được để trống",
+    },
   };
 
   const onSubmitSave = async (data) => {
@@ -155,6 +168,7 @@ const Register = () => {
     }
 
     setIsLoading(true);
+    console.log(data);
 
     var create = await postDataCustom("day-off-letter", {
       emplid: emIDnv,
@@ -165,9 +179,9 @@ const Register = () => {
       ),
       address: data.address,
       command: 0,
-      period: period,
+      period: data.period,
     });
-    // console.log(create);
+    console.log(create);
     if (create.isSuccess === 1) {
       toast.success("lưu đơn thành công \n" + create.note, {
         autoClose: 2000,
@@ -229,7 +243,7 @@ const Register = () => {
       ),
       address: data.address,
       command: 1,
-      period: period,
+      period: data.period,
     });
 
     if (create.isSuccess === 1) {
@@ -269,18 +283,21 @@ const Register = () => {
     setEmIDnv(e.target.value);
   };
 
-  const handleBlur = () => {
+  const handleBlur = (val) => {
     if (startdateV === "" || startdateV === undefined) {
       setenddateV("Nhập ngày bắt đầu");
     }
+    console.log(val);
+
+    let period = val;
     if (period !== "") {
       const roundedNumber = Math.round((Number(period) * 10) / 5) / 2;
-      setperiod(roundedNumber.toString());
+      setValue("period", roundedNumber);
       const roundedNumber1 = Math.round(Number(roundedNumber));
       const inputDate = new Date(startdateV);
       const resultDate = new Date(
         inputDate.getTime() +
-          roundedNumber1.toString() * 24 * 60 * 60 * 1000 -
+          roundedNumber1 * 24 * 60 * 60 * 1000 -
           1 * 24 * 60 * 60 * 1000
       );
       setenddateV(
@@ -289,11 +306,12 @@ const Register = () => {
     }
   };
   const onchangeday = async (e) => {
+    let period = watch("period");
     if (period === "" || period === undefined) {
       setenddateV("Nhập số ngày nghỉ");
     } else {
       const roundedNumber = Math.round((Number(period) * 10) / 5) / 2;
-      setperiod(roundedNumber.toString());
+      setValue("period", roundedNumber);
       const roundedNumber1 = Math.round(Number(roundedNumber));
       const inputDate = new Date(e);
       const resultDate = new Date(
@@ -469,14 +487,18 @@ const Register = () => {
                       )}
                     </div>
                   </div>
-                  <div className="col-md-4 d-flex justify-content-center mt-1 ">
-                    <span> Số ngày nghỉ</span>
-                    <div className="w-100 ml-3" style={{ maxWidth: "60px" }}>
+                  <div className="col-md-4 d-flex justify-content-end col-xs-6 mt-1 ">
+                    <span>
+                      Số ngày nghỉ <span style={{ color: "red" }}>*</span>
+                    </span>
+                    <div className="w-100 ml-3" style={{ maxWidth: "100px" }}>
                       <input
-                        value={period}
+                        {...register("period", validateForm.period)}
+                        type="number"
+                        // value={period}
                         className="form-control "
-                        onBlur={handleBlur}
-                        onChange={(e) => setperiod(e.target.value)}
+                        onBlur={(e) => handleBlur(e.target.value)}
+                        // onChange={(e) => console.log("first")}
                       />
 
                       <span
@@ -486,14 +508,12 @@ const Register = () => {
                           fontSize: "10px",
                         }}
                       >
-                        {errors.songaynghi?.message}
+                        {errors.period?.message}
                       </span>
                     </div>
                   </div>
                   <div className="col-md-4 d-flex justify-content-end mt-1">
-                    <span style={{ minWidth: "120px" }}>
-                      Ngày Kết thúc <span style={{ color: "red" }}>*</span>
-                    </span>
+                    <span style={{ minWidth: "105px" }}>Ngày Kết thúc</span>
                     <div className="input-group ml-3 ">
                       <input
                         value={enddateV}

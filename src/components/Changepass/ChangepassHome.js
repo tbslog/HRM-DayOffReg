@@ -73,7 +73,7 @@ const ChangepassHome = (props) => {
           theme: "colored",
         });
         setValue("Password", data.passwordNew);
-
+        Cookies.remove("fisstlogin");
         Cookies.set("empid", data.MSNV);
         reset();
         props.hideModal();

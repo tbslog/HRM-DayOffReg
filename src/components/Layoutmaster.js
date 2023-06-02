@@ -356,7 +356,8 @@ const Header = ({ children }) => {
               <div className="modal-header border-0 p-0">
                 <button
                   type="button"
-                  className="close ml"
+                  className="close"
+                  style={{ marginRight: "2px" }}
                   data-dismiss="modal"
                   onClick={() => hideModal()}
                   aria-label="Close"

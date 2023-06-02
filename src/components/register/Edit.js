@@ -170,7 +170,7 @@ const Edit = (props) => {
       setIsLoading(false);
       navigate("/indexListRegister");
     } else {
-      toast.error("lưu  thất bại Lỗi \n" + create.note, {
+      toast.error("lưu thất bại Lỗi \n" + create.note, {
         autoClose: 2000,
         className: "",
         position: "top-center",

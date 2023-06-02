@@ -125,6 +125,9 @@ const StaffPage = (props) => {
     },
   ];
   const aStatusShow = (aStatus) => {
+    if (aStatus === 0) {
+      return <span> Chưa Gửi</span>;
+    }
     if (aStatus === 1) {
       return <span style={{ color: "#ffc107" }}> Chờ Duyệt</span>;
     }
@@ -171,11 +174,15 @@ const StaffPage = (props) => {
         <>
           <div style={{ minWidth: "85px" }}>
             <button
-              className="border border-light btn btn-primary "
+              className="border border-light btn btn-warning "
               style={{ width: "40px", height: "40px" }}
               onClick={() => handleReturn(id)}
             >
-              <i className=" fas fa-check-circle" title="Duyệt" />
+              <i
+                className=" fas fa-undo-alt"
+                title="Duyệt"
+                style={{ color: "#ffffff" }}
+              />
             </button>
 
             <button
@@ -370,6 +377,7 @@ const StaffPage = (props) => {
                 <button
                   type="button"
                   className="close ml"
+                  style={{ marginRight: "1px" }}
                   data-dismiss="modal"
                   onClick={() => hideModal()}
                   aria-label="Close"

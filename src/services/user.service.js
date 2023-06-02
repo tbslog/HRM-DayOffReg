@@ -97,7 +97,7 @@ const postDataCustom = async (url, data) => {
       headers: authHeader().headers,
     })
     .then((response) => {
-      //console.log(response);
+      console.log(response);
       if (response.data.rCode === 1) {
         if (response.data.rError) {
           Object.keys(response.data.rError).forEach((key) => {
