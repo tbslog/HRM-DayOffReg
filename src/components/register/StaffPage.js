@@ -236,8 +236,9 @@ const StaffPage = (props) => {
   };
 
   const handleReturn = async (id) => {
+    console.log("```````````first```````````");
     let res = await putDataCus(`recall?regID=${id}`);
-
+    console.log(res);
     if (res.isSuccess === 1) {
       toast.success(res.note, {
         autoClose: 2000,
@@ -245,7 +246,7 @@ const StaffPage = (props) => {
         position: "top-center",
         theme: "colored",
       });
-      setcallback(!callback);
+      // setcallback(!callback);
     } else {
       toast.error(res.note, {
         autoClose: 2000,
@@ -255,6 +256,7 @@ const StaffPage = (props) => {
       });
     }
   };
+
   const handleEditButtonClick = async (id) => {
     showModalForm();
     let dataReg = await getData(`day-off-letter?regid=${id}`);
@@ -273,9 +275,9 @@ const StaffPage = (props) => {
   };
 
   const fetchData = async () => {
-    setcallback(!callback);
     let data = await getData("day-off-letters?needAppr=0");
     setdbTable(data.rData);
+    setcallback(!callback);
   };
   const checkRegDate = (regDate) => {
     if (regDate == null) {
@@ -289,76 +291,72 @@ const StaffPage = (props) => {
 
   return (
     <>
-      <form>
-        <div className="card-header py-0 border-0"></div>
+      <div className="card-header py-0 border-0"></div>
 
-        <div
-          className="card-body m-0 p-0 "
-          style={{ height: props.sizeConten }}
-        >
-          {IsLoading ? (
-            <Loading />
-          ) : (
-            <DataTable
-              columns={col}
-              data={ftTable}
-              pagination
-              paginationRowsPerPageOptions={[25, 50, 100]}
-              fixedHeader
-              fixedHeaderScrollHeight={props.sizeContenTB}
-              highlightOnHover
-              noDataComponent="Không có dữ liệu"
-              subHeader
-              subHeaderComponent={
-                <div
-                  className="d-flex justify-content-between w-100 p-0 m-0"
-                  // style={{
-                  //   background: "rgb(224 224 224)",
-                  // }}
-                >
-                  <div className="dropdown show pt-1">
-                    <select
-                      className=" btn btn-sm btn-outline-light dropdown-toggle text-left "
-                      onClick={(e) => {
-                        let a = [];
-                        if (parseInt(e.target.value) === 10) {
-                          setftTable(dbTable);
-                        } else {
-                          a = dbTable.filter((element) => {
-                            return element.EmpID === parseInt(e.target.value);
-                          });
-                          setftTable(a);
-                        }
+      <div className="card-body m-0 p-0 " style={{ height: props.sizeConten }}>
+        {IsLoading ? (
+          <Loading />
+        ) : (
+          <DataTable
+            columns={col}
+            data={ftTable}
+            pagination
+            paginationRowsPerPageOptions={[25, 50, 100]}
+            fixedHeader
+            fixedHeaderScrollHeight={props.sizeContenTB}
+            highlightOnHover
+            noDataComponent="Không có dữ liệu"
+            subHeader
+            subHeaderComponent={
+              <div
+                className="d-flex justify-content-between w-100 p-0 m-0"
+                // style={{
+                //   background: "rgb(224 224 224)",
+                // }}
+              >
+                <div className="dropdown show pt-1">
+                  <select
+                    className=" btn btn-sm btn-outline-light dropdown-toggle text-left "
+                    onClick={(e) => {
+                      let a = [];
+                      if (parseInt(e.target.value) === 10) {
+                        setftTable(dbTable);
+                      } else {
+                        a = dbTable.filter((element) => {
+                          return element.EmpID === parseInt(e.target.value);
+                        });
+                        setftTable(a);
+                      }
 
-                        // handleOpption(e.target.value);
-                      }}
-                    >
-                      <option value="10">Tất cả đơn</option>
-                      {listNV &&
-                        listNV.map((val) => {
-                          return (
-                            <option value={val.EmpID} key={val.EmpID}>
-                              {val.EmpID}({val.Name})
-                            </option>
-                          );
-                        })}
-                    </select>
-                  </div>
-                  <div className="pt-1 ">
-                    {/* style={{ alignSelf: "end" }} */}
-                    <a
-                      href="/Register"
-                      className="btn btn-sm btn-success mr-3 mb-2"
-                    >
-                      <i className="fas fa-plus" /> Tạo Đơn
-                    </a>
-                  </div>
+                      // handleOpption(e.target.value);
+                    }}
+                  >
+                    <option value="10">Tất cả đơn</option>
+                    {listNV &&
+                      listNV.map((val) => {
+                        return (
+                          <option value={val.EmpID} key={val.EmpID}>
+                            {val.EmpID}({val.Name})
+                          </option>
+                        );
+                      })}
+                  </select>
                 </div>
-              }
-            />
-          )}
-        </div>
-      </form>
+                <div className="pt-1 ">
+                  {/* style={{ alignSelf: "end" }} */}
+                  <a
+                    href="/Register"
+                    className="btn btn-sm btn-success mr-3 mb-2"
+                  >
+                    <i className="fas fa-plus" /> Tạo Đơn
+                  </a>
+                </div>
+              </div>
+            }
+          />
+        )}
+      </div>
+
       <>
         <div
           className="modal fade"

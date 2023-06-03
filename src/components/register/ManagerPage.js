@@ -3,7 +3,7 @@ import DataTable from "react-data-table-component";
 import {
   getData,
   postData,
-  putData,
+  postDataCustom,
   putDataCus,
 } from "../../services/user.service";
 import moment from "moment";
@@ -295,11 +295,12 @@ const ManagerPage = (props) => {
 
   const handleApprove = async (id) => {
     console.log(id);
-    var create = await postData("approve", {
+    var create = await postDataCustom("approve", {
       regid: id,
       comment: "",
       state: 1,
     });
+    console.log(create);
     if (create.isSuccess === 1) {
       toast.success("Duyệt thành công \n", {
         autoClose: 2000,
@@ -307,6 +308,16 @@ const ManagerPage = (props) => {
         position: "top-center",
         theme: "colored",
       });
+      fetchData();
+    } else {
+      toast.error("lưu thất bại Lỗi \n" + create.note, {
+        autoClose: 2000,
+        className: "",
+        position: "top-center",
+        theme: "colored",
+      });
+
+      setIsLoading(false);
     }
   };
 
@@ -323,91 +334,87 @@ const ManagerPage = (props) => {
 
   return (
     <>
-      <form>
-        <div className="card-header py-0 border-0">
-          <div
-            className="row  d-flex justify-content-center position-relative pt-1 "
-            style={{
-              justifyContent: "center ",
-              background: "rgb(224 224 224)",
-            }}
-          >
-            <h3>DANH SÁCH ĐƠN NGHỈ PHÉP</h3>
-          </div>
-        </div>
+      <div className="card-header py-0 border-0">
         <div
-          className="card-body m-0 p-0 "
-          style={{ height: props.sizeConten }}
+          className="row  d-flex justify-content-center position-relative pt-1 "
+          style={{
+            justifyContent: "center ",
+            background: "rgb(224 224 224)",
+          }}
         >
-          {IsLoading ? (
-            <Loading />
-          ) : (
-            <DataTable
-              columns={col}
-              data={ftTableMana}
-              pagination
-              paginationRowsPerPageOptions={[25, 50, 100]}
-              paginationResetDefaultPage={resetPaginationToggle}
-              fixedHeader
-              fixedHeaderScrollHeight={props.sizeContenTB}
-              selectableRows
-              selectableRowsHighlight
-              noDataComponent="Không có dữ liệu"
-              highlightOnHover
-              persistTableHead
-              subHeader
-              subHeaderComponent={
-                <div className="d-flex justify-content-between w-100">
-                  <div className="dropdown show">
-                    <select
-                      className="form-control btn btn-secondary dropdown-toggle text-left"
-                      onClick={(e) => {
-                        let a = [];
-                        if (parseInt(e.target.value) === 10) {
-                          setftTableMana(dbTableMana);
-                        } else {
-                          a = dbTableMana.filter((element) => {
-                            return element.aStatus === parseInt(e.target.value);
-                          });
-                          setftTableMana(a);
-                        }
+          <h3>DANH SÁCH ĐƠN NGHỈ PHÉP</h3>
+        </div>
+      </div>
+      <div className="card-body m-0 p-0 " style={{ height: props.sizeConten }}>
+        {IsLoading ? (
+          <Loading />
+        ) : (
+          <DataTable
+            columns={col}
+            data={ftTableMana}
+            pagination
+            paginationRowsPerPageOptions={[25, 50, 100]}
+            paginationResetDefaultPage={resetPaginationToggle}
+            fixedHeader
+            fixedHeaderScrollHeight={props.sizeContenTB}
+            selectableRows
+            selectableRowsHighlight
+            noDataComponent="Không có dữ liệu"
+            highlightOnHover
+            persistTableHead
+            subHeader
+            subHeaderComponent={
+              <div className="d-flex justify-content-between w-100">
+                <div className="dropdown show">
+                  <select
+                    className="form-control btn btn-secondary dropdown-toggle text-left"
+                    onClick={(e) => {
+                      let a = [];
+                      if (parseInt(e.target.value) === 10) {
+                        setftTableMana(dbTableMana);
+                      } else {
+                        a = dbTableMana.filter((element) => {
+                          return element.aStatus === parseInt(e.target.value);
+                        });
+                        setftTableMana(a);
+                      }
 
-                        // handleOpption(e.target.value);
-                      }}
+                      // handleOpption(e.target.value);
+                    }}
+                  >
+                    <option value="10">Tất cả đơn</option>
+                    <option value="1">Chờ Duyệt</option>
+                    <option value="2">Đã Duyệt</option>
+                    <option value="3">Từ Chối</option>
+                    <option value="4">Đã Hủy</option>
+                  </select>
+                </div>
+                <div className="input-group mb-2" style={{ width: "30%" }}>
+                  <input
+                    type="text"
+                    id="search"
+                    className="form-control"
+                    placeholder="Search..."
+                    aria-label="Search Input"
+                    value={filterText}
+                    onChange={(e) => setFilterText(e.target.value)}
+                  />
+                  <div className="input-group-append">
+                    <button
+                      className="btn btn-primary"
+                      type="button"
+                      onClick={handleClear}
                     >
-                      <option value="10">Tất cả đơn</option>
-                      <option value="1">Chờ Duyệt</option>
-                      <option value="2">Đã Duyệt</option>
-                      <option value="3">Từ Chối</option>
-                      <option value="4">Đã Hủy</option>
-                    </select>
-                  </div>
-                  <div className="input-group mb-2" style={{ width: "30%" }}>
-                    <input
-                      type="text"
-                      id="search"
-                      className="form-control"
-                      placeholder="Search..."
-                      aria-label="Search Input"
-                      value={filterText}
-                      onChange={(e) => setFilterText(e.target.value)}
-                    />
-                    <div className="input-group-append">
-                      <button
-                        className="btn btn-primary"
-                        type="button"
-                        onClick={handleClear}
-                      >
-                        <i className="fas fa-times"> </i>
-                      </button>
-                    </div>
+                      <i className="fas fa-times"> </i>
+                    </button>
                   </div>
                 </div>
-              }
-            />
-          )}
-        </div>
-      </form>
+              </div>
+            }
+          />
+        )}
+      </div>
+
       <>
         <div
           className="modal fade"

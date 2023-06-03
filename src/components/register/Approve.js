@@ -258,7 +258,7 @@ const Approve = (props) => {
   const handleRefuse = async (data) => {
     console.log(regID);
     console.log("1");
-    var create = await postData("approve", {
+    var create = await postDataCustom("approve", {
       regid: regID,
       comment: data.comment,
       state: 0,
