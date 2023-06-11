@@ -124,13 +124,13 @@ class DetailAccessSingleController extends GetxController
         if (data["rCode"] == 0) {
           Get.snackbar(
             "Thông báo",
-            "${data["rMsg"]} !",
+            "${data["rMsg"][0]} !",
             titleText: const Text(
               "Thông báo",
               style: TextStyle(color: Colors.red),
             ),
             messageText: Text(
-              "${data["rMsg"]} !",
+              "${data["rMsg"][0]} !",
               style: const TextStyle(color: Colors.green),
             ),
           );
@@ -138,13 +138,13 @@ class DetailAccessSingleController extends GetxController
           Get.toNamed(Routes.MANAGER_LEAVE_FORM_SCREEN);
           Get.snackbar(
             "Thông báo",
-            "${data["rMsg"]} !",
+            "${data["rMsg"][0]} !",
             titleText: const Text(
               "Thông báo",
               style: TextStyle(color: Colors.red),
             ),
             messageText: Text(
-              "${data["rMsg"]} !",
+              "${data["rMsg"][0]} !",
               style: const TextStyle(color: Colors.green),
             ),
           );

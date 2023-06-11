@@ -3,7 +3,7 @@ class RegisterDetailModel {
   int? offtype;
   String? reason;
   String? startdate;
-  int? period;
+  double? period;
   String? address;
   int? command;
 

@@ -57,7 +57,7 @@ class ChangePaswordController extends GetxController {
             ),
           ),
           messageText: Text(
-            "${data["rMsg"]}",
+            "${data["rMsg"][0]}",
             style: const TextStyle(
               color: Colors.green,
             ),

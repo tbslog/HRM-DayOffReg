@@ -128,13 +128,13 @@ class AccessSingleController extends GetxController {
 
         Get.snackbar(
           "Thông báo",
-          "${data["rMsg"]} !",
+          "${data["rMsg"][0]} !",
           titleText: const Text(
             "Thông báo",
             style: TextStyle(color: Colors.red),
           ),
           messageText: Text(
-            "${data["rMsg"]} !",
+            "${data["rMsg"][0]} !",
             style: const TextStyle(color: Colors.green),
           ),
         );

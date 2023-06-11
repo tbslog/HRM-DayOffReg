@@ -1,13 +1,15 @@
 class RegisterModel {
+  int? emplid;
   int? type;
   String? reason;
   String? startdate;
-  int? period;
+  double? period;
   String? address;
   int? command;
 
   RegisterModel(
-      {this.type,
+      {this.emplid,
+      this.type,
       this.reason,
       this.startdate,
       this.period,
@@ -15,6 +17,7 @@ class RegisterModel {
       this.command});
 
   RegisterModel.fromJson(Map<String, dynamic> json) {
+    emplid = json['emplid'];
     type = json['type'];
     reason = json['reason'];
     startdate = json['startdate'];
@@ -25,6 +28,7 @@ class RegisterModel {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
+    data['emplid'] = emplid;
     data['type'] = type;
     data['reason'] = reason;
     data['startdate'] = startdate;

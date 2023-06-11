@@ -51,10 +51,10 @@ class ChangePasswordFullController extends GetxController {
         rePasswordNew.text = "";
         if (data["rCode"] == 1) {
           Get.back();
-          getSnack(data["rMsg"]);
+          getSnack(data["rMsg"][0]);
         }
         {
-          getSnack(data["rMsg"]);
+          getSnack(data["rMsg"][0]);
         }
       }
     } catch (e) {

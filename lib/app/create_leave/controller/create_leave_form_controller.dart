@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Response;
 import 'package:intl/intl.dart';
 import 'package:tbs_logistics_phieunghi/app/create_leave/model/list_off_type_model.dart';
+import 'package:tbs_logistics_phieunghi/app/create_leave/model/of_subordinates_model.dart';
 import 'package:tbs_logistics_phieunghi/app/create_leave/model/register_model.dart';
 import 'package:tbs_logistics_phieunghi/app/manager_leave_form/model/user_model.dart';
 import 'package:tbs_logistics_phieunghi/config/core/constants.dart';
@@ -17,6 +18,11 @@ class CreateLeaveFormController extends GetxController
   TextEditingController dayController = TextEditingController();
   TextEditingController reasonController = TextEditingController();
   TextEditingController addressController = TextEditingController();
+
+  RxList<OfSubordinatesModel> listMember = <OfSubordinatesModel>[].obs;
+
+  RxList<OfSubordinatesModel> listMemberClient = <OfSubordinatesModel>[].obs;
+
   Rx<UserModel> userName = UserModel().obs;
   late TabController tabController;
   var selectedDate = DateTime.now().obs;
@@ -27,6 +33,9 @@ class CreateLeaveFormController extends GetxController
   var dayFreeError = RxnString(null);
 
   var selectedLoaiphep = "";
+  // Khai báo mã nhân viên
+  var selectMember = 0.obs;
+  // Khai báo loại phép
   var selectedValue = 0.obs;
   var nameType = "".obs;
 
@@ -84,10 +93,11 @@ class CreateLeaveFormController extends GetxController
   }
 
   void postRegister({
+    required int emplid,
     required int type,
     required String reason,
     required String startdate,
-    required int period,
+    required double period,
     required String address,
     required int command,
   }) async {
@@ -99,6 +109,7 @@ class CreateLeaveFormController extends GetxController
       HttpHeaders.authorizationHeader: "Bearer $tokens"
     };
     var register = RegisterModel(
+      emplid: emplid,
       type: type,
       reason: reason,
       startdate: startdate,
@@ -117,9 +128,6 @@ class CreateLeaveFormController extends GetxController
 
       if (response.statusCode == 200) {
         var data = response.data;
-        dayController.text = "";
-        reasonController.text = "";
-        addressController.text = "";
 
         if (data["rCode"] == 0) {
           // print("Lỗi");
@@ -136,6 +144,9 @@ class CreateLeaveFormController extends GetxController
             ),
           );
         } else if (data["rCode"] == 1) {
+          dayController.text = "";
+          reasonController.text = "";
+          addressController.text = "";
           Get.back(result: true);
           Get.snackbar(
             "Thông báo",
@@ -150,7 +161,7 @@ class CreateLeaveFormController extends GetxController
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     Text(
-                      "${data["rMsg"]}!",
+                      "${data["rMsg"][0]}!",
                       textAlign: TextAlign.left,
                       style: const TextStyle(color: Colors.green),
                     ),
@@ -238,5 +249,86 @@ class CreateLeaveFormController extends GetxController
     } catch (e) {
       rethrow;
     }
+  }
+
+  void getMember() async {
+    var dio = Dio();
+    Response response;
+    var tokens = await SharePerApi().getToken();
+    Map<String, dynamic> headers = {
+      HttpHeaders.authorizationHeader: "Bearer $tokens"
+    };
+
+    const url = '${AppConstants.urlBase}/list-of-subordinates';
+
+    try {
+      response = await dio.get(url, options: Options(headers: headers));
+
+      if (response.statusCode == AppConstants.RESPONSE_CODE_SUCCESS) {
+        if (response.data["rCode"] == 1) {
+          List<dynamic> member = response.data["rData"];
+
+          listMember.value =
+              member.map((e) => OfSubordinatesModel.fromJson(e)).toList();
+        } else {
+          getSnack(messageText: response.data["rMsg"][0]);
+        }
+      }
+    } on DioError catch (e) {
+      print([e.response!.statusCode, e.response!.statusMessage]);
+    }
+  }
+
+  Future<List<OfSubordinatesModel>> getDataCustomer(String? maKho) async {
+    listMemberClient.value = [];
+    var items = userName.value;
+
+    var userLeader = OfSubordinatesModel(
+      empID: items.empID,
+      firstName: items.firstName,
+      lastName: items.lastName,
+      comeDate: items.comeDate,
+      zoneID: items.zoneID,
+      deptID: items.deptID,
+      posID: items.jobPosID,
+      sex: 1,
+      tel: null,
+      status: 1,
+      directlyMng: null,
+      iDWorkingTime: null,
+      name: items.jobpositionName,
+      jPLevel: items.jPLevelID,
+    );
+
+    listMemberClient.add(userLeader);
+
+    for (var i = 0; i < listMember.length; i++) {
+      var items = listMember.value[i];
+      listMemberClient.add(items);
+    }
+
+    print("listMemberClient : ${listMemberClient.length}");
+
+    return listMemberClient;
+  }
+
+  void getSnack({required String messageText}) {
+    Get.snackbar(
+      "",
+      "",
+      titleText: const Text(
+        "Thông báo",
+        style: TextStyle(
+          color: Colors.red,
+          fontSize: 16,
+        ),
+      ),
+      messageText: Text(
+        messageText,
+        style: const TextStyle(
+          color: Colors.green,
+        ),
+      ),
+    );
   }
 }

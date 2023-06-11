@@ -28,7 +28,7 @@ class RData {
   String? type;
   String? reason;
   String? startDate;
-  int? period;
+  double? period;
   String? regDate;
   int? annualLeave;
   String? address;

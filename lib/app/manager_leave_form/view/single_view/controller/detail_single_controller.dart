@@ -172,7 +172,7 @@ class DetailSingleController extends GetxController {
       required int regID,
       required String reason,
       required String startdate,
-      required int period,
+      required double period,
       required String address,
       required int command,
       required BuildContext context}) async {
@@ -207,22 +207,22 @@ class DetailSingleController extends GetxController {
         if (data["rCode"] == 0) {
           Get.snackbar(
             "Thông báo",
-            "${data["rMsg"]} !",
+            "${data["rMsg"][0]} !",
             titleText: const Text(
               "Thông báo",
               style: TextStyle(color: Colors.red),
             ),
             messageText: Text(
-              "${data["rMsg"]} !",
+              "${data["rMsg"][0]} !",
               style: const TextStyle(color: Colors.green),
             ),
           );
         } else if (data["rCode"] == 1) {
           Get.back(result: true);
-          print(data["rMsg"]);
+          print(data["rMsg"][0]);
           Get.snackbar(
             "Thông báo",
-            "${data["rMsg"]} !",
+            "${data["rMsg"][0]} !",
             titleText: const Text(
               "Thông báo",
               style: TextStyle(color: Colors.red),
@@ -233,7 +233,7 @@ class DetailSingleController extends GetxController {
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     Text(
-                      "${data["rMsg"]}!",
+                      "${data["rMsg"][0]}!",
                       textAlign: TextAlign.left,
                       style: const TextStyle(color: Colors.green),
                     )

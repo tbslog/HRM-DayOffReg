@@ -1,7 +1,7 @@
 class DayOffLettersManagerModel {
   int? empID;
   int? regID;
-  int? period;
+  double? period;
   String? startDate;
   String? regDate;
   String? type;

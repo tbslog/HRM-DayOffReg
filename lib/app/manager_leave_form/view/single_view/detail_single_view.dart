@@ -699,10 +699,10 @@ class DetailSingleView extends GetView<DetailSingleController> {
                             )
                           : controller.timeController.text,
                       period: controller.dayController.text == ""
-                          ? int.parse(controller
+                          ? double.parse(controller
                               .detailsSingle.value.rData!.period
                               .toString())
-                          : int.parse(controller.dayController.text),
+                          : double.parse(controller.dayController.text),
                       address: controller.addressController.text == ""
                           ? controller.detailsSingle.value.rData!.address
                               .toString()
@@ -749,10 +749,10 @@ class DetailSingleView extends GetView<DetailSingleController> {
                             )
                           : controller.timeController.text,
                       period: controller.dayController.text == ""
-                          ? int.parse(controller
+                          ? double.parse(controller
                               .detailsSingle.value.rData!.period
                               .toString())
-                          : int.parse(controller.dayController.text),
+                          : double.parse(controller.dayController.text),
                       address: controller.addressController.text == ""
                           ? controller.detailsSingle.value.rData!.address
                               .toString()

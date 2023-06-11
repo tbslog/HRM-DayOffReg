@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:tbs_logistics_phieunghi/app/create_leave/model/list_off_type_model.dart';
 import 'package:tbs_logistics_phieunghi/app/create_leave/controller/create_leave_form_controller.dart';
+import 'package:tbs_logistics_phieunghi/app/create_leave/model/of_subordinates_model.dart';
 
 class CreateLeaveFormScreen extends GetView<CreateLeaveFormController> {
   const CreateLeaveFormScreen({super.key});
@@ -135,6 +136,7 @@ class CreateLeaveFormScreen extends GetView<CreateLeaveFormController> {
                       Column(
                         children: [
                           _buildLoaiPhep(size),
+                          _listCustomer(size),
                           _buildDateTime(
                             title: "Bắt đầu nghỉ từ *",
                             content: day.format(timeNow),
@@ -198,6 +200,9 @@ class CreateLeaveFormScreen extends GetView<CreateLeaveFormController> {
                                           .validate();
                                       if (!validate) {
                                         controller.postRegister(
+                                          emplid: int.parse(controller
+                                              .selectMember.value
+                                              .toString()),
                                           type: int.parse(controller
                                               .selectedValue.value
                                               .toString()),
@@ -205,7 +210,7 @@ class CreateLeaveFormScreen extends GetView<CreateLeaveFormController> {
                                               controller.reasonController.text,
                                           startdate:
                                               controller.timeController.text,
-                                          period: int.parse(
+                                          period: double.parse(
                                               controller.dayController.text),
                                           address:
                                               controller.addressController.text,
@@ -242,6 +247,9 @@ class CreateLeaveFormScreen extends GetView<CreateLeaveFormController> {
                                         // If the form is valid, display a snackbar. In the real world,
                                         // you'd often call a server or save the information in a database.
                                         controller.postRegister(
+                                          emplid: int.parse(controller
+                                              .selectMember.value
+                                              .toString()),
                                           type: int.parse(controller
                                               .selectedValue.value
                                               .toString()),
@@ -249,7 +257,7 @@ class CreateLeaveFormScreen extends GetView<CreateLeaveFormController> {
                                               controller.reasonController.text,
                                           startdate:
                                               controller.timeController.text,
-                                          period: int.parse(
+                                          period: double.parse(
                                               controller.dayController.text),
                                           address:
                                               controller.addressController.text,
@@ -478,6 +486,120 @@ class CreateLeaveFormScreen extends GetView<CreateLeaveFormController> {
                     ),
                   ),
                 ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _listCustomer(Size size) {
+    return Card(
+      child: SizedBox(
+        height: 70,
+        child: Row(
+          children: [
+            Expanded(
+              flex: 5,
+              child: Padding(
+                  padding: EdgeInsets.only(
+                    left: size.width * 0.05,
+                  ),
+                  child: const Text("MSNV")),
+            ),
+            Expanded(
+              flex: 5,
+              child: Container(
+                // margin: const EdgeInsets.only(top: 10),
+                child: FindDropdown<OfSubordinatesModel>(
+                  validate: (value) {
+                    // ignore: unrelated_type_equality_checks
+                    if (value == "" || value == 0 || value == null) {
+                      return 'Chọn nhân viên !';
+                    }
+                    return null;
+                  },
+                  onFind: (String filter) => controller.getDataCustomer(filter),
+                  onChanged: (OfSubordinatesModel? data) {
+                    controller.selectMember.value = data!.empID!;
+                  },
+                  dropdownBuilder:
+                      (BuildContext context, OfSubordinatesModel? item) {
+                    return Container(
+                      height: 40,
+                      decoration: BoxDecoration(
+                        border:
+                            Border.all(color: Theme.of(context).dividerColor),
+                        borderRadius: BorderRadius.circular(5),
+                        color: Colors.white,
+                      ),
+                      child: (item == null)
+                          ? Row(
+                              children: const [
+                                Padding(
+                                  padding: EdgeInsets.only(left: 10),
+                                  child: Text(
+                                    "Chọn nhân viên",
+                                    style: TextStyle(fontSize: 15),
+                                  ),
+                                ),
+                                Icon(
+                                  Icons.arrow_drop_down_outlined,
+                                  color: Colors.black,
+                                )
+                              ],
+                            )
+                          : Row(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 10),
+                                  child: Text(
+                                    "${item.lastName!} ${item.firstName}",
+                                    style: const TextStyle(fontSize: 15),
+                                  ),
+                                ),
+                                const Icon(
+                                  Icons.arrow_drop_down_outlined,
+                                  color: Colors.black,
+                                )
+                              ],
+                            ),
+                    );
+                  },
+                  dropdownItemBuilder: (BuildContext context,
+                      OfSubordinatesModel item, bool isSelected) {
+                    return Container(
+                      decoration: !isSelected
+                          ? null
+                          : BoxDecoration(
+                              border: Border.all(
+                                  color: Theme.of(context).primaryColor),
+                              borderRadius: BorderRadius.circular(5),
+                              color: Colors.white,
+                            ),
+                      child: Card(
+                        shape: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                            color: Colors.orangeAccent,
+                          ),
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: ListTile(
+                          selected: isSelected,
+                          title: Text(
+                            "${item.lastName!} ${item.firstName}",
+                            style: const TextStyle(fontSize: 15),
+                          ),
+                          subtitle: Text(
+                            "${item.empID!}",
+                            style: const TextStyle(fontSize: 15),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
           ],

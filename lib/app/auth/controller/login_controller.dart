@@ -169,7 +169,7 @@ class LoginController extends GetxController {
               const SizedBox(
                 height: 5,
               ),
-              Text("${response.data["rMsg"]}"),
+              Text("${response.data["rMsg"][0]}"),
             ],
           ),
           confirmTextColor: Colors.orangeAccent,
